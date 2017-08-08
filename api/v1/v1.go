@@ -4,7 +4,7 @@ package v1
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/backend/store"
 )
 
 // Store is the global store used in our HTTP handlers.

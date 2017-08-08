@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/praelatus/praelatus/api/utils"
-	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/backend/api/utils"
+	"github.com/praelatus/backend/models"
 )
 
 func TestGetProject(t *testing.T) {

@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/praelatus/praelatus/api"
-	"github.com/praelatus/praelatus/api/middleware"
-	"github.com/praelatus/praelatus/config"
-	"github.com/praelatus/praelatus/models"
-	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/backend/api"
+	"github.com/praelatus/backend/api/middleware"
+	"github.com/praelatus/backend/config"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/store"
 	"github.com/tylerb/graceful"
 	"github.com/urfave/cli"
 )

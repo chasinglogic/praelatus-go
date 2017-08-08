@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/securecookie"
-	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/backend/models"
 )
 
 var hashKey = securecookie.GenerateRandomKey(64)

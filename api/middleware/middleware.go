@@ -5,7 +5,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/backend/store"
 )
 
 // Cache is the global session store used in our middleware.

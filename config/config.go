@@ -9,9 +9,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/praelatus/praelatus/store"
-	"github.com/praelatus/praelatus/store/pg"
-	"github.com/praelatus/praelatus/store/session/bolt"
+	"github.com/praelatus/backend/store"
+	"github.com/praelatus/backend/store/pg"
+	"github.com/praelatus/backend/store/session/bolt"
 )
 
 // Config holds much of the configuration for praelatus, if reading from the

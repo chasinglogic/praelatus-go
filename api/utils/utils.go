@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/backend/store"
 )
 
 // APIMessage is a general purpose struct for sending messages to the client,

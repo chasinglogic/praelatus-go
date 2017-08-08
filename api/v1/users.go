@@ -5,10 +5,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/praelatus/praelatus/api/middleware"
-	"github.com/praelatus/praelatus/api/utils"
-	"github.com/praelatus/praelatus/models"
-	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/backend/api/middleware"
+	"github.com/praelatus/backend/api/utils"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/store"
 
 	"github.com/gorilla/mux"
 )
