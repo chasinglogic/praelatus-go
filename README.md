@@ -50,7 +50,7 @@ View our deployment guides for your platform:
 Praelatus is distributed under the Apache License.
 
 ```
-   Copyright 2016 Mark Chandler & Mathew Robinson
+   Copyright 2017 Mathew Robinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
