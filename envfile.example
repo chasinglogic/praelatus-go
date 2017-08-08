@@ -1,0 +1,3 @@
+POSTGRES_USER="postgres"
+POSTGRES_PASSWORD="supersecure"
+PRAELATUS_DB_URL="user=$POSTGRES_USER host=localhost sslmode=disable port=5432 password=$POSTGRES_PASSWORD dbname=praelatus"
