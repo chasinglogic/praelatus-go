@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -20,19 +21,19 @@ type Ticket struct {
 	Key         string        `json:"key"`
 	Summary     string        `json:"summary"`
 	Description string        `json:"description"`
-	Fields      []FieldValue  `json:"fields"`
-	Labels      []Label       `json:"labels"`
-	Type        TicketType    `json:"ticket_type"`
-	Reporter    User          `json:"reporter"`
-	Assignee    User          `json:"assignee"`
-	Status      Status        `json:"status"`
+	Status      string        `json:"status"`
 
-	WorkflowID int64 `json:"workflow_id"`
+	Type     TicketType `json:"ticket_type"`
+	Reporter User       `json:"reporter"`
+	Assignee User       `json:"assignee"`
 
-	Transitions []Transition `json:"transitions"`
-	Comments    []Comment    `json:"comments,omitempty"`
+	Labels []string `json:"labels"`
 
-	Project Project `json:"project"`
+	Fields   []FieldValue `json:"fields"`
+	Comments []Comment    `json:"comments,omitempty"`
+
+	Workflow bson.ObjectId `json:"workflow"`
+	Project  bson.ObjectId `json:"project"`
 }
 
 func (t *Ticket) String() string {
@@ -41,9 +42,17 @@ func (t *Ticket) String() string {
 
 // Transition searches through the available transitions for the ticket
 // returning a boolean indicating success or failure and the transition
-func (t *Ticket) Transition(name string) (Transition, bool) {
-	for _, transition := range t.Transitions {
-		if transition.Name == name {
+func (t *Ticket) Transition(db *mgo.DB, name string) (Transition, bool) {
+	var workflow Workflow
+
+	err := db.C("workflows").FindId(t.Workflow).One(&workflow)
+	if err != nil {
+		log.Println(err.Error())
+		return Transition{}, false
+	}
+
+	for _, transition := range workflow.Transitions {
+		if transition.Name == name && t.Status == transition.FromStatus {
 			return transition, true
 		}
 	}

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/praelatus/praelatus/models"
-	"github.com/praelatus/praelatus/models/permission"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/models/permission"
 )
 
 // Mock will return a mock store and session store to use for testing

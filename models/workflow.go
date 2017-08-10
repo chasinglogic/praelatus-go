@@ -4,9 +4,9 @@ import "gopkg.in/mgo.v2/bson"
 
 // Workflow is the container for issues and keeps track of available transitions
 type Workflow struct {
-	ID          bson.ObjectId           `json:"id" bson:"_id"`
-	Name        string                  `json:"name"`
-	Transitions map[string][]Transition `json:"transitions"`
+	ID          bson.ObjectId `json:"id" bson:"_id"`
+	Name        string        `json:"name"`
+	Transitions []Transition  `json:"transitions"`
 }
 
 func (w *Workflow) String() string {
@@ -16,10 +16,11 @@ func (w *Workflow) String() string {
 // Transition contains information about what hooks to perform when performing
 // a transition
 type Transition struct {
-	ID       bson.ObjectId `json:"id" bson:"_id"`
-	Name     string        `json:"name"`
-	ToStatus Status        `json:"to_status"`
-	Hooks    []Hook        `json:"hooks"`
+	ID         bson.ObjectId `json:"id" bson:"_id"`
+	Name       string        `json:"name"`
+	FromStatus string        `json:"from_status"`
+	ToStatus   string        `json:"to_status"`
+	Hooks      []Hook        `json:"hooks"`
 }
 
 func (t *Transition) String() string {
@@ -41,8 +42,7 @@ func (h *Hook) String() string {
 
 // Status represents a ticket's current status.
 type Status struct {
-	ID   bson.ObjectId `json:"id" bson:"_id"`
-	Name string        `json:"name"`
+	Name string `json:"name" bson:"_id"`
 }
 
 func (s *Status) String() string {

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/backend/models"
 )
 
 // StatusStore contains methods for storing and retrieving Statuses from a

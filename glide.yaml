@@ -1,4 +1,4 @@
-package: github.com/praelatus/praelatus
+package: github.com/praelatus/backend
 import:
 - package: github.com/alecthomas/template
 - package: github.com/boltdb/bolt

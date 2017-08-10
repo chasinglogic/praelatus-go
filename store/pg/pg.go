@@ -10,9 +10,9 @@ import (
 	"os"
 
 	"github.com/lib/pq"
-	"github.com/praelatus/praelatus/models/permission"
-	"github.com/praelatus/praelatus/store"
-	"github.com/praelatus/praelatus/store/pg/migrations"
+	"github.com/praelatus/backend/models/permission"
+	"github.com/praelatus/backend/store"
+	"github.com/praelatus/backend/store/pg/migrations"
 )
 
 // rowScanner is used internally so we can take a sql.Row or sql.Rows in some

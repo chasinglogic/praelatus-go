@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/praelatus/praelatus/models"
-	"github.com/praelatus/praelatus/models/permission"
-	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/models/permission"
+	"github.com/praelatus/backend/store"
 )
 
 // PermissionStore contains methods for storing, retrieving, and

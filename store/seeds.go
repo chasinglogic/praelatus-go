@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/praelatus/praelatus/models"
-	"github.com/praelatus/praelatus/models/permission"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/models/permission"
 )
 
 // DefaultWorkflow should be given when the /api/workflows/default endpoint is

@@ -109,13 +109,13 @@ here by simply changing to that user:
 ```
 
 You can get the latest release of praelatus for Linux from our 
-[releases page](https://github.com/praelatus/praelatus/releases)
+[releases page](https://github.com/praelatus/backend/releases)
 
 Once you have the download link from the release page you can curl it down to
 your server, here I'm downloading v0.0.2:
 
 ```
-$ curl -sSOL https://github.com/praelatus/praelatus/releases/download/v0.0.2/praelatus-v0.0.2-linux-amd64.tar.gz
+$ curl -sSOL https://github.com/praelatus/backend/releases/download/v0.0.2/praelatus-v0.0.2-linux-amd64.tar.gz
 ```
 
 Then simply extract the tar ball:
@@ -174,7 +174,7 @@ Here is more in depth explanation of each variable:
 This is the url / connection string that praelatus will use for connecting to 
 the database, `postgres:postgres` is the username / password to be used when 
 connecting. See the 
-[envfile.example](https://raw.githubusercontent.com/praelatus/praelatus/develop/envfile.example) 
+[envfile.example](https://raw.githubusercontent.com/praelatus/backend/develop/envfile.example) 
 for alternative ways of setting this and further paramterization.
 
 **PRAELATUS_SESSION**
@@ -249,7 +249,7 @@ Requires=postgresql.service
 After=network-online.target
 
 [Service]
-ExecStart=/opt/praelatus/praelatus
+ExecStart=/opt/praelatus/backend
 User=praelatus
 
 [Install]

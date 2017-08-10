@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/backend/models"
 )
 
 // TypeStore is used to store ticket types in a postgres database

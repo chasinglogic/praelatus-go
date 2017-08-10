@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
-	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/backend/models"
 )
 
 func TestFieldGet(t *testing.T) {

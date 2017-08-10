@@ -3,9 +3,9 @@ package pg_test
 import (
 	"testing"
 
-	"github.com/praelatus/praelatus/config"
-	"github.com/praelatus/praelatus/store"
-	"github.com/praelatus/praelatus/store/pg"
+	"github.com/praelatus/backend/config"
+	"github.com/praelatus/backend/store"
+	"github.com/praelatus/backend/store/pg"
 )
 
 var s *pg.Store

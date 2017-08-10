@@ -3,9 +3,9 @@ package pg
 import (
 	"database/sql"
 
-	"github.com/praelatus/praelatus/models"
-	"github.com/praelatus/praelatus/models/permission"
-	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/models/permission"
+	"github.com/praelatus/backend/store"
 )
 
 // RoleStore contains methods for storing, and retrieving roles in a

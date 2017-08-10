@@ -48,7 +48,7 @@ cd $GOPATH/src/github.com/praelatus
 ```
 
 If you haven't forked the project yet you can do so by clicking this 
-[link](https://github.com/praelatus/praelatus#fork-destination-box)
+[link](https://github.com/praelatus/backend#fork-destination-box)
 
 Once you've got your fork you can get the code by cloning your fork, the url
 will be `https://github.com/{yourusername}/praelatus`. For example my github
@@ -58,11 +58,11 @@ username is chasinglogic so if I were to clone my fork the command would be
 git clone https://github.com/chasinglogic/praelatus
 ```
 
-You should then have a folder at `$GOPATH/src/github.com/praelatus/praelatus`
+You should then have a folder at `$GOPATH/src/github.com/praelatus/backend`
 let's go ahead and move into that directory:
 
 ```
-cd $GOPATH/src/github.com/praelatus/praelatus
+cd $GOPATH/src/github.com/praelatus/backend
 ```
 
 ## Setting up the Database
@@ -70,7 +70,7 @@ cd $GOPATH/src/github.com/praelatus/praelatus
 Now that we've got the code the first thing to do is configure our database and
 our environment. I'm going to go over the minimal configuration needed to get
 hacking here but if you're curious about how to customize / configure this
-setup you can [read the source, Luke](https://raw.githubusercontent.com/praelatus/praelatus/develop/config/config.go)
+setup you can [read the source, Luke](https://raw.githubusercontent.com/praelatus/backend/develop/config/config.go)
 or [read the deployment guides](/deployments/linux)
 which cover how to configure the app.
 
@@ -130,7 +130,7 @@ actually executing some code!
 If you're not there already go to the directory we created earlier:
 
 ```
-cd $GOPATH/src/github.com/praelatus/praelatus
+cd $GOPATH/src/github.com/praelatus/backend
 ```
 
 First let's make sure the db is running, if you have praelatus installed you

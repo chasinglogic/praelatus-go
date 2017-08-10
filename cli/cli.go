@@ -25,11 +25,15 @@ func Run(args []string) {
 	app.Authors = []cli.Author{
 		{
 			Name:  "Mathew Robinson",
-			Email: "chasinglogic@gmail.com",
+			Email: "mrobinson@praelatus.io",
 		},
 		{
-			Name:  "Mark Chandler",
-			Email: "mark.allen.chandler@gmail.com",
+			Name:  "Wes Swett",
+			Email: "wswett@praelatus.io",
+		},
+		{
+			Name:  "Ryan Brzezinski",
+			Email: "ryan.brzezinski867@gmail.com",
 		},
 	}
 
@@ -67,13 +71,13 @@ func Run(args []string) {
 		},
 		{
 			Name:   "cleandb",
-			Usage:  "will clean the database (remove all tables), useful for testing",
+			Usage:  "will clean the database (remove all data), useful for testing",
 			Action: cleanDB,
 		},
 		{
-			Name:   "migratedb",
-			Usage:  "will migrate the database if it is migrateable",
-			Action: migrateDB,
+			Name:   "setupdb",
+			Usage:  "Sets up indexes and other such items on the database.",
+			Action: setupDB,
 		},
 		{
 			Name:  "admin",

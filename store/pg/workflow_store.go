@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/backend/models"
 )
 
 // WorkflowStore contains methods for saving/retrieving workflows from a

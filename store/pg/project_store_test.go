@@ -3,7 +3,7 @@ package pg_test
 import (
 	"testing"
 
-	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/backend/models"
 )
 
 func TestProjectGet(t *testing.T) {

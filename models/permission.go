@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/praelatus/praelatus/models/permission"
+	"github.com/praelatus/backend/models/permission"
 	"gopkg.in/mgo.v2/bson"
 )
 

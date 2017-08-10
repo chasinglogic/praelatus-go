@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/praelatus/praelatus/models"
-	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/store"
 )
 
 var s store.SessionStore

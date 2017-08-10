@@ -27,8 +27,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/praelatus/praelatus/models"
-	"github.com/praelatus/praelatus/models/permission"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/models/permission"
 )
 
 var (

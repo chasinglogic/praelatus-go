@@ -1,4 +1,4 @@
-# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/praelatus?status.svg)](https://godoc.org/github.com/praelatus/praelatus/) [![Go Report Card](https://goreportcard.com/badge/github.com/praelatus/praelatus)](https://goreportcard.com/report/github.com/praelatus/praelatus)
+# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/backend?status.svg)](https://godoc.org/github.com/praelatus/backend/) [![Go Report Card](https://goreportcard.com/badge/github.com/praelatus/praelatus)](https://goreportcard.com/report/github.com/praelatus/praelatus)
 An Open Source bug tracker and ticketing system.
 
 If you're looking for the official web frontend it's
@@ -6,7 +6,7 @@ If you're looking for the official web frontend it's
 
 | Stable | Nightly |
 |:------:|:-------:|
-| [![Build Status](https://travis-ci.org/praelatus/praelatus.svg?branch=master)](https://travis-ci.org/praelatus/praelatus) | [![Build Status](https://travis-ci.org/praelatus/praelatus.svg?branch=develop)](https://travis-ci.org/praelatus/praelatus) |
+| [![Build Status](https://travis-ci.org/praelatus/backend.svg?branch=master)](https://travis-ci.org/praelatus/backend) | [![Build Status](https://travis-ci.org/praelatus/praelatus.svg?branch=develop)](https://travis-ci.org/praelatus/praelatus) |
 
 ## What is Praelatus?
 
@@ -35,7 +35,7 @@ The basics:
 All pull requests should go to the develop branch not master. Thanks!
 
 Need help getting started hacking on Praelatus? No problem we have docs for that!
-- [Contribution Guidelines](https://github.com/praelatus/praelatus/blob/develop/CONTRIBUTING.md)
+- [Contribution Guidelines](https://github.com/praelatus/backend/blob/develop/CONTRIBUTING.md)
 - [HACKING](https://doc.praelatus.io/contributing/HACKING)
 - [REST API Reference](https://doc.praelatus.io/rest/api_reference/)
 
