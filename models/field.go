@@ -1,6 +1,10 @@
 package models
 
-import "errors"
+import (
+	"errors"
+
+	"gopkg.in/mgo.v2/bson"
+)
 
 // ErrInvalidDataType indicates that the field was created with an incorrect
 // data type
@@ -17,10 +21,10 @@ var DataTypes = []string{
 
 // Field is a ticket field
 type Field struct {
-	ID       int64        `json:"id"`
-	Name     string       `json:"name"`
-	DataType string       `json:"data_type"`
-	Options  *FieldOption `json:"options,omitempty"`
+	ID       bson.ObjectId `json:"id" bson:"_id"`
+	Name     string        `json:"name"`
+	DataType string        `json:"data_type"`
+	Options  *FieldOption  `json:"options,omitempty"`
 }
 
 // FieldOption is used as the value for FieldValues which are selects.
@@ -47,9 +51,9 @@ func (f *Field) IsValidDataType() bool {
 
 // FieldValue holds the value for a field on a given ticket.
 type FieldValue struct {
-	ID       int64  `json:"id"`
-	Name     string `json:"name"`
-	DataType string `json:"data_type"`
+	ID       bson.ObjectId `json:"id" bson:"_id"`
+	Name     string        `json:"name"`
+	DataType string        `json:"data_type"`
 
 	// Value holds the value of the given field
 	Value interface{} `json:"value"`

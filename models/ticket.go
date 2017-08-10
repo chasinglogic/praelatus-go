@@ -1,27 +1,31 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gopkg.in/mgo.v2/bson"
+)
 
 // TicketType represents the type of ticket.
 type TicketType struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID   bson.ObjectId `json:"id" bson:"_id"`
+	Name string        `json:"name"`
 }
 
 // Ticket represents a ticket
 type Ticket struct {
-	ID          int64        `json:"id"`
-	CreatedDate time.Time    `json:"created_date"`
-	UpdatedDate time.Time    `json:"updated_date"`
-	Key         string       `json:"key"`
-	Summary     string       `json:"summary"`
-	Description string       `json:"description"`
-	Fields      []FieldValue `json:"fields"`
-	Labels      []Label      `json:"labels"`
-	Type        TicketType   `json:"ticket_type"`
-	Reporter    User         `json:"reporter"`
-	Assignee    User         `json:"assignee"`
-	Status      Status       `json:"status"`
+	ID          bson.ObjectId `json:"id" bson:"_id"`
+	CreatedDate time.Time     `json:"created_date"`
+	UpdatedDate time.Time     `json:"updated_date"`
+	Key         string        `json:"key"`
+	Summary     string        `json:"summary"`
+	Description string        `json:"description"`
+	Fields      []FieldValue  `json:"fields"`
+	Labels      []Label       `json:"labels"`
+	Type        TicketType    `json:"ticket_type"`
+	Reporter    User          `json:"reporter"`
+	Assignee    User          `json:"assignee"`
+	Status      Status        `json:"status"`
 
 	WorkflowID int64 `json:"workflow_id"`
 
@@ -47,22 +51,26 @@ func (t *Ticket) Transition(name string) (Transition, bool) {
 	return Transition{}, false
 }
 
-// Status represents a ticket's current status.
-type Status struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-}
-
-func (s *Status) String() string {
-	return jsonString(s)
-}
-
 // Label is a label used on tickets
 type Label struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID   bson.ObjectId `json:"id" bson:"_id"`
+	Name string        `json:"name"`
 }
 
 func (l *Label) String() string {
 	return jsonString(l)
+}
+
+// Comment is a comment on an issue / ticket.
+type Comment struct {
+	ID          bson.ObjectId `json:"id" bson:"_id"`
+	UpdatedDate time.Time     `json:"updated_date"`
+	CreatedDate time.Time     `json:"created_date"`
+	TicketKey   string        `json:"ticket_key"`
+	Body        string        `json:"body"`
+	Author      User          `json:"author"`
+}
+
+func (c *Comment) String() string {
+	return jsonString(c)
 }
