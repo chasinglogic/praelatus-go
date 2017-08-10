@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -42,7 +43,7 @@ func (t *Ticket) String() string {
 
 // Transition searches through the available transitions for the ticket
 // returning a boolean indicating success or failure and the transition
-func (t *Ticket) Transition(db *mgo.DB, name string) (Transition, bool) {
+func (t *Ticket) Transition(db *mgo.Database, name string) (Transition, bool) {
 	var workflow Workflow
 
 	err := db.C("workflows").FindId(t.Workflow).One(&workflow)
