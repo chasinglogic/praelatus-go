@@ -8,10 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/praelatus/backend/store"
-	"github.com/praelatus/backend/store/pg"
-	"github.com/praelatus/backend/store/session/bolt"
 )
 
 // Config holds much of the configuration for praelatus, if reading from the
@@ -19,6 +15,7 @@ import (
 // some prequisite processing and return appropriate types.
 type Config struct {
 	DBURL        string
+	DBName       string
 	SessionURL   string
 	Port         string
 	ContextPath  string
@@ -39,9 +36,14 @@ func (c Config) String() string {
 var Cfg Config
 
 func init() {
-	Cfg.DBURL = os.Getenv("PRAELATUS_DB")
+	Cfg.DBURL = os.Getenv("PRAELATUS_DB_URL")
 	if Cfg.DBURL == "" {
-		Cfg.DBURL = "postgres://postgres:postgres@localhost:5432/prae_dev?sslmode=disable"
+		Cfg.DBURL = "mongodb://localhost:27017/praelatus"
+	}
+
+	Cfg.DBName = os.Getenv("PRAELATUS_DB")
+	if Cfg.DBName == "" {
+		Cfg.DBName = "praelatus"
 	}
 
 	Cfg.SessionStore = os.Getenv("PRAELATUS_SESSION")
@@ -105,26 +107,15 @@ func DBURL() string {
 	return Cfg.DBURL
 }
 
+// DBName will return the appropriate database name
+func DBName() string {
+	return Cfg.DBName
+}
+
 // Port will return the port / interfaces for the api to listen on based on the
 // configuration
 func Port() string {
 	return Cfg.Port
-}
-
-// Store will return the correct data store based on the configuration of the
-// instance
-func Store() store.Store {
-	return pg.New(DBURL())
-}
-
-// SessionStore will return a session store with a default location
-func SessionStore() store.SessionStore {
-	switch Cfg.SessionStore {
-	case "bolt":
-		return bolt.New(Cfg.SessionURL)
-	default:
-		return bolt.New(Cfg.SessionURL)
-	}
 }
 
 // SessionURL will get the url to use for redis or file location for boltdb

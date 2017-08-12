@@ -5,8 +5,6 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"gopkg.in/mgo.v2/bson"
-
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -14,15 +12,17 @@ import (
 
 // User represents a user of our application
 type User struct {
-	ID         bson.ObjectId `json:"id" bson:"_id"`
-	Username   string        `json:"username"`
-	Password   string        `json:"password,omitempty"`
-	Email      string        `json:"email"`
-	FullName   string        `json:"full_name"`
-	ProfilePic string        `json:"profile_picture"`
-	IsAdmin    bool          `json:"is_admin,omitempty"`
-	IsActive   bool          `json:"is_active,omitempty"`
-	Settings   *Settings     `json:"settings,omitempty"`
+	Username   string   `json:"username" bson:"_id"`
+	Password   string   `json:"password,omitempty"`
+	Email      string   `json:"email"`
+	FullName   string   `json:"full_name"`
+	ProfilePic string   `json:"profile_picture"`
+	IsAdmin    bool     `json:"isAdmin,omitempty"`
+	IsActive   bool     `json:"isActive,omitempty"`
+	Settings   Settings `json:"settings,omitempty"`
+
+	// Map of project keys to roles.
+	Permissions map[string][]Role
 }
 
 // CheckPw will verify if the given password matches for this user. Logs any

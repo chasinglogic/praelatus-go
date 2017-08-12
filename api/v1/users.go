@@ -1,301 +1,282 @@
 package v1
 
-import (
-	"encoding/json"
-	"log"
-	"net/http"
+// import (
+// 	"encoding/json"
+// 	"log"
+// 	"net/http"
 
-	"github.com/praelatus/backend/api/middleware"
-	"github.com/praelatus/backend/api/utils"
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/store"
+// 	"github.com/praelatus/backend/api/middleware"
+// 	"github.com/praelatus/backend/api/utils"
+// 	"github.com/praelatus/backend/models"
 
-	"github.com/gorilla/mux"
-)
+// 	"github.com/gorilla/mux"
+// )
 
-func userRouter(router *mux.Router) {
-	router.HandleFunc("/users", GetAllUsers).Methods("GET")
-	router.HandleFunc("/users", CreateUser).Methods("POST")
+// func userRouter(router *mux.Router) {
+// 	router.HandleFunc("/users", GetAllUsers).Methods("GET")
+// 	router.HandleFunc("/users", CreateUser).Methods("POST")
 
-	router.HandleFunc("/users/current_user", CurrentUser).Methods("GET")
+// 	router.HandleFunc("/users/current_user", CurrentUser).Methods("GET")
 
-	router.HandleFunc("/users/sessions", CreateSession).Methods("POST")
-	router.HandleFunc("/users/sessions", RefreshSession).Methods("GET")
+// 	router.HandleFunc("/users/sessions", CreateSession).Methods("POST")
+// 	router.HandleFunc("/users/sessions", RefreshSession).Methods("GET")
 
-	router.HandleFunc("/users/search", SearchUsers).Methods("GET")
+// 	router.HandleFunc("/users/search", SearchUsers).Methods("GET")
 
-	router.HandleFunc("/users/{username}", UpdateUser).Methods("PUT")
-	router.HandleFunc("/users/{username}", DeleteUser).Methods("DELETE")
-	router.HandleFunc("/users/{username}", GetUser).Methods("GET")
-}
+// 	router.HandleFunc("/users/{username}", UpdateUser).Methods("PUT")
+// 	router.HandleFunc("/users/{username}", DeleteUser).Methods("DELETE")
+// 	router.HandleFunc("/users/{username}", GetUser).Methods("GET")
+// }
 
-// TokenResponse is used when logging in or signing up, it will return a
-// generated token plus the user model for use by the client.
-type TokenResponse struct {
-	Token string      `json:"token"`
-	User  models.User `json:"user"`
-}
+// // TokenResponse is used when logging in or signing up, it will return a
+// // generated token plus the user model for use by the client.
+// type TokenResponse struct {
+// 	Token string      `json:"token"`
+// 	User  models.User `json:"user"`
+// }
 
-// GetUser will get a user from the database by the given username
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+// // GetUser will get a user from the database by the given username
+// func GetUser(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
 
-	u := models.User{
-		Username: vars["username"],
-	}
+// 	u := models.User{
+// 		Username: vars["username"],
+// 	}
 
-	err := Store.Users().Get(&u)
-	if err != nil {
-		if err == store.ErrNotFound {
-			w.WriteHeader(404)
-			w.Write(utils.APIError("No user exists with that username."))
-			return
-		}
+// 	err := Store.Users().Get(&u)
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// 	u.Password = ""
 
-	u.Password = ""
+// 	utils.SendJSON(w, u)
+// }
 
-	utils.SendJSON(w, u)
-}
+// // GetAllUsers will return the json encoded array of all users in the given
+// // store
+// func GetAllUsers(w http.ResponseWriter, r *http.Request) {
+// 	u := middleware.GetUserSession(r)
+// 	if u == nil {
+// 		w.WriteHeader(403)
+// 		w.Write(utils.APIError("you must be logged in to view other users"))
+// 		return
+// 	}
 
-// GetAllUsers will return the json encoded array of all users in the given
-// store
-func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	u := middleware.GetUserSession(r)
-	if u == nil {
-		w.WriteHeader(403)
-		w.Write(utils.APIError("you must be logged in to view other users"))
-		return
-	}
+// 	users, err := Store.Users().GetAll()
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-	users, err := Store.Users().GetAll()
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// 	for i := range users {
+// 		users[i].Password = ""
+// 		users[i].Settings = nil
+// 	}
 
-	for i := range users {
-		users[i].Password = ""
-		users[i].Settings = nil
-	}
+// 	utils.SendJSON(w, users)
+// }
 
-	utils.SendJSON(w, users)
-}
+// // SearchUsers will return the json encoded array of all users in the given
+// // store which match the provided query
+// func SearchUsers(w http.ResponseWriter, r *http.Request) {
+// 	u := middleware.GetUserSession(r)
+// 	if u == nil {
+// 		w.WriteHeader(403)
+// 		w.Write(utils.APIError("you must be logged in to view other users"))
+// 		return
+// 	}
 
-// SearchUsers will return the json encoded array of all users in the given
-// store which match the provided query
-func SearchUsers(w http.ResponseWriter, r *http.Request) {
-	u := middleware.GetUserSession(r)
-	if u == nil {
-		w.WriteHeader(403)
-		w.Write(utils.APIError("you must be logged in to view other users"))
-		return
-	}
+// 	query := r.FormValue("query")
 
-	query := r.FormValue("query")
+// 	users, err := Store.Users().Search(query)
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-	users, err := Store.Users().Search(query)
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// 	for i := range users {
+// 		users[i].Password = ""
+// 		users[i].Settings = nil
+// 	}
 
-	for i := range users {
-		users[i].Password = ""
-		users[i].Settings = nil
-	}
+// 	utils.SendJSON(w, users)
+// }
 
-	utils.SendJSON(w, users)
-}
+// // CreateUser will take the JSON given and attempt to
+// func CreateUser(w http.ResponseWriter, r *http.Request) {
+// 	var u models.User
 
-// CreateUser will take the JSON given and attempt to
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var u models.User
+// 	decoder := json.NewDecoder(r.Body)
+// 	err := decoder.Decode(&u)
+// 	if err != nil {
+// 		w.WriteHeader(400)
+// 		w.Write(utils.APIError(err.Error()))
+// 		return
+// 	}
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&u)
-	if err != nil {
-		w.WriteHeader(400)
-		w.Write(utils.APIError(err.Error()))
-		return
-	}
+// 	usr, err := models.NewUser(u.Username, u.Password, u.FullName, u.Email, false)
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-	usr, err := models.NewUser(u.Username, u.Password, u.FullName, u.Email, false)
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// 	err = Store.Users().New(usr)
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		return
+// 	}
 
-	err = Store.Users().New(usr)
-	if err != nil {
-		if err == store.ErrDuplicateEntry {
-			w.WriteHeader(400)
-			w.Write(utils.APIError("That username is already taken"))
-			return
-		}
+// 	err = middleware.SetUserSession(*usr, w)
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		return
+// 	}
 
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		return
-	}
+// 	usr.Password = ""
 
-	err = middleware.SetUserSession(*usr, w)
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		return
-	}
+// 	utils.SendJSON(w, usr)
+// }
 
-	usr.Password = ""
+// // UpdateUser will update a user in the database, it will reject the call if
+// // the user sending is not the user being updated or if the user sending is not
+// // a sys admin
+// func UpdateUser(w http.ResponseWriter, r *http.Request) {
+// 	var u models.User
 
-	utils.SendJSON(w, usr)
-}
+// 	decoder := json.NewDecoder(r.Body)
+// 	err := decoder.Decode(&u)
+// 	if err != nil {
+// 		w.WriteHeader(400)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-// UpdateUser will update a user in the database, it will reject the call if
-// the user sending is not the user being updated or if the user sending is not
-// a sys admin
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	var u models.User
+// 	if u.Username == "" {
+// 		vars := mux.Vars(r)
+// 		u.Username = vars["username"]
+// 	}
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&u)
-	if err != nil {
-		w.WriteHeader(400)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// 	err = Store.Users().Save(u)
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-	if u.Username == "" {
-		vars := mux.Vars(r)
-		u.Username = vars["username"]
-	}
+// 	utils.SendJSON(w, u)
+// }
 
-	err = Store.Users().Save(u)
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// // DeleteUser will remove a user from the database by setting is_inactive = 1
+// // can only be used by sys admins
+// func DeleteUser(w http.ResponseWriter, r *http.Request) {
+// 	var u models.User
 
-	utils.SendJSON(w, u)
-}
+// 	decoder := json.NewDecoder(r.Body)
+// 	err := decoder.Decode(&u)
+// 	if err != nil {
+// 		w.WriteHeader(400)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-// DeleteUser will remove a user from the database by setting is_inactive = 1
-// can only be used by sys admins
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	var u models.User
+// 	if u.Username == "" {
+// 		vars := mux.Vars(r)
+// 		u.Username = vars["username"]
+// 	}
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&u)
-	if err != nil {
-		w.WriteHeader(400)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// 	err = Store.Users().Remove(u)
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-	if u.Username == "" {
-		vars := mux.Vars(r)
-		u.Username = vars["username"]
-	}
+// 	w.Write([]byte(""))
+// }
 
-	err = Store.Users().Remove(u)
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// // CreateSession will log in a user and create a jwt token for the current
+// // session
+// func CreateSession(w http.ResponseWriter, r *http.Request) {
+// 	type loginRequest struct {
+// 		Username string `json:"username"`
+// 		Password string `json:"password"`
+// 	}
 
-	w.Write([]byte(""))
-}
+// 	var l loginRequest
 
-// CreateSession will log in a user and create a jwt token for the current
-// session
-func CreateSession(w http.ResponseWriter, r *http.Request) {
-	type loginRequest struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+// 	decode := json.NewDecoder(r.Body)
+// 	err := decode.Decode(&l)
+// 	if err != nil {
+// 		w.WriteHeader(400)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-	var l loginRequest
+// 	u := models.User{Username: l.Username}
 
-	decode := json.NewDecoder(r.Body)
-	err := decode.Decode(&l)
-	if err != nil {
-		w.WriteHeader(400)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// 	err = Store.Users().Get(&u)
+// 	if err != nil {
+// 		w.WriteHeader(500)
+// 		w.Write(utils.APIError(err.Error()))
+// 		log.Println(err)
+// 		return
+// 	}
 
-	u := models.User{Username: l.Username}
+// 	if u.CheckPw([]byte(l.Password)) {
+// 		err := middleware.SetUserSession(u, w)
+// 		if err != nil {
+// 			w.WriteHeader(500)
+// 			w.Write(utils.APIError(err.Error()))
+// 			log.Println(err)
+// 			return
 
-	err = Store.Users().Get(&u)
-	if err != nil {
-		if err == store.ErrNotFound {
-			w.WriteHeader(404)
-			w.Write(utils.APIError("No user exists with that username."))
-			return
-		}
+// 		}
 
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
+// 		u.Password = ""
+// 		utils.SendJSON(w, u)
 
-	if u.CheckPw([]byte(l.Password)) {
-		err := middleware.SetUserSession(u, w)
-		if err != nil {
-			w.WriteHeader(500)
-			w.Write(utils.APIError(err.Error()))
-			log.Println(err)
-			return
+// 		return
+// 	}
 
-		}
+// 	w.WriteHeader(401)
+// 	w.Write(utils.APIError("invalid password", "password"))
+// }
 
-		u.Password = ""
-		utils.SendJSON(w, u)
+// // RefreshSession will reset the expiration on the current session
+// func RefreshSession(w http.ResponseWriter, r *http.Request) {
+// 	err := middleware.RefreshSession(r)
+// 	if err != nil {
+// 		w.Write(utils.APIError(err.Error()))
+// 	}
 
-		return
-	}
+// 	w.Write([]byte{})
+// }
 
-	w.WriteHeader(401)
-	w.Write(utils.APIError("invalid password", "password"))
-}
+// // CurrentUser will return the user object for the currently logged in user
+// func CurrentUser(w http.ResponseWriter, r *http.Request) {
+// 	u := middleware.GetUserSession(r)
+// 	if u != nil {
+// 		w.WriteHeader(http.StatusUnauthorized)
+// 		w.Write(utils.APIError("you are not logged in"))
+// 		return
+// 	}
 
-// RefreshSession will reset the expiration on the current session
-func RefreshSession(w http.ResponseWriter, r *http.Request) {
-	err := middleware.RefreshSession(r)
-	if err != nil {
-		w.Write(utils.APIError(err.Error()))
-	}
-
-	w.Write([]byte{})
-}
-
-// CurrentUser will return the user object for the currently logged in user
-func CurrentUser(w http.ResponseWriter, r *http.Request) {
-	u := middleware.GetUserSession(r)
-	if u != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write(utils.APIError("you are not logged in"))
-		return
-	}
-
-	utils.SendJSON(w, u)
-}
+// 	utils.SendJSON(w, u)
+// }

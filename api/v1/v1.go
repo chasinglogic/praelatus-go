@@ -4,22 +4,22 @@ package v1
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/praelatus/backend/store"
+	mgo "gopkg.in/mgo.v2"
 )
 
-// Store is the global store used in our HTTP handlers.
-var Store store.Store
+// Conn is the global database connection used in our HTTP handlers.
+var Conn *mgo.Session
 
 // Routes will set up the appropriate routes on the given mux.Router
 func Routes(router *mux.Router) {
-	labelRouter(router)
+	// labelRouter(router)
 	fieldRouter(router)
-	projectRouter(router)
-	teamRouter(router)
-	ticketRouter(router)
-	typeRouter(router)
-	userRouter(router)
-	workflowRouter(router)
-	roleRouter(router)
-	permissionSchemeRouter(router)
+	// projectRouter(router)
+	// teamRouter(router)
+	// ticketRouter(router)
+	// typeRouter(router)
+	// userRouter(router)
+	// workflowRouter(router)
+	// roleRouter(router)
+	// permissionSchemeRouter(router)
 }

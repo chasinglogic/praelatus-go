@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"strings"
 
+	mgo "gopkg.in/mgo.v2"
+
 	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/store"
 
 	"github.com/praelatus/backend/api/middleware"
 	"github.com/praelatus/backend/api/utils"
@@ -82,11 +83,8 @@ func Routes() *mux.Router {
 }
 
 // New will start running the api on the given port
-func New(store store.Store, ss store.SessionStore) http.Handler {
-
-	middleware.Cache = ss
-	// setup v1 of api
-	v1.Store = store
+func New(conn *mgo.Session) http.Handler {
+	v1.Conn = conn
 
 	router := Routes()
 

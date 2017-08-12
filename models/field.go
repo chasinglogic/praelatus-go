@@ -21,20 +21,14 @@ var DataTypes = []string{
 
 // Field is a ticket field
 type Field struct {
-	ID       bson.ObjectId `json:"id" bson:"_id"`
-	Name     string        `json:"name"`
-	DataType string        `json:"data_type"`
-	Options  *FieldOption  `json:"options,omitempty"`
-}
+	Name     string `json:"name"`
+	DataType string `json:"dataType"`
 
-// FieldOption is used as the value for FieldValues which are selects.
-type FieldOption struct {
-	Selected string   `json:"selected,omitempty"`
-	Options  []string `json:"options"`
-}
+	// Options is only relevant for Fields of DataType OPT
+	Options []string `json:"options,omitempty" bson:"options,omitempty"`
 
-func (f *Field) String() string {
-	return jsonString(f)
+	// Value holds the value of the given field
+	Value interface{} `json:"value,omitempty" bson:"value,omitempty"`
 }
 
 // IsValidDataType is used to verify that the field has a data type we can
@@ -49,28 +43,15 @@ func (f *Field) IsValidDataType() bool {
 	return false
 }
 
-// FieldValue holds the value for a field on a given ticket.
-type FieldValue struct {
-	ID       bson.ObjectId `json:"id" bson:"_id"`
-	Name     string        `json:"name"`
-	DataType string        `json:"data_type"`
-
-	// Value holds the value of the given field
-	Value interface{} `json:"value"`
-}
-
-// IsValidDataType is used to verify that the field has a data type we can
-// support
-func (f *FieldValue) IsValidDataType() bool {
-	for _, t := range DataTypes {
-		if t == f.DataType {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (f *FieldValue) String() string {
+func (f *Field) String() string {
 	return jsonString(f)
+}
+
+// FieldScheme assigns fields to a ticke type.
+type FieldScheme struct {
+	ID   bson.ObjectId `json:"id" bson:"_id"`
+	Name string
+
+	// Map ticket type to fields
+	Fields map[string][]Field
 }

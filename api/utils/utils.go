@@ -8,8 +8,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/praelatus/backend/store"
 )
 
 // APIMessage is a general purpose struct for sending messages to the client,
@@ -61,21 +59,6 @@ func APIErr(w http.ResponseWriter, status int, msg string) {
 // GetErrorCode returns the appropriate http status code for the given
 // error
 func GetErrorCode(e error) int {
-	if inv, ok := e.(store.Error); ok {
-		if inv.InvalidInput() {
-			return http.StatusBadRequest
-		}
-
-		switch inv {
-		case store.ErrDuplicateEntry:
-			return http.StatusBadRequest
-		case store.ErrNotFound:
-			return http.StatusNotFound
-		case store.ErrPermissionDenied:
-			return http.StatusForbidden
-		}
-	}
-
 	return http.StatusInternalServerError
 }
 

@@ -8,30 +8,22 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// TicketType represents the type of ticket.
-type TicketType struct {
-	ID   bson.ObjectId `json:"id" bson:"_id"`
-	Name string        `json:"name"`
-}
-
 // Ticket represents a ticket
 type Ticket struct {
 	ID          bson.ObjectId `json:"id" bson:"_id"`
-	CreatedDate time.Time     `json:"created_date"`
-	UpdatedDate time.Time     `json:"updated_date"`
+	CreatedDate time.Time     `json:"createdDate"`
+	UpdatedDate time.Time     `json:"updatedDate"`
 	Key         string        `json:"key"`
 	Summary     string        `json:"summary"`
 	Description string        `json:"description"`
 	Status      string        `json:"status"`
+	Reporter    string        `json:"reporter"`
+	Assignee    string        `json:"assignee"`
+	Type        string        `json:"ticketType"`
+	Labels      []string      `json:"labels"`
 
-	Type     TicketType `json:"ticket_type"`
-	Reporter User       `json:"reporter"`
-	Assignee User       `json:"assignee"`
-
-	Labels []string `json:"labels"`
-
-	Fields   []FieldValue `json:"fields"`
-	Comments []Comment    `json:"comments,omitempty"`
+	Fields   []Field   `json:"fields"`
+	Comments []Comment `json:"comments,omitempty"`
 
 	Workflow bson.ObjectId `json:"workflow"`
 	Project  bson.ObjectId `json:"project"`
@@ -61,24 +53,13 @@ func (t *Ticket) Transition(db *mgo.Database, name string) (Transition, bool) {
 	return Transition{}, false
 }
 
-// Label is a label used on tickets
-type Label struct {
-	ID   bson.ObjectId `json:"id" bson:"_id"`
-	Name string        `json:"name"`
-}
-
-func (l *Label) String() string {
-	return jsonString(l)
-}
-
 // Comment is a comment on an issue / ticket.
 type Comment struct {
-	ID          bson.ObjectId `json:"id" bson:"_id"`
-	UpdatedDate time.Time     `json:"updated_date"`
-	CreatedDate time.Time     `json:"created_date"`
-	TicketKey   string        `json:"ticket_key"`
-	Body        string        `json:"body"`
-	Author      User          `json:"author"`
+	UpdatedDate time.Time `json:"updatedDate"`
+	CreatedDate time.Time `json:"createdDate"`
+	TicketKey   string    `json:"ticketKey"`
+	Body        string    `json:"body"`
+	Author      string    `json:"author"`
 }
 
 func (c *Comment) String() string {

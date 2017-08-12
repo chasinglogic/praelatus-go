@@ -64,50 +64,50 @@ func Run(args []string) {
 				},
 			},
 		},
-		{
-			Name:   "testdb",
-			Usage:  "will test the connections to the databases",
-			Action: testDB,
-		},
-		{
-			Name:   "cleandb",
-			Usage:  "will clean the database (remove all data), useful for testing",
-			Action: cleanDB,
-		},
+		// {
+		// 	Name:   "testdb",
+		// 	Usage:  "will test the connections to the databases",
+		// 	Action: testDB,
+		// },
+		// {
+		// 	Name:   "cleandb",
+		// 	Usage:  "will clean the database (remove all data), useful for testing",
+		// 	Action: cleanDB,
+		// },
 		{
 			Name:   "setupdb",
 			Usage:  "Sets up indexes and other such items on the database.",
 			Action: setupDB,
 		},
-		{
-			Name:  "admin",
-			Usage: "various admin functions for the instance",
-			Subcommands: []cli.Command{
-				{
-					Name:   "createUser",
-					Usage:  "create a user, useful for creating admin accounts",
-					Action: adminCreateUser,
-					Flags: []cli.Flag{
-						cli.StringFlag{
-							Name: "username",
-						},
-						cli.StringFlag{
-							Name: "password",
-						},
-						cli.StringFlag{
-							Name: "fullName",
-						},
-						cli.StringFlag{
-							Name: "email",
-						},
-						cli.BoolFlag{
-							Name:  "admin",
-							Usage: "when this flag is given user will be created as an system admin",
-						},
-					},
-				},
-			},
-		},
+		// {
+		// 	Name:  "admin",
+		// 	Usage: "various admin functions for the instance",
+		// 	Subcommands: []cli.Command{
+		// 		{
+		// 			Name:   "createUser",
+		// 			Usage:  "create a user, useful for creating admin accounts",
+		// 			Action: adminCreateUser,
+		// 			Flags: []cli.Flag{
+		// 				cli.StringFlag{
+		// 					Name: "username",
+		// 				},
+		// 				cli.StringFlag{
+		// 					Name: "password",
+		// 				},
+		// 				cli.StringFlag{
+		// 					Name: "fullName",
+		// 				},
+		// 				cli.StringFlag{
+		// 					Name: "email",
+		// 				},
+		// 				cli.BoolFlag{
+		// 					Name:  "admin",
+		// 					Usage: "when this flag is given user will be created as an system admin",
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
 	}
 
 	err := app.Run(args)

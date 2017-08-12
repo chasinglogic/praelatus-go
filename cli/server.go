@@ -9,8 +9,8 @@ import (
 	"github.com/praelatus/backend/api"
 	"github.com/praelatus/backend/api/middleware"
 	"github.com/praelatus/backend/config"
+	"github.com/praelatus/backend/db"
 	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/store"
 	"github.com/tylerb/graceful"
 	"github.com/urfave/cli"
 )
@@ -50,20 +50,8 @@ func runServer(c *cli.Context) error {
 	log.Println("Starting Praelatus...")
 	log.Println("Initializing database...")
 
-	s := config.Store()
-	ss := config.SessionStore()
-
-	if sql, ok := s.(store.Migrater); ok {
-		log.Println("Migrating database...")
-		err := sql.Migrate()
-		if err != nil {
-			log.Println("Error migrating database:", err)
-			os.Exit(1)
-		}
-	}
-
 	log.Println("Prepping API")
-	r := api.New(s, ss)
+	r := api.New(db.Connect())
 	if c.Bool("devmode") || os.Getenv("PRAELATUS_DEV_MODE") == "1" {
 		log.Println("Running in dev mode, disabling cors and authentication...")
 		r = disableCors(r)
