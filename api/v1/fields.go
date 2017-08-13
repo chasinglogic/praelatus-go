@@ -1,8 +1,11 @@
 package v1
 
 import (
-	"log"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -14,53 +17,116 @@ import (
 )
 
 func fieldRouter(router *mux.Router) {
-	router.HandleFunc("/fields", GetAllFields).Methods("GET")
-
-	// router.HandleFunc("/fieldschemes", GetAllFieldSchemes)
+	router.HandleFunc("/fieldschemes", getAllFieldSchemes).Methods("GET")
+	router.HandleFunc("/fieldschemes", createFieldScheme).Methods("POST")
+	router.HandleFunc("/fieldschemes/{id}", singleFieldScheme)
 }
 
-// GetAllFields will retrieve all fields from the DB and send a JSON response
-func GetAllFields(w http.ResponseWriter, r *http.Request) {
+func createFieldScheme(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		w.WriteHeader(403)
-		w.Write(utils.APIError("you must be logged in to view all fields"))
+	if u == nil || !u.IsAdmin {
+		utils.APIErr(w, http.StatusForbidden,
+			"you must be logged in as an administrator")
 		return
 	}
 
-	var fields []models.Field
-	coll := Conn.DB(config.DBName()).C(config.FieldSchemeCollection)
+	var f map[string]models.FieldScheme
 
-	iter := coll.Pipe([]bson.M{
-		bson.M{
-			"$unwind": "$fields",
-		},
-		bson.M{
-			"$group": bson.M{
-				"$_id": bson.M{
-					"name":     "$fields.name",
-					"dataType": "$fields.dataType",
-					"options":  "$fields.options",
-				},
-			},
-		},
-	}).Iter()
-
-	err := iter.Err()
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&f)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	var t struct {
-		ID models.Field `bson:"_id,omitempty"`
+	fs := f["fieldScheme"]
+	fs.ID = bson.NewObjectId()
+
+	err = getCollection(config.FieldSchemeCollection).Insert(fs)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	for iter.Next(&t) {
-		fields = append(fields, t.ID)
+	utils.SendJSON(w, fs)
+}
+
+func getAllFieldSchemes(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil || !u.IsAdmin {
+		utils.APIErr(w, http.StatusForbidden,
+			"you must be logged in as an administrator")
+		return
 	}
 
-	utils.SendJSON(w, fields)
+	var fs []models.FieldScheme
+
+	var query bson.M
+	q := r.FormValue("q")
+	if q != "" {
+		q = strings.Replace(q, "*", ".*", -1)
+		query = bson.M{"name": bson.M{"$regex": q, "$options": "i"}}
+	}
+
+	fmt.Println("query", query)
+
+	err := getCollection(config.FieldSchemeCollection).Find(query).All(&fs)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(utils.APIError(err.Error()))
+		return
+	}
+
+	utils.SendJSONR(w, models.JSONRepr{"fieldSchemes": fs})
+}
+
+func singleFieldScheme(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil || !u.IsAdmin {
+		utils.APIErr(w, http.StatusForbidden,
+			"you must be logged in as an administrator")
+		return
+	}
+
+	var f models.FieldScheme
+	id := bson.ObjectIdHex(mux.Vars(r)["id"])
+	coll := getCollection(config.FieldSchemeCollection)
+
+	var err error
+
+	switch r.Method {
+	case "GET":
+		err = coll.FindId(id).One(&f)
+	case "DELETE":
+		err = coll.RemoveId(id)
+	case "PUT":
+		var jr map[string]models.FieldScheme
+
+		decoder := json.NewDecoder(r.Body)
+		err = decoder.Decode(&jr)
+		if err != nil {
+			break
+		}
+
+		fmt.Println(jr)
+		f, ok := jr["fieldScheme"]
+		if !ok {
+			err = errors.New("invalid object schema")
+			break
+		}
+
+		err = coll.UpdateId(id, &f)
+	}
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(utils.APIMsg(err.Error()))
+		return
+	}
+
+	if f.Name != "" {
+		utils.SendJSON(w, f)
+	} else {
+		utils.SendJSONR(w, models.JSONRepr{})
+	}
 }

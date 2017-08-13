@@ -88,5 +88,6 @@ func New(conn *mgo.Session) http.Handler {
 
 	router := Routes()
 
+	middleware.Cache = middleware.NewMongoCache(conn)
 	return middleware.LoadMw(router)
 }

@@ -241,7 +241,6 @@ ipsa divite, est ille ver verba vicisse, exsiliantque aprica illius, rapta?`,
 			Assignee: users[rand.Intn(2)].Username,
 			Type:     p.TicketTypes[rand.Intn(3)],
 			Project:  p.Key,
-			ID:       bson.NewObjectId(),
 		}
 
 		t.Workflow = p.GetWorkflow(t.Type)

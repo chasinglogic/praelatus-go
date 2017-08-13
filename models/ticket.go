@@ -10,17 +10,16 @@ import (
 
 // Ticket represents a ticket
 type Ticket struct {
-	ID          bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty"`
-	CreatedDate time.Time     `json:"createdDate"`
-	UpdatedDate time.Time     `json:"updatedDate"`
-	Key         string        `json:"key"`
-	Summary     string        `json:"summary"`
-	Description string        `json:"description"`
-	Status      string        `json:"status"`
-	Reporter    string        `json:"reporter"`
-	Assignee    string        `json:"assignee"`
-	Type        string        `json:"ticketType"`
-	Labels      []string      `json:"labels"`
+	CreatedDate time.Time `json:"createdDate"`
+	UpdatedDate time.Time `json:"updatedDate"`
+	Key         string    `bson:"_id" json:"key"`
+	Summary     string    `json:"summary"`
+	Description string    `json:"description"`
+	Status      string    `json:"status"`
+	Reporter    string    `json:"reporter"`
+	Assignee    string    `json:"assignee"`
+	Type        string    `json:"ticketType"`
+	Labels      []string  `json:"labels"`
 
 	Fields   []Field   `json:"fields"`
 	Comments []Comment `json:"comments,omitempty"`

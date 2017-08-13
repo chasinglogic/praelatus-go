@@ -3,9 +3,12 @@
 package middleware
 
 import (
-	"errors"
+	"log"
 	"net/http"
 
+	mgo "gopkg.in/mgo.v2"
+
+	"github.com/praelatus/backend/config"
 	"github.com/praelatus/backend/models"
 )
 
@@ -15,36 +18,50 @@ type SessionCache interface {
 	Remove(id string) error
 }
 
-type MemCache struct {
-	Cache map[string]models.Session
+type MongoCache struct {
+	conn *mgo.Session
 }
 
-func (m *MemCache) Get(id string) (models.Session, error) {
-	if val, ok := m.Cache[id]; ok {
-		return val, nil
+func (m MongoCache) Get(id string) (models.Session, error) {
+	var s models.Session
+
+	err := m.conn.DB(config.DBName()).C("sessions").FindId(id).One(&s)
+	if err != nil {
+		if err.Error() != "not found" {
+			log.Println("Unexpected Error:", err)
+		}
+
+		return models.Session{}, err
 	}
 
-	return models.Session{}, errors.New("No session found")
+	return s, nil
 }
 
-func (m *MemCache) Set(id string, sess models.Session) error {
-	m.Cache[id] = sess
-	return nil
+func (m MongoCache) Set(id string, sess models.Session) error {
+	sess.ID = id
+
+	err := m.conn.DB(config.DBName()).C("sessions").Insert(&sess)
+	return err
 }
 
-func (m *MemCache) Remove(id string) error {
-	delete(m.Cache, id)
-	return nil
+func (m MongoCache) Remove(id string) error {
+	return m.conn.DB(config.DBName()).C("sessios").RemoveId(id)
 }
 
-func NewMemCache() *MemCache {
-	m := MemCache{}
-	m.Cache = make(map[string]models.Session)
-	return &m
+// NewMongoCache returns a session store using MongoDB as the backend.
+func NewMongoCache(c *mgo.Session) MongoCache {
+	return MongoCache{c}
 }
 
 // Cache is the global SessionCache
-var Cache SessionCache = NewMemCache()
+var Cache SessionCache
+
+func headers(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		h.ServeHTTP(w, r)
+	})
+}
 
 // LoadMw will wrap the given http.Handler in the DefaultMiddleware
 func LoadMw(handler http.Handler) http.Handler {
@@ -59,5 +76,6 @@ func LoadMw(handler http.Handler) http.Handler {
 
 // DefaultMiddleware is the default middleware stack for Praelatus
 var DefaultMiddleware = []func(http.Handler) http.Handler{
+	headers,
 	Logger,
 }
