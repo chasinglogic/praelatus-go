@@ -1,9 +1,10 @@
 package v1
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/api/middleware"
@@ -14,11 +15,8 @@ import (
 
 func fieldRouter(router *mux.Router) {
 	router.HandleFunc("/fields", GetAllFields).Methods("GET")
-	router.HandleFunc("/fields", CreateField).Methods("POST")
 
-	// 	router.HandleFunc("/fields/{id}", GetField).Methods("GET")
-	// 	router.HandleFunc("/fields/{id}", UpdateField).Methods("PUT")
-	// 	router.HandleFunc("/fields/{id}", DeleteField).Methods("DELETE")
+	// router.HandleFunc("/fieldschemes", GetAllFieldSchemes)
 }
 
 // GetAllFields will retrieve all fields from the DB and send a JSON response
@@ -31,7 +29,24 @@ func GetAllFields(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var fields []models.Field
-	err := Conn.DB(config.DBName()).C(fieldCollection).Find(nil).All(&fields)
+	coll := Conn.DB(config.DBName()).C(config.FieldSchemeCollection)
+
+	iter := coll.Pipe([]bson.M{
+		bson.M{
+			"$unwind": "$fields",
+		},
+		bson.M{
+			"$group": bson.M{
+				"$_id": bson.M{
+					"name":     "$fields.name",
+					"dataType": "$fields.dataType",
+					"options":  "$fields.options",
+				},
+			},
+		},
+	}).Iter()
+
+	err := iter.Err()
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(utils.APIError(err.Error()))
@@ -39,127 +54,13 @@ func GetAllFields(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var t struct {
+		ID models.Field `bson:"_id,omitempty"`
+	}
+
+	for iter.Next(&t) {
+		fields = append(fields, t.ID)
+	}
+
 	utils.SendJSON(w, fields)
 }
-
-// CreateField will create a field in the database based on the JSON sent by the
-// client
-func CreateField(w http.ResponseWriter, r *http.Request) {
-	var t models.Field
-
-	u := middleware.GetUserSession(r)
-	if u == nil || !u.IsAdmin {
-		w.WriteHeader(403)
-		w.Write(utils.APIError("you must be logged in as a system administrator to create a field"))
-		return
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&t)
-	if err != nil {
-		w.WriteHeader(400)
-		w.Write(utils.APIError("malformed json"))
-		log.Println(err)
-		return
-	}
-
-	err = Conn.DB(config.DBName()).C(fieldCollection).Insert(&t)
-	if err != nil {
-		w.WriteHeader(400)
-		w.Write(utils.APIError(err.Error()))
-		log.Println(err)
-		return
-	}
-
-	utils.SendJSON(w, t)
-}
-
-// // GetField will return the json representation of a field in the database
-// func GetField(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id := vars["id"]
-
-// 	i, err := strconv.Atoi(id)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError("invalid id"))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	t := models.Field{ID: int64(i)}
-
-// 	err = Store.Fields().Get(&t)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, t)
-// }
-
-// // UpdateField will update a project based on the JSON representation sent to
-// // the API
-// func UpdateField(w http.ResponseWriter, r *http.Request) {
-// 	var t models.Field
-
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil || !u.IsAdmin {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in as a system administrator to update a field"))
-// 		return
-// 	}
-
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&t)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError("invalid body"))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	err = Store.Fields().Save(*u, t)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, t)
-// }
-
-// // DeleteField will remove the project indicated by the id passed in as a
-// // url parameter
-// func DeleteField(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id := vars["id"]
-
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil || !u.IsAdmin {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in as a system administrator remove a field"))
-// 		return
-// 	}
-
-// 	i, err := strconv.Atoi(id)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError("invalid id"))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	err = Store.Fields().Remove(*u, models.Field{ID: int64(i)})
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	w.Write([]byte{})
-// }

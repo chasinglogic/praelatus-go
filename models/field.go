@@ -49,7 +49,7 @@ func (f *Field) String() string {
 
 // FieldScheme assigns fields to a ticke type.
 type FieldScheme struct {
-	ID   bson.ObjectId `json:"id" bson:"_id"`
+	ID   bson.ObjectId `json:"id" bson:"_id,omitempty"`
 	Name string
 
 	// Map ticket type to fields

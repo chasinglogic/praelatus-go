@@ -1,5 +1,6 @@
 // Package config defines the config struct and provides utility methods for
-// querying it. Additionally it handles loading the config.json if present
+// querying it. Additionally it handles loading the config.json if present and
+// holds various other global values used in the app.
 package config
 
 import (

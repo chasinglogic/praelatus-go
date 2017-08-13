@@ -1,22 +1,49 @@
-// package permission is used to store the various permission in
-// praelatus, it acts as a pseudo-enumberation
+// Package permission is used to store the various permission in
+// praelatus, it acts as a pseudo-enumeration
 package permission
 
-// Permission is a string used for determining whether a user has
-// access or not
+// Permission is an alias type to make it's use more clear inside of models.
 type Permission string
 
 // These are the permissions available in Praelatus
 const (
-	VIEWPROJECT      Permission = "VIEW_PROJECT"
-	ADMINPROJECT                = "ADMIN_PROJECT"
-	CREATETICKET                = "CREATE_TICKET"
-	COMMENTTICKET               = "COMMENT_TICKET"
-	REMOVECOMMENT               = "REMOVE_COMMENT"
-	REMOVEOWNCOMMENT            = "REMOVE_OWN_COMMENT"
-	EDITOWNCOMMENT              = "EDIT_OWN_COMMENT"
-	EDITCOMMENT                 = "EDIT_COMMENT"
-	TRANSITIONTICKET            = "TRANSITION_TICKET"
-	EDITTICKET                  = "EDIT_TICKET"
-	REMOVETICKET                = "REMOVE_TICKET"
+	ViewProject      Permission = "VIEW_PROJECT"
+	AdminProject                = "ADMIN_PROJECT"
+	CreateTicket                = "CREATE_TICKET"
+	CommentTicket               = "COMMENT_TICKET"
+	RemoveComment               = "REMOVE_COMMENT"
+	RemoveOwnComment            = "REMOVE_OWN_COMMENT"
+	EditOwnComment              = "EDIT_OWN_COMMENT"
+	EditComment                 = "EDIT_COMMENT"
+	TransitionTicket            = "TRANSITION_TICKET"
+	EditTicket                  = "EDIT_TICKET"
+	RemoveTicket                = "REMOVE_TICKET"
 )
+
+// Permissions holds available permissions in a slice. This is valuable for
+// various areas where we need to return all permissions or iterate
+// permissions.
+var Permissions = [...]Permission{
+	ViewProject,
+	AdminProject,
+	CreateTicket,
+	CommentTicket,
+	RemoveComment,
+	RemoveOwnComment,
+	EditOwnComment,
+	EditComment,
+	TransitionTicket,
+	EditTicket,
+	RemoveTicket,
+}
+
+// ValidPermission will verify that a given permission string is valid.
+func ValidPermission(permName Permission) bool {
+	for _, p := range Permissions {
+		if p == permName {
+			return true
+		}
+	}
+
+	return false
+}

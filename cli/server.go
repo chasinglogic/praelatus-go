@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	mgo "gopkg.in/mgo.v2"
+
 	"github.com/praelatus/backend/api"
 	"github.com/praelatus/backend/api/middleware"
 	"github.com/praelatus/backend/config"

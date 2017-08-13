@@ -10,7 +10,7 @@ import (
 
 // Ticket represents a ticket
 type Ticket struct {
-	ID          bson.ObjectId `json:"id" bson:"_id"`
+	ID          bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty"`
 	CreatedDate time.Time     `json:"createdDate"`
 	UpdatedDate time.Time     `json:"updatedDate"`
 	Key         string        `json:"key"`
@@ -26,7 +26,7 @@ type Ticket struct {
 	Comments []Comment `json:"comments,omitempty"`
 
 	Workflow bson.ObjectId `json:"workflow"`
-	Project  bson.ObjectId `json:"project"`
+	Project  string        `json:"project"`
 }
 
 func (t *Ticket) String() string {
@@ -57,7 +57,6 @@ func (t *Ticket) Transition(db *mgo.Database, name string) (Transition, bool) {
 type Comment struct {
 	UpdatedDate time.Time `json:"updatedDate"`
 	CreatedDate time.Time `json:"createdDate"`
-	TicketKey   string    `json:"ticketKey"`
 	Body        string    `json:"body"`
 	Author      string    `json:"author"`
 }

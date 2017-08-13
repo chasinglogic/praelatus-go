@@ -4,7 +4,7 @@ import "gopkg.in/mgo.v2/bson"
 
 // Workflow is the container for issues and keeps track of available transitions
 type Workflow struct {
-	ID          bson.ObjectId `json:"id" bson:"_id"`
+	ID          bson.ObjectId `json:"id" bson:"_id,omitempty"`
 	Name        string        `json:"name"`
 	Transitions []Transition  `json:"transitions"`
 }

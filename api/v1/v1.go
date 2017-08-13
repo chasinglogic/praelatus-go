@@ -10,12 +10,6 @@ import (
 // Conn is the global database connection used in our HTTP handlers.
 var Conn *mgo.Session
 
-const (
-	fieldCollection string = "fields"
-	ticketCollection string = "tickets"
-	projectCollection string = "projects"
-)
-
 // Routes will set up the appropriate routes on the given mux.Router
 func Routes(router *mux.Router) {
 	// labelRouter(router)

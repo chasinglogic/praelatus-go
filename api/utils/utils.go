@@ -7,7 +7,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
+	"unicode"
+
+	"github.com/praelatus/backend/models"
 )
 
 // APIMessage is a general purpose struct for sending messages to the client,
@@ -62,8 +66,26 @@ func GetErrorCode(e error) int {
 	return http.StatusInternalServerError
 }
 
-// SendJSON is a convenience function for sending JSON to the given ResponseWriter
-func SendJSON(w http.ResponseWriter, v interface{}) {
+// Use this to properly wrap JSON in a root element.
+func getType(v interface{}) string {
+	var name string
+
+	if t := reflect.TypeOf(v); t.Kind() == reflect.Ptr {
+		name = t.Elem().Name()
+	} else {
+		name = t.Name()
+	}
+
+	// lower case first letter since that's what ember expects.
+	lower := []rune(name)
+	lower[0] = unicode.ToLower(lower[0])
+
+	return string(lower)
+}
+
+// SendJSONR  will send an already ready JSONRepr and won't attempt to convert
+// it first.
+func SendJSONR(w http.ResponseWriter, v models.JSONRepr) {
 	resp, err := json.Marshal(v)
 	if err != nil {
 		w.WriteHeader(500)
@@ -79,4 +101,13 @@ func SendJSON(w http.ResponseWriter, v interface{}) {
 	}
 
 	w.Write(resp)
+}
+
+// SendJSON is a convenience function for sending JSON to the given
+// ResponseWriter it will attempt to convert v into a JSONRepr appropriately
+// based on the struct name it's only really useful if v is a single record.
+// For a result set convert to JSONRepr yourself then use SendJSONR
+func SendJSON(w http.ResponseWriter, v interface{}) {
+	repr := models.JSONRepr{getType(v): v}
+	SendJSONR(w, repr)
 }
