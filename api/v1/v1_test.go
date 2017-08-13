@@ -8,7 +8,6 @@ import (
 	"github.com/praelatus/backend/api/middleware"
 	"github.com/praelatus/backend/api/v1"
 	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/store"
 )
 
 var router *mux.Router

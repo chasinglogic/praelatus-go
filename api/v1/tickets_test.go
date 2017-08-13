@@ -1,202 +1,202 @@
 package v1_test
 
-import (
-	"bytes"
-	"encoding/json"
-	"net/http/httptest"
-	"testing"
+// import (
+// 	"bytes"
+// 	"encoding/json"
+// 	"net/http/httptest"
+// 	"testing"
 
-	"github.com/praelatus/backend/models"
-)
+// 	"github.com/praelatus/backend/models"
+// )
 
-func TestGetTicket(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1", nil)
+// func TestGetTicket(t *testing.T) {
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1", nil)
 
-	router.ServeHTTP(w, r)
+// 	router.ServeHTTP(w, r)
 
-	var tk models.Ticket
+// 	var tk models.Ticket
 
-	e := json.Unmarshal(w.Body.Bytes(), &tk)
-	if e != nil {
-		t.Errorf("Failed with error %s", e.Error())
-	}
+// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
+// 	if e != nil {
+// 		t.Errorf("Failed with error %s", e.Error())
+// 	}
 
-	if tk.Key != "TEST-1" {
-		t.Errorf("Expected TEST-1 Got %s", tk.Key)
-	}
+// 	if tk.Key != "TEST-1" {
+// 		t.Errorf("Expected TEST-1 Got %s", tk.Key)
+// 	}
 
-	t.Log(w.Body)
-}
+// 	t.Log(w.Body)
+// }
 
-func TestGetTicketPreloadComments(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1?preload=comments", nil)
+// func TestGetTicketPreloadComments(t *testing.T) {
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1?preload=comments", nil)
 
-	router.ServeHTTP(w, r)
+// 	router.ServeHTTP(w, r)
 
-	var tk models.Ticket
+// 	var tk models.Ticket
 
-	e := json.Unmarshal(w.Body.Bytes(), &tk)
-	if e != nil {
-		t.Errorf("Failed with error %s", e.Error())
-	}
+// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
+// 	if e != nil {
+// 		t.Errorf("Failed with error %s", e.Error())
+// 	}
 
-	t.Log(w.Body)
+// 	t.Log(w.Body)
 
-	if len(tk.Comments) == 0 {
-		t.Errorf("Expected comments got 0 instead.")
-		return
-	}
+// 	if len(tk.Comments) == 0 {
+// 		t.Errorf("Expected comments got 0 instead.")
+// 		return
+// 	}
 
-	if tk.Key != "TEST-1" {
-		t.Errorf("Expected TEST-1 Got %s", tk.Key)
-	}
-}
+// 	if tk.Key != "TEST-1" {
+// 		t.Errorf("Expected TEST-1 Got %s", tk.Key)
+// 	}
+// }
 
-func TestGetAllTickets(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets", nil)
+// func TestGetAllTickets(t *testing.T) {
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest("GET", "/api/v1/tickets", nil)
 
-	router.ServeHTTP(w, r)
+// 	router.ServeHTTP(w, r)
 
-	var tk []models.Ticket
+// 	var tk []models.Ticket
 
-	e := json.Unmarshal(w.Body.Bytes(), &tk)
-	if e != nil {
-		t.Errorf("Failed with error %s", e.Error())
-		t.Log(w.Body)
-	}
+// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
+// 	if e != nil {
+// 		t.Errorf("Failed with error %s", e.Error())
+// 		t.Log(w.Body)
+// 	}
 
-	t.Log(w.Body)
+// 	t.Log(w.Body)
 
-	if len(tk) != 2 {
-		t.Errorf("Expected 2 tickets got %d", len(tk))
-		return
-	}
+// 	if len(tk) != 2 {
+// 		t.Errorf("Expected 2 tickets got %d", len(tk))
+// 		return
+// 	}
 
-	if tk[0].Key != "TEST-1" {
-		t.Errorf("Expected TEST-1 Got %s", tk[0].Key)
-	}
-}
+// 	if tk[0].Key != "TEST-1" {
+// 		t.Errorf("Expected TEST-1 Got %s", tk[0].Key)
+// 	}
+// }
 
-func TestGetAllTicketsByProject(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/projects/TEST/tickets", nil)
+// func TestGetAllTicketsByProject(t *testing.T) {
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest("GET", "/api/v1/projects/TEST/tickets", nil)
 
-	router.ServeHTTP(w, r)
+// 	router.ServeHTTP(w, r)
 
-	var tk []models.Ticket
+// 	var tk []models.Ticket
 
-	e := json.Unmarshal(w.Body.Bytes(), &tk)
-	if e != nil {
-		t.Errorf("Failed with error %s", e.Error())
-	}
+// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
+// 	if e != nil {
+// 		t.Errorf("Failed with error %s", e.Error())
+// 	}
 
-	t.Log(w.Body)
+// 	t.Log(w.Body)
 
-	if len(tk) != 2 {
-		t.Errorf("Expected 2 tickets got %d", len(tk))
-		return
-	}
+// 	if len(tk) != 2 {
+// 		t.Errorf("Expected 2 tickets got %d", len(tk))
+// 		return
+// 	}
 
-	if tk[0].Key != "TEST-1" {
-		t.Errorf("Expected TEST-1 Got %s", tk[0].Key)
-	}
+// 	if tk[0].Key != "TEST-1" {
+// 		t.Errorf("Expected TEST-1 Got %s", tk[0].Key)
+// 	}
 
-}
+// }
 
-func TestCreateTicket(t *testing.T) {
-	tk := models.Ticket{Summary: "Nope"}
-	byt, _ := json.Marshal(tk)
-	rd := bytes.NewReader(byt)
+// func TestCreateTicket(t *testing.T) {
+// 	tk := models.Ticket{Summary: "Nope"}
+// 	byt, _ := json.Marshal(tk)
+// 	rd := bytes.NewReader(byt)
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST", rd)
-	testLogin(w, r)
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST", rd)
+// 	testLogin(w, r)
 
-	router.ServeHTTP(w, r)
+// 	router.ServeHTTP(w, r)
 
-	e := json.Unmarshal(w.Body.Bytes(), &tk)
-	if e != nil {
-		t.Logf("Failed with error %s", e.Error())
-		t.Logf("Received %s", string(w.Body.Bytes()))
-		t.Fail()
-	}
+// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
+// 	if e != nil {
+// 		t.Logf("Failed with error %s", e.Error())
+// 		t.Logf("Received %s", string(w.Body.Bytes()))
+// 		t.Fail()
+// 	}
 
-	if tk.ID != 1 {
-		t.Errorf("Expected 1 Got %d", tk.ID)
-	}
+// 	if tk.ID != 1 {
+// 		t.Errorf("Expected 1 Got %d", tk.ID)
+// 	}
 
-	t.Log(w.Body)
-}
+// 	t.Log(w.Body)
+// }
 
-func TestGetComments(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1/comments", nil)
+// func TestGetComments(t *testing.T) {
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1/comments", nil)
 
-	router.ServeHTTP(w, r)
+// 	router.ServeHTTP(w, r)
 
-	var cm []models.Comment
+// 	var cm []models.Comment
 
-	e := json.Unmarshal(w.Body.Bytes(), &cm)
-	if e != nil {
-		t.Errorf("Failed with error %s\n", e.Error())
-		t.Log(w.Body)
-	}
+// 	e := json.Unmarshal(w.Body.Bytes(), &cm)
+// 	if e != nil {
+// 		t.Errorf("Failed with error %s\n", e.Error())
+// 		t.Log(w.Body)
+// 	}
 
-	if len(cm) != 1 {
-		t.Errorf("Expected 1 comment got %d\n", len(cm))
-	}
+// 	if len(cm) != 1 {
+// 		t.Errorf("Expected 1 comment got %d\n", len(cm))
+// 	}
 
-	t.Log(w.Body)
-}
+// 	t.Log(w.Body)
+// }
 
-func TestCreateComment(t *testing.T) {
-	cm := models.Comment{}
-	byt, _ := json.Marshal(cm)
-	rd := bytes.NewReader(byt)
+// func TestCreateComment(t *testing.T) {
+// 	cm := models.Comment{}
+// 	byt, _ := json.Marshal(cm)
+// 	rd := bytes.NewReader(byt)
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST-1/comments", rd)
-	testLogin(w, r)
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST-1/comments", rd)
+// 	testLogin(w, r)
 
-	router.ServeHTTP(w, r)
+// 	router.ServeHTTP(w, r)
 
-	e := json.Unmarshal(w.Body.Bytes(), &cm)
-	if e != nil {
-		t.Errorf("Failed with error %s\n", e.Error())
-		t.Log(w.Body)
-	}
+// 	e := json.Unmarshal(w.Body.Bytes(), &cm)
+// 	if e != nil {
+// 		t.Errorf("Failed with error %s\n", e.Error())
+// 		t.Log(w.Body)
+// 	}
 
-	if cm.ID == 0 {
-		t.Errorf("Expected 1 Got %d\n", cm.ID)
-	}
+// 	if cm.ID == 0 {
+// 		t.Errorf("Expected 1 Got %d\n", cm.ID)
+// 	}
 
-	t.Log(w.Body)
-}
+// 	t.Log(w.Body)
+// }
 
-func TestTransitionTicket(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST-1/transition?name=In%20Progress", nil)
+// func TestTransitionTicket(t *testing.T) {
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST-1/transition?name=In%20Progress", nil)
 
-	testLogin(w, r)
+// 	testLogin(w, r)
 
-	router.ServeHTTP(w, r)
+// 	router.ServeHTTP(w, r)
 
-	var tk models.Ticket
+// 	var tk models.Ticket
 
-	e := json.Unmarshal(w.Body.Bytes(), &tk)
-	if e != nil {
-		t.Errorf("Failed with error %s", e.Error())
-		return
-	}
+// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
+// 	if e != nil {
+// 		t.Errorf("Failed with error %s", e.Error())
+// 		return
+// 	}
 
-	if tk.Status.ID != 2 {
-		t.Errorf("Expected ID of Status to be 2 got %d\n", tk.Status.ID)
-	}
+// 	if tk.Status.ID != 2 {
+// 		t.Errorf("Expected ID of Status to be 2 got %d\n", tk.Status.ID)
+// 	}
 
-	if tk.Status.Name != "In Progress" {
-		t.Errorf("Expected Name of Status to be In Progress got %s\n", tk.Status.Name)
-	}
-}
+// 	if tk.Status.Name != "In Progress" {
+// 		t.Errorf("Expected Name of Status to be In Progress got %s\n", tk.Status.Name)
+// 	}
+// }
