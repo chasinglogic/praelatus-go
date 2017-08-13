@@ -14,7 +14,7 @@ import (
 
 func fieldRouter(router *mux.Router) {
 	router.HandleFunc("/fields", GetAllFields).Methods("GET")
-	// router.HandleFunc("/fields", CreateField).Methods("POST")
+	router.HandleFunc("/fields", CreateField).Methods("POST")
 
 	// 	router.HandleFunc("/fields/{id}", GetField).Methods("GET")
 	// 	router.HandleFunc("/fields/{id}", UpdateField).Methods("PUT")
@@ -31,7 +31,7 @@ func GetAllFields(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var fields []models.Field
-	err := Conn.DB(config.DBName()).C("fields").Find(nil).All(&fields)
+	err := Conn.DB(config.DBName()).C(fieldCollection).Find(nil).All(&fields)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(utils.APIError(err.Error()))
@@ -50,7 +50,7 @@ func CreateField(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
-		w.Write(utils.APIError("you must be logged in as a system administrator to create a project"))
+		w.Write(utils.APIError("you must be logged in as a system administrator to create a field"))
 		return
 	}
 
@@ -63,7 +63,7 @@ func CreateField(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Conn.DB(config.DBName()).C("fields").Insert(&t)
+	err = Conn.DB(config.DBName()).C(fieldCollection).Insert(&t)
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(utils.APIError(err.Error()))

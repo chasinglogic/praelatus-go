@@ -9,7 +9,6 @@ import (
 	"github.com/praelatus/backend/api"
 	"github.com/praelatus/backend/api/middleware"
 	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/db"
 	"github.com/praelatus/backend/models"
 	"github.com/tylerb/graceful"
 	"github.com/urfave/cli"
@@ -44,6 +43,15 @@ func alwaysAuth(next http.Handler) http.Handler {
 		})
 }
 
+func connectDB() *mgo.Session {
+	conn, err := mgo.Dial(config.DBURL())
+	if err != nil {
+		panic(err)
+	}
+
+	return conn
+}
+
 func runServer(c *cli.Context) error {
 	log.SetOutput(config.LogWriter())
 
@@ -51,7 +59,7 @@ func runServer(c *cli.Context) error {
 	log.Println("Initializing database...")
 
 	log.Println("Prepping API")
-	r := api.New(db.Connect())
+	r := api.New(connectDB())
 	if c.Bool("devmode") || os.Getenv("PRAELATUS_DEV_MODE") == "1" {
 		log.Println("Running in dev mode, disabling cors and authentication...")
 		r = disableCors(r)
