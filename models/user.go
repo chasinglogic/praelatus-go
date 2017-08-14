@@ -22,7 +22,7 @@ type User struct {
 	Settings   Settings `json:"settings,omitempty"`
 
 	// Map of project keys to roles.
-	Permissions map[string][]Role
+	Permissions map[string]Role
 }
 
 // CheckPw will verify if the given password matches for this user. Logs any
@@ -39,6 +39,20 @@ func (u *User) CheckPw(pw []byte) bool {
 
 func (u *User) String() string {
 	return jsonString(u)
+}
+
+// ProjectsMemberOf returns an array of project keys which this user has a
+// role in.
+func (u *User) ProjectsMemberOf() []string {
+	projectKeys := make([]string, len(u.Permissions))
+
+	i := 0
+	for k := range u.Permissions {
+		projectKeys[i] = k
+		i++
+	}
+
+	return projectKeys
 }
 
 // NewUser will create the user after encrypting the password with bcrypt

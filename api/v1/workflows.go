@@ -1,195 +1,129 @@
 package v1
 
-// import (
-// 	"encoding/json"
-// 	"log"
-// 	"net/http"
-// 	"strconv"
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strings"
 
-// 	"github.com/gorilla/mux"
-// 	"github.com/praelatus/backend/api/middleware"
-// 	"github.com/praelatus/backend/api/utils"
-// 	"github.com/praelatus/backend/models"
-// )
+	"gopkg.in/mgo.v2/bson"
 
-// func workflowRouter(router *mux.Router) {
-// 	router.HandleFunc("/workflows", GetAllWorkflows).Methods("GET")
+	"github.com/gorilla/mux"
+	"github.com/praelatus/backend/api/middleware"
+	"github.com/praelatus/backend/api/utils"
+	"github.com/praelatus/backend/config"
+	"github.com/praelatus/backend/models"
+)
 
-// 	router.HandleFunc("/workflows/{id:[0-9]+}", GetWorkflow).Methods("GET")
-// 	router.HandleFunc("/workflows/{id:[0-9]+}", UpdateWorkflow).Methods("PUT")
-// 	router.HandleFunc("/workflows/{id:[0-9]+}", RemoveWorkflow).Methods("DELETE")
+func workflowRouter(router *mux.Router) {
+	router.HandleFunc("/workflows", getAllWorkflows).Methods("GET")
+	router.HandleFunc("/workflows", createWorkflow).Methods("POST")
+	router.HandleFunc("/workflows/{id}", singleWorkflow)
+}
 
-// 	router.HandleFunc("/workflows/{project_key}", CreateWorkflow).Methods("POST")
-// }
+func createWorkflow(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil || !u.IsAdmin {
+		utils.APIErr(w, http.StatusForbidden,
+			"you must be logged in as an administrator")
+		return
+	}
 
-// // GetAllWorkflows will retrieve all workflows from the DB and send a JSON response
-// func GetAllWorkflows(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in to view all workflows"))
-// 		return
-// 	}
+	var wkf map[string]models.Workflow
 
-// 	workflows, err := Store.Workflows().GetAll()
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&wkf)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-// 	utils.SendJSON(w, workflows)
-// }
+	workflow := wkf["workflow"]
+	workflow.ID = bson.NewObjectId()
 
-// // CreateWorkflow will create a workflow in the database based on the JSON sent by the
-// // client
-// func CreateWorkflow(w http.ResponseWriter, r *http.Request) {
-// 	var t models.Workflow
+	err = getCollection(config.WorkflowCollection).Insert(workflow)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil || !u.IsAdmin {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in as a system administrator to create a project"))
-// 		return
-// 	}
+	utils.SendJSON(w, workflow)
+}
 
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&t)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError("malformed json"))
-// 		log.Println(err)
-// 		return
-// 	}
+func getAllWorkflows(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil || !u.IsAdmin {
+		utils.APIErr(w, http.StatusForbidden,
+			"you must be logged in as an administrator")
+		return
+	}
 
-// 	vars := mux.Vars(r)
-// 	p := models.Project{Key: vars["project_key"]}
+	var ws []models.Workflow
 
-// 	err = Store.Projects().Get(*u, &p)
-// 	if err != nil {
-// 		w.WriteHeader(404)
-// 		w.Write(utils.APIError("project with that key does not exist"))
-// 		log.Println(err)
-// 		return
-// 	}
+	var query bson.M
+	q := r.FormValue("q")
+	if q != "" {
+		q = strings.Replace(q, "*", ".*", -1)
+		query = bson.M{"name": bson.M{"$regex": q, "$options": "i"}}
+	}
 
-// 	err = Store.Workflows().New(p, &t)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
+	err := getCollection(config.WorkflowCollection).Find(query).All(&ws)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(utils.APIError(err.Error()))
+		return
+	}
 
-// 	utils.SendJSON(w, t)
-// }
+	utils.SendJSONR(w, models.JSONRepr{"fieldSchemes": ws})
+}
 
-// // GetWorkflow will return the json representation of a workflow in the database
-// func GetWorkflow(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	i, err := strconv.Atoi(vars["id"])
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError("invalid id"))
-// 		log.Println(err)
-// 		return
-// 	}
+func singleWorkflow(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil || !u.IsAdmin {
+		utils.APIErr(w, http.StatusForbidden,
+			"you must be logged in as an administrator")
+		return
+	}
 
-// 	t := models.Workflow{ID: int64(i)}
+	var f models.Workflow
+	id := bson.ObjectIdHex(mux.Vars(r)["id"])
+	coll := getCollection(config.WorkflowCollection)
 
-// 	err = Store.Workflows().Get(&t)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
+	var err error
 
-// 	utils.SendJSON(w, t)
-// }
+	switch r.Method {
+	case "GET":
+		err = coll.FindId(id).One(&f)
+	case "DELETE":
+		err = coll.RemoveId(id)
+	case "PUT":
+		var jr map[string]models.Workflow
 
-// // UpdateWorkflow will update a project based on the JSON representation sent to
-// // the API
-// func UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
-// 	var t models.Workflow
+		decoder := json.NewDecoder(r.Body)
+		err = decoder.Decode(&jr)
+		if err != nil {
+			break
+		}
 
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil || !u.IsAdmin {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in as a system administrator to create a project"))
-// 		return
-// 	}
+		f, ok := jr["fieldScheme"]
+		if !ok {
+			err = errors.New("invalid object schema")
+			break
+		}
 
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&t)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError("invalid body"))
-// 		log.Println(err)
-// 		return
-// 	}
+		err = coll.UpdateId(id, &f)
+	}
 
-// 	if t.ID == 0 {
-// 		vars := mux.Vars(r)
-// 		id := vars["id"]
-// 		i, err := strconv.Atoi(id)
-// 		if err != nil {
-// 			w.WriteHeader(http.StatusBadRequest)
-// 			w.Write(utils.APIError(http.StatusText(http.StatusBadRequest)))
-// 			return
-// 		}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(utils.APIMsg(err.Error()))
+		return
+	}
 
-// 		t.ID = int64(i)
-// 	}
+	if f.Name != "" {
+		utils.SendJSON(w, f)
+		return
+	}
 
-// 	p := models.Project{Key: r.Context().Value("pkey").(string)}
-
-// 	err = Store.Projects().Get(*u, &p)
-// 	if err != nil {
-// 		w.WriteHeader(404)
-// 		w.Write(utils.APIError("project with that key does not exist"))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	err = Store.Workflows().New(p, &t)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, t)
-// }
-
-// // RemoveWorkflow will remove the project indicated by the id passed in as a
-// // url parameter
-// func RemoveWorkflow(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil || !u.IsAdmin {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in as a system administrator to create a project"))
-// 		return
-// 	}
-
-// 	vars := mux.Vars(r)
-// 	i, err := strconv.Atoi(vars["id"])
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError("invalid id"))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	err = Store.Workflows().Remove(models.Workflow{ID: int64(i)})
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	w.Write([]byte{})
-// }
+	utils.SendJSONR(w, models.JSONRepr{})
+}

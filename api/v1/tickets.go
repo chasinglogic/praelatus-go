@@ -1,381 +1,110 @@
 package v1
 
-// import (
-// 	"encoding/json"
-// 	"log"
-// 	"net/http"
-// 	"strconv"
-// 	"strings"
-
-// 	"github.com/gorilla/mux"
-// 	"github.com/praelatus/backend/api/middleware"
-// 	"github.com/praelatus/backend/api/utils"
-// 	"github.com/praelatus/backend/models"
-// )
-
-// func ticketRouter(router *mux.Router) {
-// 	router.HandleFunc("/tickets", GetAllTickets).Methods("GET")
-
-// 	router.HandleFunc("/tickets/{key}", GetTicket).Methods("GET")
-// 	router.HandleFunc("/tickets/{key}", RemoveTicket).Methods("DELETE")
-// 	router.HandleFunc("/tickets/{key}", UpdateTicket).Methods("PUT")
-
-// 	router.HandleFunc("/tickets/{key}/transition", TransitionTicket).Methods("POST")
-
-// 	router.HandleFunc("/tickets/{project_key}", CreateTicket).Methods("POST")
-
-// 	router.HandleFunc("/tickets/{key}/comments", GetComments).Methods("GET")
-// 	router.HandleFunc("/tickets/{key}/comments", CreateComment).Methods("POST")
-
-// 	router.HandleFunc("/tickets/comments/{id}", UpdateComment).Methods("PUT")
-// 	router.HandleFunc("/tickets/comments/{id}", RemoveComment).Methods("DELETE")
-// }
-
-// // GetTicket will get a ticket by the ticket key
-// func GetTicket(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	key := vars["key"]
-// 	preload := r.FormValue("preload")
-
-// 	tk := &models.Ticket{
-// 		Key: key,
-// 	}
-
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		u = &models.User{ID: 0}
-// 	}
-
-// 	err := Store.Tickets().Get(*u, tk)
-// 	if err != nil {
-// 		log.Println(err.Error())
-
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		return
-// 	}
-
-// 	if strings.Contains(preload, "comments") {
-// 		cm, err := Store.Tickets().GetComments(*u, tk.Project, *tk)
-// 		if err != nil {
-// 			w.WriteHeader(500)
-// 			w.Write(utils.APIError(err.Error()))
-// 			return
-// 		}
-
-// 		tk.Comments = cm
-// 	}
-
-// 	utils.SendJSON(w, tk)
-// }
-
-// // GetAllTickets will get all the tickets for this instance
-// func GetAllTickets(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		u = &models.User{ID: 0}
-// 	}
-
-// 	tks, err := Store.Tickets().GetAll(*u)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError("failed to retrieve tickets from the database"))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, tks)
-// }
-
-// // CreateTicket will create a ticket in the database and send the json
-// // representation of the ticket back
-// func CreateTicket(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	pkey := vars["project_key"]
-
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in to create a ticket"))
-// 		return
-// 	}
-
-// 	var tk models.Ticket
-
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&tk)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError("invalid body"))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	err = Store.Tickets().New(models.Project{Key: pkey}, &tk)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, tk)
-// }
-
-// // RemoveTicket will remove the ticket with the given key from the database
-// func RemoveTicket(w http.ResponseWriter, r *http.Request) {
-// 	key := r.Context().Value("key").(string)
-
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in to remove a ticket"))
-// 		return
-// 	}
-
-// 	tk := &models.Ticket{Key: key}
-
-// 	err := Store.Tickets().Get(*u, tk)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		return
-// 	}
-
-// 	err = Store.Tickets().Remove(*u, tk.Project, *tk)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		return
-// 	}
-
-// 	w.Write([]byte{})
-// }
-
-// // UpdateTicket will update the ticket indicated by given key using the json
-// // from the body of the request
-// func UpdateTicket(w http.ResponseWriter, r *http.Request) {
-// 	key := r.Context().Value("key").(string)
-
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in to update a ticket"))
-// 		return
-// 	}
-
-// 	var tk models.Ticket
-
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&tk)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	if tk.Key == "" {
-// 		tk.Key = key
-// 	}
-
-// 	err = Store.Tickets().Save(*u, tk.Project, tk)
-// 	if err != nil {
-// 		utils.APIErr(w, 500, err.Error())
-// 		return
-// 	}
-
-// 	w.Write(utils.Success())
-// }
-
-// // GetComments will get the comments for the ticket indicated by the ticket key
-// // in the url
-// func GetComments(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	key := vars["key"]
-
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		u = &models.User{ID: 0}
-// 	}
-
-// 	tk := &models.Ticket{Key: key}
-// 	err := Store.Tickets().Get(*u, tk)
-// 	if tk.ID == 0 {
-// 		utils.APIErr(w, 404, "ticket not found")
-// 		return
-// 	}
-
-// 	if err != nil {
-// 		utils.APIErr(w, 500, err.Error())
-// 		return
-// 	}
-
-// 	comments, err := Store.Tickets().GetComments(*u, tk.Project, *tk)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, comments)
-// }
-
-// // UpdateComment will update the comment with the given ID
-// func UpdateComment(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		utils.APIErr(w, 403, "you must be logged in to update a comment")
-// 		return
-// 	}
-
-// 	var cm models.Comment
-
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&cm)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	if cm.ID == 0 {
-// 		vars := mux.Vars(r)
-// 		id, _ := strconv.Atoi(vars["id"])
-// 		cm.ID = int64(id)
-// 	}
-
-// 	tk := &models.Ticket{Key: cm.TicketKey}
-// 	err = Store.Tickets().Get(*u, tk)
-// 	if tk.ID == 0 {
-// 		utils.APIErr(w, 404, "ticket not found")
-// 		return
-// 	}
-
-// 	if err != nil {
-// 		utils.APIErr(w, 500, err.Error())
-// 		return
-// 	}
-
-// 	err = Store.Tickets().SaveComment(*u, tk.Project, cm)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	w.Write([]byte{})
-// }
-
-// // RemoveComment will remove the ticket with the given key from the database
-// func RemoveComment(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		utils.APIErr(w, 403, "you must be logged in to remove a comment")
-// 		return
-// 	}
-
-// 	vars := mux.Vars(r)
-// 	id, _ := strconv.Atoi(vars["id"])
-
-// 	cm := models.Comment{ID: int64(id)}
-
-// 	err := Store.Tickets().GetComment(*u, &cm)
-// 	if err != nil {
-// 		utils.APIErr(w, 500, err.Error())
-// 		return
-// 	}
-
-// 	tk := &models.Ticket{Key: cm.TicketKey}
-// 	err = Store.Tickets().Get(*u, tk)
-// 	if tk.ID == 0 {
-// 		utils.APIErr(w, 404, "ticket not found")
-// 		return
-// 	}
-
-// 	if err != nil {
-// 		utils.APIErr(w, 500, err.Error())
-// 		return
-// 	}
-
-// 	err = Store.Tickets().RemoveComment(*u, tk.Project, cm)
-// 	if err != nil {
-// 		utils.APIErr(w, 500, err.Error())
-// 		return
-// 	}
-
-// 	w.Write([]byte{})
-// }
-
-// // CreateComment will add a comment to the ticket indicated in the url
-// func CreateComment(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in to update a ticket"))
-// 		return
-// 	}
-
-// 	var cm models.Comment
-
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&cm)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	vars := mux.Vars(r)
-// 	key := vars["key"]
-// 	err = Store.Tickets().NewComment(models.Ticket{Key: key}, &cm)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, cm)
-// }
-
-// // TransitionTicket will perform the given transition on the ticket indicated by {key}
-// func TransitionTicket(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in to transition a ticket"))
-// 		return
-// 	}
-
-// 	tk := &models.Ticket{
-// 		Key: mux.Vars(r)["key"],
-// 	}
-
-// 	err := Store.Tickets().Get(*u, tk)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		w.Write(utils.APIError(err.Error()))
-// 		return
-// 	}
-
-// 	transition, valid := tk.Transition(r.FormValue("name"))
-// 	if !valid {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		w.Write(utils.APIError("not a valid transition for ticket"))
-// 		return
-// 	}
-
-// 	err = Store.Tickets().ExecuteTransition(*u, tk.Project, tk, transition)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, tk)
-// }
+import (
+	"log"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/praelatus/backend/api/middleware"
+	"github.com/praelatus/backend/api/utils"
+	"github.com/praelatus/backend/config"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/models/permission"
+	"gopkg.in/mgo.v2/bson"
+)
+
+func ticketRouter(router *mux.Router) {
+	router.HandleFunc("/tickets", getAllTickets).Methods("GET")
+	// router.HandleFunc("/tickets", createTicket).Methods("POST")
+	router.HandleFunc("/tickets/{key}", singleTicket)
+
+	// router.HandleFunc("/tickets/{key}/addComment", addComment).Methods("POST")
+}
+
+func singleTicket(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		u = &models.User{}
+	}
+
+	var t models.Ticket
+	var err error
+
+	id := mux.Vars(r)["key"]
+	coll := getCollection(config.TicketCollection)
+
+	switch r.Method {
+	case "GET":
+		err = coll.FindId(id).One(&t)
+	case "DELETE":
+		err = coll.RemoveId(id)
+	case "PUT":
+		// TODO: Have to validate field schema.
+		break
+	}
+
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SendJSON(w, t)
+}
+
+// getAllTickets will return all tickets which the user has permissions to.
+// TODO: Make this faster checking permissions requires multiple nested loops
+// and memory allocations and so is the slowest call at 10ms which isn't
+// horrible but certainly leaves much to be desired.
+func getAllTickets(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		u = &models.User{}
+	}
+
+	query := bson.M{
+		"$or": []bson.M{
+			{
+				"key": bson.M{
+					"$in": u.ProjectsMemberOf(),
+				},
+			},
+			{
+				"permissions.Anonymous": permission.ViewProject,
+			},
+		},
+	}
+
+	var projects []models.Project
+
+	err := getCollection(config.ProjectCollection).Find(query).
+		Select(bson.M{"permissions": 1, "key": 1}).All(&projects)
+	if err != nil {
+		log.Println("Error:", err.Error())
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	projects = models.HasPermission(permission.ViewProject, *u, projects...)
+
+	keys := make([]string, len(projects))
+
+	for i := range projects {
+		keys[i] = projects[i].Key
+	}
+
+	var tickets []models.Ticket
+
+	tQuery := bson.M{
+		"project": bson.M{
+			"$in": keys,
+		},
+	}
+
+	err = getCollection(config.TicketCollection).Find(tQuery).All(&tickets)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SendJSONR(w, models.JSONRepr{"tickets": tickets})
+}

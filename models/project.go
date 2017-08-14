@@ -51,3 +51,34 @@ func (p *Project) GetWorkflow(ticketType string) bson.ObjectId {
 
 	return ""
 }
+
+// HasPermission will return a slice of projects for which the given user has
+// the permission indicated out of the projects given.
+func HasPermission(permName permission.Permission, user User, projects ...Project) []Project {
+
+	var hasPermission []Project
+
+projects:
+	for _, p := range projects {
+		role := user.Permissions[p.Key]
+
+		permissions, hasRole := p.Permissions[role]
+		anon, hasAnon := p.Permissions["Anonymous"]
+		if !hasAnon && !hasRole {
+			continue
+		}
+
+		if hasAnon {
+			permissions = append(permissions, anon...)
+		}
+
+		for _, perm := range permissions {
+			if perm == permName {
+				hasPermission = append(hasPermission, p)
+				continue projects
+			}
+		}
+	}
+
+	return hasPermission
+}

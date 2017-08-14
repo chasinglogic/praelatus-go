@@ -20,8 +20,8 @@ func getCollection(collName string) *mgo.Collection {
 func Routes(router *mux.Router) {
 	fieldRouter(router)
 	projectRouter(router)
-	// ticketRouter(router)
-	// userRouter(router)
-	// workflowRouter(router)
+	ticketRouter(router)
+	userRouter(router)
+	workflowRouter(router)
 	miscRouter(router)
 }

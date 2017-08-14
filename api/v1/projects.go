@@ -16,18 +16,6 @@ import (
 	"github.com/praelatus/backend/models/permission"
 )
 
-// import (
-// 	"encoding/json"
-// 	"log"
-// 	"net/http"
-// 	"strconv"
-
-// 	"github.com/gorilla/mux"
-// 	"github.com/praelatus/backend/api/middleware"
-// 	"github.com/praelatus/backend/api/utils"
-// 	"github.com/praelatus/backend/models"
-// )
-
 func projectRouter(router *mux.Router) {
 	router.HandleFunc("/projects", GetAllProjects).Methods("GET")
 	// router.HandleFunc("/projects", CreateProject).Methods("POST")
@@ -89,20 +77,12 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 		u = &models.User{}
 	}
 
-	projectKeys := make([]string, len(u.Permissions))
-
-	i := 0
-	for k := range u.Permissions {
-		projectKeys[i] = k
-		i++
-	}
-
 	var projects []models.Project
 	query := bson.M{
 		"$or": []bson.M{
 			{
 				"key": bson.M{
-					"$in": projectKeys,
+					"$in": u.ProjectsMemberOf(),
 				},
 			},
 			{

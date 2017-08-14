@@ -1,282 +1,151 @@
 package v1
 
-// import (
-// 	"encoding/json"
-// 	"log"
-// 	"net/http"
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strings"
 
-// 	"github.com/praelatus/backend/api/middleware"
-// 	"github.com/praelatus/backend/api/utils"
-// 	"github.com/praelatus/backend/models"
+	"gopkg.in/mgo.v2/bson"
 
-// 	"github.com/gorilla/mux"
-// )
+	"github.com/praelatus/backend/api/middleware"
+	"github.com/praelatus/backend/api/utils"
+	"github.com/praelatus/backend/config"
+	"github.com/praelatus/backend/models"
 
-// func userRouter(router *mux.Router) {
-// 	router.HandleFunc("/users", GetAllUsers).Methods("GET")
-// 	router.HandleFunc("/users", CreateUser).Methods("POST")
+	"github.com/gorilla/mux"
+)
 
-// 	router.HandleFunc("/users/current_user", CurrentUser).Methods("GET")
+func userRouter(router *mux.Router) {
+	router.HandleFunc("/users", getAllUsers).Methods("GET")
+	router.HandleFunc("/users", createUser).Methods("POST")
 
-// 	router.HandleFunc("/users/sessions", CreateSession).Methods("POST")
-// 	router.HandleFunc("/users/sessions", RefreshSession).Methods("GET")
+	router.HandleFunc("/users/{username}", singleUser)
+}
 
-// 	router.HandleFunc("/users/search", SearchUsers).Methods("GET")
+func createUser(w http.ResponseWriter, r *http.Request) {
+	loggedInUser := middleware.GetUserSession(r)
+	if loggedInUser == nil {
+		loggedInUser = &models.User{}
+	}
 
-// 	router.HandleFunc("/users/{username}", UpdateUser).Methods("PUT")
-// 	router.HandleFunc("/users/{username}", DeleteUser).Methods("DELETE")
-// 	router.HandleFunc("/users/{username}", GetUser).Methods("GET")
-// }
+	var u *models.User
 
-// // TokenResponse is used when logging in or signing up, it will return a
-// // generated token plus the user model for use by the client.
-// type TokenResponse struct {
-// 	Token string      `json:"token"`
-// 	User  models.User `json:"user"`
-// }
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&u)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-// // GetUser will get a user from the database by the given username
-// func GetUser(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
+	if !loggedInUser.IsAdmin {
+		u.IsAdmin = false
+	}
 
-// 	u := models.User{
-// 		Username: vars["username"],
-// 	}
+	u, err = models.NewUser(u.Username, u.Password, u.FullName, u.Email, u.IsAdmin)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-// 	err := Store.Users().Get(&u)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
+	err = middleware.SetUserSession(*u, w)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-// 	u.Password = ""
+	var tokenResponse struct {
+		Token string      `json:"token"`
+		User  models.User `json:"user"`
+	}
 
-// 	utils.SendJSON(w, u)
-// }
+	tokenResponse.Token = w.Header().Get("Token")
+	tokenResponse.User = *u
 
-// // GetAllUsers will return the json encoded array of all users in the given
-// // store
-// func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in to view other users"))
-// 		return
-// 	}
+	utils.SendJSONR(w, models.JSONRepr{"token": tokenResponse})
+}
 
-// 	users, err := Store.Users().GetAll()
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
+func getAllUsers(w http.ResponseWriter, r *http.Request) {
+	var users []models.User
 
-// 	for i := range users {
-// 		users[i].Password = ""
-// 		users[i].Settings = nil
-// 	}
+	var query bson.M
+	q := r.FormValue("q")
+	if q != "" {
+		q = strings.Replace(q, "*", ".*", -1)
+		query = bson.M{
+			"$or": []bson.M{
+				{"username": bson.M{"$regex": q, "$options": "i"}},
+				{"email": bson.M{"$regex": q, "$options": "i"}},
+				{"fullname": bson.M{"$regex": q, "$options": "i"}},
+			},
+		}
+	}
 
-// 	utils.SendJSON(w, users)
-// }
+	err := getCollection(config.UserCollection).Find(query).All(&users)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(utils.APIError(err.Error()))
+		return
+	}
 
-// // SearchUsers will return the json encoded array of all users in the given
-// // store which match the provided query
-// func SearchUsers(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u == nil {
-// 		w.WriteHeader(403)
-// 		w.Write(utils.APIError("you must be logged in to view other users"))
-// 		return
-// 	}
+	utils.SendJSONR(w, models.JSONRepr{"users": users})
+}
 
-// 	query := r.FormValue("query")
+func singleUser(w http.ResponseWriter, r *http.Request) {
+	loggedInUser := middleware.GetUserSession(r)
+	if loggedInUser == nil {
+		loggedInUser = &models.User{}
+	}
 
-// 	users, err := Store.Users().Search(query)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
+	var u models.User
+	var err error
 
-// 	for i := range users {
-// 		users[i].Password = ""
-// 		users[i].Settings = nil
-// 	}
+	username := mux.Vars(r)["username"]
+	coll := getCollection(config.UserCollection)
 
-// 	utils.SendJSON(w, users)
-// }
+	switch r.Method {
+	case "GET":
+		err = coll.FindId(username).One(&u)
+	case "DELETE":
+		if !u.IsAdmin && loggedInUser.Username != username {
+			err = errors.New("not authorized")
+			break
+		}
 
-// // CreateUser will take the JSON given and attempt to
-// func CreateUser(w http.ResponseWriter, r *http.Request) {
-// 	var u models.User
+		err = coll.RemoveId(username)
+	case "PUT":
+		if !u.IsAdmin && loggedInUser.Username != username {
+			err = errors.New("not authorized")
+			break
+		}
 
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&u)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		return
-// 	}
+		var jr map[string]models.User
 
-// 	usr, err := models.NewUser(u.Username, u.Password, u.FullName, u.Email, false)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
+		decoder := json.NewDecoder(r.Body)
+		err = decoder.Decode(&jr)
+		if err != nil {
+			break
+		}
 
-// 	err = Store.Users().New(usr)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		return
-// 	}
+		u, ok := jr["user"]
+		if !ok {
+			err = errors.New("invalid object schema")
+			break
+		}
 
-// 	err = middleware.SetUserSession(*usr, w)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		return
-// 	}
+		err = coll.Update(bson.M{"_id": username},
+			bson.M{"$set": bson.M{
+				"username":   u.Username,
+				"email":      u.Email,
+				"fullname":   u.FullName,
+				"profilePic": u.ProfilePic,
+			}})
+	}
 
-// 	usr.Password = ""
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-// 	utils.SendJSON(w, usr)
-// }
-
-// // UpdateUser will update a user in the database, it will reject the call if
-// // the user sending is not the user being updated or if the user sending is not
-// // a sys admin
-// func UpdateUser(w http.ResponseWriter, r *http.Request) {
-// 	var u models.User
-
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&u)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	if u.Username == "" {
-// 		vars := mux.Vars(r)
-// 		u.Username = vars["username"]
-// 	}
-
-// 	err = Store.Users().Save(u)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, u)
-// }
-
-// // DeleteUser will remove a user from the database by setting is_inactive = 1
-// // can only be used by sys admins
-// func DeleteUser(w http.ResponseWriter, r *http.Request) {
-// 	var u models.User
-
-// 	decoder := json.NewDecoder(r.Body)
-// 	err := decoder.Decode(&u)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	if u.Username == "" {
-// 		vars := mux.Vars(r)
-// 		u.Username = vars["username"]
-// 	}
-
-// 	err = Store.Users().Remove(u)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	w.Write([]byte(""))
-// }
-
-// // CreateSession will log in a user and create a jwt token for the current
-// // session
-// func CreateSession(w http.ResponseWriter, r *http.Request) {
-// 	type loginRequest struct {
-// 		Username string `json:"username"`
-// 		Password string `json:"password"`
-// 	}
-
-// 	var l loginRequest
-
-// 	decode := json.NewDecoder(r.Body)
-// 	err := decode.Decode(&l)
-// 	if err != nil {
-// 		w.WriteHeader(400)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	u := models.User{Username: l.Username}
-
-// 	err = Store.Users().Get(&u)
-// 	if err != nil {
-// 		w.WriteHeader(500)
-// 		w.Write(utils.APIError(err.Error()))
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	if u.CheckPw([]byte(l.Password)) {
-// 		err := middleware.SetUserSession(u, w)
-// 		if err != nil {
-// 			w.WriteHeader(500)
-// 			w.Write(utils.APIError(err.Error()))
-// 			log.Println(err)
-// 			return
-
-// 		}
-
-// 		u.Password = ""
-// 		utils.SendJSON(w, u)
-
-// 		return
-// 	}
-
-// 	w.WriteHeader(401)
-// 	w.Write(utils.APIError("invalid password", "password"))
-// }
-
-// // RefreshSession will reset the expiration on the current session
-// func RefreshSession(w http.ResponseWriter, r *http.Request) {
-// 	err := middleware.RefreshSession(r)
-// 	if err != nil {
-// 		w.Write(utils.APIError(err.Error()))
-// 	}
-
-// 	w.Write([]byte{})
-// }
-
-// // CurrentUser will return the user object for the currently logged in user
-// func CurrentUser(w http.ResponseWriter, r *http.Request) {
-// 	u := middleware.GetUserSession(r)
-// 	if u != nil {
-// 		w.WriteHeader(http.StatusUnauthorized)
-// 		w.Write(utils.APIError("you are not logged in"))
-// 		return
-// 	}
-
-// 	utils.SendJSON(w, u)
-// }
+	utils.SendJSON(w, u)
+}

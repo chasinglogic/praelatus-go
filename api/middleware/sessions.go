@@ -37,6 +37,7 @@ var sec = securecookie.New(hashKey, blockKey)
 // 	}
 // }
 
+// generateSessionID generates a secure Session ID
 func generateSessionID() string {
 	b := securecookie.GenerateRandomKey(32)
 	return base64.URLEncoding.EncodeToString(b)

@@ -108,7 +108,6 @@ func singleFieldScheme(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		fmt.Println(jr)
 		f, ok := jr["fieldScheme"]
 		if !ok {
 			err = errors.New("invalid object schema")
@@ -126,7 +125,8 @@ func singleFieldScheme(w http.ResponseWriter, r *http.Request) {
 
 	if f.Name != "" {
 		utils.SendJSON(w, f)
-	} else {
-		utils.SendJSONR(w, models.JSONRepr{})
+		return
 	}
+
+	utils.SendJSONR(w, models.JSONRepr{})
 }
