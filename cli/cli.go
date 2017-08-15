@@ -20,6 +20,10 @@ func Run(args []string) {
 			Name:  "devmode",
 			Usage: "runs server in devmode which changes some security behavior to ease development",
 		},
+		cli.BoolFlag{
+			Name:  "profile",
+			Usage: "runs server profiling for debugging hotspots in the code",
+		},
 	}
 
 	app.Authors = []cli.Author{

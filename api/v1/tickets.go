@@ -1,8 +1,11 @@
 package v1
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/api/middleware"
@@ -36,6 +39,20 @@ func singleTicket(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		err = coll.FindId(id).One(&t)
+		if err != nil {
+			break
+		}
+
+		var p models.Project
+		projects := getCollection(config.ProjectCollection)
+		err = projects.FindId(t.Project).One(&p)
+		if err != nil {
+			break
+		}
+
+		if len(models.HasPermission(permission.ViewProject, *u, p)) == 0 {
+			err = errors.New("unauthorized")
+		}
 	case "DELETE":
 		err = coll.RemoveId(id)
 	case "PUT":
@@ -52,9 +69,6 @@ func singleTicket(w http.ResponseWriter, r *http.Request) {
 }
 
 // getAllTickets will return all tickets which the user has permissions to.
-// TODO: Make this faster checking permissions requires multiple nested loops
-// and memory allocations and so is the slowest call at 10ms which isn't
-// horrible but certainly leaves much to be desired.
 func getAllTickets(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
 	if u == nil {
@@ -76,8 +90,11 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 
 	var projects []models.Project
 
+	pstart := time.Now()
 	err := getCollection(config.ProjectCollection).Find(query).
 		Select(bson.M{"permissions": 1, "key": 1}).All(&projects)
+
+	fmt.Println("took", time.Since(pstart), "to get projects")
 	if err != nil {
 		log.Println("Error:", err.Error())
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
@@ -100,7 +117,9 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
+	tstart := time.Now()
 	err = getCollection(config.TicketCollection).Find(tQuery).All(&tickets)
+	fmt.Println("took", time.Since(tstart), "to get tickets")
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return

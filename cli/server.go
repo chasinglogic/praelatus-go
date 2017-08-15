@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	_ "net/http/pprof"
+
 	mgo "gopkg.in/mgo.v2"
 
 	"github.com/praelatus/backend/api"
@@ -35,10 +37,14 @@ func disableCors(next http.Handler) http.Handler {
 }
 
 func alwaysAuth(next http.Handler) http.Handler {
+	u, _ := models.NewUser("testadmin", "test",
+		"Test Testerson", "test@example.com", true)
+
+	u.Permissions = make(map[string]models.Role)
+	u.Permissions["TEST"] = "Administrator"
+
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			u, _ := models.NewUser("testadmin", "test",
-				"Test Testerson", "test@example.com", true)
 			_ = middleware.SetUserSession(*u, w)
 			r.Header.Set("Authorization", w.Header().Get("Token"))
 			next.ServeHTTP(w, r)
@@ -58,14 +64,18 @@ func runServer(c *cli.Context) error {
 	log.SetOutput(config.LogWriter())
 
 	log.Println("Starting Praelatus...")
-	log.Println("Initializing database...")
-
-	log.Println("Prepping API")
+	log.Println("Connecting to database...")
 	r := api.New(connectDB())
 	if c.Bool("devmode") || os.Getenv("PRAELATUS_DEV_MODE") == "1" {
 		log.Println("Running in dev mode, disabling cors and authentication...")
 		r = disableCors(r)
 		r = alwaysAuth(r)
+	}
+
+	if c.Bool("profile") {
+		go func() {
+			log.Println(http.ListenAndServe("localhost:6060", nil))
+		}()
 	}
 
 	log.Println("Listening on", config.Port())

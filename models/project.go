@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/praelatus/backend/models/permission"
@@ -55,30 +56,34 @@ func (p *Project) GetWorkflow(ticketType string) bson.ObjectId {
 // HasPermission will return a slice of projects for which the given user has
 // the permission indicated out of the projects given.
 func HasPermission(permName permission.Permission, user User, projects ...Project) []Project {
-
-	var hasPermission []Project
+	hasPermission := make([]Project, len(projects))
+	i := 0
 
 projects:
 	for _, p := range projects {
 		role := user.Permissions[p.Key]
 
-		permissions, hasRole := p.Permissions[role]
-		anon, hasAnon := p.Permissions["Anonymous"]
-		if !hasAnon && !hasRole {
-			continue
-		}
-
-		if hasAnon {
-			permissions = append(permissions, anon...)
-		}
+		permissions := p.Permissions[role]
+		anon := p.Permissions["Anonymous"]
 
 		for _, perm := range permissions {
 			if perm == permName {
-				hasPermission = append(hasPermission, p)
+				hasPermission[i] = p
+				i++
 				continue projects
 			}
 		}
+
+		fmt.Println("Checking anon permissions")
+		for _, perm := range anon {
+			if perm == permName {
+				hasPermission[i] = p
+				i++
+				continue projects
+			}
+		}
+
 	}
 
-	return hasPermission
+	return hasPermission[:i]
 }
