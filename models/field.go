@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 
 	"gopkg.in/mgo.v2/bson"
 )
@@ -54,4 +55,33 @@ type FieldScheme struct {
 
 	// Map ticket type to fields
 	Fields map[string][]Field `json:"fields"`
+}
+
+// ValidateTicket verifies that all fields on t are valid
+func (fs *FieldScheme) ValidateTicket(t Ticket) error {
+	fields, ok := fs.Fields[t.Type]
+	if !ok {
+		fields, ok = fs.Fields[""]
+		if !ok {
+			return errors.New("no fields set for this ticket type and default not set")
+		}
+	}
+
+	for _, f := range t.Fields {
+		if !validField(fields, f) {
+			return fmt.Errorf("%s is not a valid field for type %s", f.Name, t.Type)
+		}
+	}
+
+	return nil
+}
+
+func validField(fields []Field, field Field) bool {
+	for _, f := range fields {
+		if field.Name == f.Name {
+			return true
+		}
+	}
+
+	return false
 }

@@ -53,9 +53,25 @@ func (p *Project) GetWorkflow(ticketType string) bson.ObjectId {
 	return ""
 }
 
+func (p *Project) HasTicketType(typeName string) bool {
+	for _, t := range p.TicketTypes {
+		if t == typeName {
+			return true
+		}
+	}
+
+	return false
+}
+
 // HasPermission will return a slice of projects for which the given user has
 // the permission indicated out of the projects given.
 func HasPermission(permName permission.Permission, user User, projects ...Project) []Project {
+
+	// Skip perm checking for SysAdmins
+	if user.IsAdmin {
+		return projects
+	}
+
 	hasPermission := make([]Project, len(projects))
 	i := 0
 

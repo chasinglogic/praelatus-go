@@ -1,10 +1,11 @@
 package v1
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -18,10 +19,93 @@ import (
 
 func ticketRouter(router *mux.Router) {
 	router.HandleFunc("/tickets", getAllTickets).Methods("GET")
-	// router.HandleFunc("/tickets", createTicket).Methods("POST")
+	router.HandleFunc("/tickets", createTicket).Methods("POST")
 	router.HandleFunc("/tickets/{key}", singleTicket)
 
-	// router.HandleFunc("/tickets/{key}/addComment", addComment).Methods("POST")
+	router.HandleFunc("/tickets/{key}/addComment", addComment).Methods("POST")
+}
+
+func createTicket(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		u = &models.User{}
+	}
+
+	var tjson map[string]models.Ticket
+
+	var t models.Ticket
+	var p models.Project
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&tjson)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	t = tjson["ticket"]
+
+	projects := getCollection(config.ProjectCollection)
+	err = projects.FindId(t.Project).One(&p)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(models.HasPermission(permission.CreateTicket, *u, p)) == 0 {
+		utils.APIErr(w, http.StatusUnauthorized, "you do not have the required permission")
+		return
+	}
+
+	if !p.HasTicketType(t.Type) {
+		utils.APIErr(w, http.StatusForbidden, "not a valid ticket type for project "+t.Project)
+		return
+	}
+
+	var fs models.FieldScheme
+
+	fieldSchemes := getCollection(config.FieldSchemeCollection)
+	err = fieldSchemes.FindId(p.FieldScheme).One(&fs)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := fs.ValidateTicket(t); err != nil {
+		utils.APIErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var wkf models.Workflow
+
+	workflows := getCollection(config.WorkflowCollection)
+	err = workflows.FindId(t.Workflow).One(&wkf)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	tickets := getCollection(config.TicketCollection)
+	count, err := tickets.Find(bson.M{"project": t.Project}).Count()
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	t.Key = t.Project + "-" + strconv.Itoa(count+1)
+	t.CreatedDate = time.Now()
+	t.UpdatedDate = time.Now()
+	t.Comments = []models.Comment{}
+	t.Status = wkf.CreateTransition().ToStatus
+	t.Workflow = p.GetWorkflow(t.Type)
+
+	err = tickets.Insert(t)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SendJSON(w, t)
 }
 
 func singleTicket(w http.ResponseWriter, r *http.Request) {
@@ -90,11 +174,8 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 
 	var projects []models.Project
 
-	pstart := time.Now()
 	err := getCollection(config.ProjectCollection).Find(query).
 		Select(bson.M{"permissions": 1, "key": 1}).All(&projects)
-
-	fmt.Println("took", time.Since(pstart), "to get projects")
 	if err != nil {
 		log.Println("Error:", err.Error())
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
@@ -109,21 +190,54 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 		keys[i] = projects[i].Key
 	}
 
-	var tickets []models.Ticket
-
 	tQuery := bson.M{
 		"project": bson.M{
 			"$in": keys,
 		},
 	}
 
-	tstart := time.Now()
+	var tickets []models.Ticket
+
 	err = getCollection(config.TicketCollection).Find(tQuery).All(&tickets)
-	fmt.Println("took", time.Since(tstart), "to get tickets")
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	utils.SendJSONR(w, models.JSONRepr{"tickets": tickets})
+}
+
+func addComment(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		utils.APIErr(w, http.StatusForbidden, "you must be logged in to comment")
+		return
+	}
+
+	var c map[string]models.Comment
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&c)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	key := mux.Vars(r)["key"]
+	tickets := getCollection(config.TicketCollection)
+
+	c["comment"].CreatedDate = time.Now()
+	c["comment"].UpdatedDate = time.Now()
+
+	err = tickets.UpdateId(key, bson.M{
+		"$push": bson.M{
+			"comments": c["comment"],
+		},
+	})
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SendJSONR(w, models.JSONRepr{"message": "success"})
 }

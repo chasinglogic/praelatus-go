@@ -13,6 +13,16 @@ func (w *Workflow) String() string {
 	return jsonString(w)
 }
 
+func (w *Workflow) CreateTransition() Transition {
+	for _, t := range w.Transitions {
+		if t.FromStatus == "Create" {
+			return t
+		}
+	}
+
+	return Transition{ToStatus: "null"}
+}
+
 // Transition contains information about what hooks to perform when performing
 // a transition
 type Transition struct {
