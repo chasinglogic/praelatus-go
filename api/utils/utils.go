@@ -7,9 +7,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"reflect"
 	"strings"
-	"unicode"
 )
 
 // APIMessage is a general purpose struct for sending messages to the client,
@@ -64,33 +62,12 @@ func GetErrorCode(e error) int {
 	return http.StatusInternalServerError
 }
 
-// Use this to properly wrap JSON in a root element.
-func getType(v interface{}) string {
-	var name string
-
-	if t := reflect.TypeOf(v); t.Kind() == reflect.Ptr {
-		name = t.Elem().Name()
-	} else {
-		name = t.Name()
-	}
-
-	// lower case first letter since that's what ember expects.
-	lower := []rune(name)
-	lower[0] = unicode.ToLower(lower[0])
-
-	return string(lower)
-}
-
 // SendJSON is a convenience function for sending JSON to the given
 // ResponseWriter it will attempt to convert v into a JSONRepr appropriately
 // based on the struct name it's only really useful if v is a single record.
 // For a result set convert to JSONRepr yourself then use SendJSONR
 func SendJSON(w http.ResponseWriter, v interface{}) {
-	repr := map[string]interface{}{
-		"data": v,
-	}
-
-	resp, err := json.Marshal(repr)
+	resp, err := json.Marshal(v)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(APIMsg("Failed to marshal database response to JSON."))
