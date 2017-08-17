@@ -23,7 +23,7 @@ var DataTypes = []string{
 // Field is a ticket field
 type Field struct {
 	Name     string `json:"name"`
-	DataType string `json:"data-type"`
+	DataType string `json:"dataType"`
 
 	// Options is only relevant for Fields of DataType OPT
 	Options []string `json:"options,omitempty" bson:"options,omitempty"`

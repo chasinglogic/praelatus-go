@@ -17,15 +17,15 @@ type Role string
 type Project struct {
 	Key         string    `json:"key" bson:"_id"`
 	Name        string    `json:"name"`
-	CreatedDate time.Time `json:"created-date"`
+	CreatedDate time.Time `json:"createdDate"`
 	Lead        string    `json:"lead"`
 	Homepage    string    `json:"homepage,omitempty"`
 	Repo        string    `json:"repo,omitempty"`
-	TicketTypes []string  `json:"ticket-types"`
+	TicketTypes []string  `json:"ticketTypes"`
 	// Map roles to permissions
 	Permissions map[Role][]permission.Permission
 
-	FieldScheme bson.ObjectId `json:"field-scheme"`
+	FieldScheme bson.ObjectId `json:"fieldScheme"`
 
 	// Map ticket types to workflow ID's
 	WorkflowScheme map[string]bson.ObjectId

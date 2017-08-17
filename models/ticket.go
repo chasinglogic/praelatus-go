@@ -10,15 +10,15 @@ import (
 
 // Ticket represents a ticket
 type Ticket struct {
-	CreatedDate time.Time `json:"created-date"`
-	UpdatedDate time.Time `json:"updated-date"`
+	CreatedDate time.Time `json:"createdDate"`
+	UpdatedDate time.Time `json:"updatedDate"`
 	Key         string    `bson:"_id" json:"key"`
 	Summary     string    `json:"summary"`
 	Description string    `json:"description"`
 	Status      string    `json:"status"`
 	Reporter    string    `json:"reporter"`
 	Assignee    string    `json:"assignee"`
-	Type        string    `json:"ticket-type"`
+	Type        string    `json:"ticketType"`
 	Labels      []string  `json:"labels"`
 
 	Fields   []Field   `json:"fields"`
@@ -54,8 +54,8 @@ func (t *Ticket) Transition(db *mgo.Database, name string) (Transition, bool) {
 
 // Comment is a comment on an issue / ticket.
 type Comment struct {
-	UpdatedDate time.Time `json:"updated-date"`
-	CreatedDate time.Time `json:"created-date"`
+	UpdatedDate time.Time `json:"updatedDate"`
+	CreatedDate time.Time `json:"createdDate"`
 	Body        string    `json:"body"`
 	Author      string    `json:"author"`
 }
