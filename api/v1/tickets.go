@@ -204,7 +204,7 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSONR(w, models.JSONRepr{"tickets": tickets})
+	utils.SendJSON(w, tickets)
 }
 
 func addComment(w http.ResponseWriter, r *http.Request) {
@@ -214,10 +214,10 @@ func addComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var c map[string]models.Comment
+	var cjson map[string]models.Comment
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&c)
+	err := decoder.Decode(&cjson)
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
@@ -226,12 +226,13 @@ func addComment(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
 	tickets := getCollection(config.TicketCollection)
 
-	c["comment"].CreatedDate = time.Now()
-	c["comment"].UpdatedDate = time.Now()
+	c := cjson["comment"]
+	c.CreatedDate = time.Now()
+	c.UpdatedDate = time.Now()
 
 	err = tickets.UpdateId(key, bson.M{
 		"$push": bson.M{
-			"comments": c["comment"],
+			"comments": c,
 		},
 	})
 	if err != nil {
@@ -239,5 +240,5 @@ func addComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSONR(w, models.JSONRepr{"message": "success"})
+	utils.SendJSON(w, map[string]string{})
 }

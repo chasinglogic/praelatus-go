@@ -8,18 +8,17 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/api/middleware"
 	"github.com/praelatus/backend/api/utils"
-	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/models/permission"
 )
 
 func miscRouter(router *mux.Router) {
-	router.HandleFunc("/permissions", GetAllPermissionSchemes)
+	router.HandleFunc("/permissions", getAllPermissions)
 	// router.HandleFunc("/labels", GetAllLabels).Methods("GET")
 	// router.HandleFunc("/types", GetAllTypes).Methods("GET")
 }
 
 // GetAllPermissionSchemes will return a JSON array of all permissionSchemes from the store.
-func GetAllPermissionSchemes(w http.ResponseWriter, r *http.Request) {
+func getAllPermissions(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
 	if u == nil {
 		utils.APIErr(w, http.StatusForbidden,
@@ -27,6 +26,5 @@ func GetAllPermissionSchemes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSONR(w,
-		models.JSONRepr{"permissions": permission.Permissions})
+	utils.SendJSON(w, permission.Permissions)
 }

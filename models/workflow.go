@@ -27,8 +27,8 @@ func (w *Workflow) CreateTransition() Transition {
 // a transition
 type Transition struct {
 	Name       string `json:"name"`
-	FromStatus string `json:"from_status"`
-	ToStatus   string `json:"to_status"`
+	FromStatus string `json:"fromStatus"`
+	ToStatus   string `json:"toStatus"`
 	Hooks      []Hook `json:"hooks"`
 }
 

@@ -74,7 +74,7 @@ func getAllWorkflows(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSONR(w, models.JSONRepr{"fieldSchemes": ws})
+	utils.SendJSON(w, ws)
 }
 
 func singleWorkflow(w http.ResponseWriter, r *http.Request) {
@@ -125,5 +125,5 @@ func singleWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSONR(w, models.JSONRepr{})
+	utils.SendJSON(w, map[string]string{})
 }

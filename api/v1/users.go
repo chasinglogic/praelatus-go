@@ -62,7 +62,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	tokenResponse.Token = w.Header().Get("Token")
 	tokenResponse.User = *u
 
-	utils.SendJSONR(w, models.JSONRepr{"token": tokenResponse})
+	utils.SendJSON(w, tokenResponse)
 }
 
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +88,7 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSONR(w, models.JSONRepr{"users": users})
+	utils.SendJSON(w, users)
 }
 
 func singleUser(w http.ResponseWriter, r *http.Request) {

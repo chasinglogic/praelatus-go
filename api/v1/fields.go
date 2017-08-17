@@ -77,7 +77,7 @@ func getAllFieldSchemes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSONR(w, models.JSONRepr{"fieldSchemes": fs})
+	utils.SendJSON(w, fs)
 }
 
 func singleFieldScheme(w http.ResponseWriter, r *http.Request) {
@@ -128,5 +128,5 @@ func singleFieldScheme(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSONR(w, models.JSONRepr{})
+	utils.SendJSON(w, map[string]string{})
 }

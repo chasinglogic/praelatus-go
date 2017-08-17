@@ -12,13 +12,13 @@ import (
 
 // User represents a user of our application
 type User struct {
-	Username   string   `json:"username" bson:"_id"`
+	Username   string   `json:"username" bson:"-id"`
 	Password   string   `json:"password,omitempty"`
 	Email      string   `json:"email"`
-	FullName   string   `json:"full_name"`
-	ProfilePic string   `json:"profile_picture"`
-	IsAdmin    bool     `json:"isAdmin,omitempty"`
-	IsActive   bool     `json:"isActive,omitempty"`
+	FullName   string   `json:"full-name"`
+	ProfilePic string   `json:"profile-picture"`
+	IsAdmin    bool     `json:"is-admin,omitempty"`
+	IsActive   bool     `json:"is-active,omitempty"`
 	Settings   Settings `json:"settings,omitempty"`
 
 	// Map of project keys to roles.
@@ -77,6 +77,6 @@ func NewUser(username, password, fullName, email string, admin bool) (*User, err
 
 // Settings represents an individual users preferences
 type Settings struct {
-	DefaultProject string `json:"default_project,omitempty"`
-	DefaultView    string `json:"default_view,omitempty"`
+	DefaultProject string `json:"default-project,omitempty"`
+	DefaultView    string `json:"default-view,omitempty"`
 }
