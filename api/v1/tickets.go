@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -31,19 +32,15 @@ func createTicket(w http.ResponseWriter, r *http.Request) {
 		u = &models.User{}
 	}
 
-	var tjson map[string]models.Ticket
-
 	var t models.Ticket
 	var p models.Project
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&tjson)
+	err := decoder.Decode(&t)
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	t = tjson["ticket"]
 
 	projects := getCollection(config.ProjectCollection)
 	err = projects.FindId(t.Project).One(&p)
@@ -154,20 +151,29 @@ func singleTicket(w http.ResponseWriter, r *http.Request) {
 
 // getAllTickets will return all tickets which the user has permissions to.
 func getAllTickets(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("F")
 	u := middleware.GetUserSession(r)
 	if u == nil {
 		u = &models.User{}
 	}
 
+	permMaps := make([]models.RolePermission, len(u.Roles))
+	for i, r := range u.Roles {
+		permMaps[i] = models.RolePermission{
+			Role:       r.Role,
+			Permission: permission.ViewProject,
+		}
+	}
+
 	query := bson.M{
 		"$or": []bson.M{
 			{
-				"key": bson.M{
-					"$in": u.ProjectsMemberOf(),
-				},
+				"public": true,
 			},
 			{
-				"permissions.Anonymous": permission.ViewProject,
+				"permissions": bson.M{
+					"$in": permMaps,
+				},
 			},
 		},
 	}
@@ -175,19 +181,16 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 	var projects []models.Project
 
 	err := getCollection(config.ProjectCollection).Find(query).
-		Select(bson.M{"permissions": 1, "key": 1}).All(&projects)
+		Select(bson.M{"_id": 1}).All(&projects)
 	if err != nil {
 		log.Println("Error:", err.Error())
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	projects = models.HasPermission(permission.ViewProject, *u, projects...)
-
 	keys := make([]string, len(projects))
-
-	for i := range projects {
-		keys[i] = projects[i].Key
+	for i, prj := range projects {
+		keys[i] = prj.Key
 	}
 
 	tQuery := bson.M{
@@ -214,10 +217,10 @@ func addComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var cjson map[string]models.Comment
+	var c models.Comment
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&cjson)
+	err := decoder.Decode(&c)
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
@@ -226,7 +229,6 @@ func addComment(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
 	tickets := getCollection(config.TicketCollection)
 
-	c := cjson["comment"]
 	c.CreatedDate = time.Now()
 	c.UpdatedDate = time.Now()
 

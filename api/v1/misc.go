@@ -26,5 +26,5 @@ func getAllPermissions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSON(w, permission.Permissions)
+	utils.SendJSON(w, permission.ListOfPermissions)
 }

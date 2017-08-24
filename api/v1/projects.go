@@ -2,7 +2,6 @@ package v1
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 
@@ -42,17 +41,11 @@ func SingleProject(w http.ResponseWriter, r *http.Request) {
 	case "DELETE":
 		err = coll.RemoveId(key)
 	case "PUT":
-		var jr map[string]models.Project
+		var p models.Project
 
 		decoder := json.NewDecoder(r.Body)
-		err = decoder.Decode(&jr)
+		err = decoder.Decode(&p)
 		if err != nil {
-			break
-		}
-
-		p, ok := jr["project"]
-		if !ok {
-			err = errors.New("invalid object schema")
 			break
 		}
 

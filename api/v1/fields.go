@@ -2,7 +2,6 @@ package v1
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -30,16 +29,15 @@ func createFieldScheme(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var f map[string]models.FieldScheme
+	var fs models.FieldScheme
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&f)
+	err := decoder.Decode(&fs)
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	fs := f["fieldScheme"]
 	fs.ID = bson.NewObjectId()
 
 	err = getCollection(config.FieldSchemeCollection).Insert(fs)
@@ -100,17 +98,11 @@ func singleFieldScheme(w http.ResponseWriter, r *http.Request) {
 	case "DELETE":
 		err = coll.RemoveId(id)
 	case "PUT":
-		var jr map[string]models.FieldScheme
+		var f models.FieldScheme
 
 		decoder := json.NewDecoder(r.Body)
-		err = decoder.Decode(&jr)
+		err = decoder.Decode(&f)
 		if err != nil {
-			break
-		}
-
-		f, ok := jr["fieldScheme"]
-		if !ok {
-			err = errors.New("invalid object schema")
 			break
 		}
 

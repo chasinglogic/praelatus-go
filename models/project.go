@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/praelatus/backend/models/permission"
@@ -13,22 +12,34 @@ import (
 // Role is an alias type to make it's use more clear inside of other models.
 type Role string
 
+// WorkflowMapping maps a ticket type to a workflow
+type WorkflowMapping struct {
+	Workflow   bson.ObjectId `json:"workflow"`
+	TicketType string        `json:"ticket_type"`
+}
+
+// RolePermission maps a role to a permission on a project
+type RolePermission struct {
+	Role       Role                  `json:"role"`
+	Permission permission.Permission `json:"permission"`
+}
+
 // Project is the model used to represent a project in the database.
 type Project struct {
-	Key         string    `json:"key" bson:"_id"`
-	Name        string    `json:"name"`
-	CreatedDate time.Time `json:"createdDate"`
-	Lead        string    `json:"lead"`
-	Homepage    string    `json:"homepage,omitempty"`
-	Repo        string    `json:"repo,omitempty"`
-	TicketTypes []string  `json:"ticketTypes"`
-	// Map roles to permissions
-	Permissions map[Role][]permission.Permission
+	Key         string           `json:"key" bson:"_id"`
+	Name        string           `json:"name"`
+	CreatedDate time.Time        `json:"createdDate"`
+	Lead        string           `json:"lead"`
+	Homepage    string           `json:"homepage,omitempty"`
+	Repo        string           `json:"repo,omitempty"`
+	TicketTypes []string         `json:"ticketTypes"`
+	Public      bool             `json:"public"`
+	Permissions []RolePermission `json:"permissions"`
 
 	FieldScheme bson.ObjectId `json:"fieldScheme"`
 
 	// Map ticket types to workflow ID's
-	WorkflowScheme map[string]bson.ObjectId
+	WorkflowScheme []WorkflowMapping `json:"workflowScheme"`
 
 	Icon *mgo.GridFile `json:"-"`
 }
@@ -40,17 +51,17 @@ func (p *Project) String() string {
 // GetWorkflow will return the ID of the workflow to use for tickets of the
 // given type for this project.
 func (p *Project) GetWorkflow(ticketType string) bson.ObjectId {
-	for t, worfklowID := range p.WorkflowScheme {
-		if t == ticketType {
-			return worfklowID
+	var defaultWorkflow bson.ObjectId
+
+	for _, mapping := range p.WorkflowScheme {
+		if mapping.TicketType == ticketType {
+			return mapping.Workflow
+		} else if mapping.TicketType == "" {
+			defaultWorkflow = mapping.Workflow
 		}
 	}
 
-	if defaultWorkflow, ok := p.WorkflowScheme[""]; ok {
-		return defaultWorkflow
-	}
-
-	return ""
+	return defaultWorkflow
 }
 
 func (p *Project) HasTicketType(typeName string) bool {
@@ -63,43 +74,39 @@ func (p *Project) HasTicketType(typeName string) bool {
 	return false
 }
 
+func (p *Project) GetPermsForRoles(roles ...Role) permission.Permissions {
+	perms := make(permission.Permissions, 0)
+
+	for _, role := range roles {
+		for _, mappings := range p.Permissions {
+			if role == mappings.Role {
+				perms = append(perms, mappings.Permission)
+			}
+		}
+	}
+
+	return perms
+}
+
 // HasPermission will return a slice of projects for which the given user has
 // the permission indicated out of the projects given.
-func HasPermission(permName permission.Permission, user User, projects ...Project) []Project {
+func HasPermission(permName permission.Permission, user User,
+	projects ...Project) []Project {
 
-	// Skip perm checking for SysAdmins
 	if user.IsAdmin {
 		return projects
 	}
 
-	hasPermission := make([]Project, len(projects))
-	i := 0
+	hasPerm := make([]Project, 0)
 
-projects:
 	for _, p := range projects {
-		role := user.Permissions[p.Key]
-
-		permissions := p.Permissions[role]
-		anon := p.Permissions["Anonymous"]
-
-		for _, perm := range permissions {
-			if perm == permName {
-				hasPermission[i] = p
-				i++
-				continue projects
-			}
+		roles := user.RolesForProject(p)
+		perms := p.GetPermsForRoles(roles...)
+		if (permName == permission.ViewProject && p.Public) ||
+			perms.Contains(permName) {
+			hasPerm = append(hasPerm, p)
 		}
-
-		fmt.Println("Checking anon permissions")
-		for _, perm := range anon {
-			if perm == permName {
-				hasPermission[i] = p
-				i++
-				continue projects
-			}
-		}
-
 	}
 
-	return hasPermission[:i]
+	return hasPerm
 }

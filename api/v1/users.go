@@ -119,17 +119,11 @@ func singleUser(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		var jr map[string]models.User
+		var u models.User
 
 		decoder := json.NewDecoder(r.Body)
-		err = decoder.Decode(&jr)
+		err = decoder.Decode(&u)
 		if err != nil {
-			break
-		}
-
-		u, ok := jr["user"]
-		if !ok {
-			err = errors.New("invalid object schema")
 			break
 		}
 

@@ -143,42 +143,52 @@ func seedDB(c *cli.Context) error {
 
 		FieldScheme: fs.ID,
 
-		Permissions: map[models.Role][]permission.Permission{
-			"Administrator": []permission.Permission{
-				"VIEW_PROJECT",
-				"ADMIN_PROJECT",
-				"CREATE_TICKET",
-				"COMMENT_TICKET",
-				"REMOVE_COMMENT",
-				"REMOVE_OWN_COMMENT",
-				"EDIT_OWN_COMMENT",
-				"EDIT_COMMENT",
-				"TRANSITION_TICKET",
-				"EDIT_TICKET",
-				"REMOVE_TICKET",
-			},
-			"Contributor": []permission.Permission{
-				"VIEW_PROJECT",
-				"CREATE_TICKET",
-				"COMMENT_TICKET",
-				"REMOVE_OWN_COMMENT",
-				"EDIT_OWN_COMMENT",
-				"TRANSITION_TICKET",
-				"EDIT_TICKET",
-			},
-			"User": []permission.Permission{
-				"VIEW_PROJECT",
-				"CREATE_TICKET",
-				"COMMENT_TICKET",
-			},
-			"Anonymous": []permission.Permission{
-				"VIEW_PROJECT",
+		WorkflowScheme: []models.WorkflowMapping{
+			{
+				TicketType: "",
+				Workflow:   workflows[0].ID,
 			},
 		},
+	}
 
-		WorkflowScheme: map[string]bson.ObjectId{
-			"": workflows[0].ID,
+	perms := map[models.Role][]permission.Permission{
+		"Administrator": []permission.Permission{
+			"VIEW_PROJECT",
+			"ADMIN_PROJECT",
+			"CREATE_TICKET",
+			"COMMENT_TICKET",
+			"REMOVE_COMMENT",
+			"REMOVE_OWN_COMMENT",
+			"EDIT_OWN_COMMENT",
+			"EDIT_COMMENT",
+			"TRANSITION_TICKET",
+			"EDIT_TICKET",
+			"REMOVE_TICKET",
 		},
+		"Contributor": []permission.Permission{"VIEW_PROJECT",
+			"CREATE_TICKET",
+			"COMMENT_TICKET",
+			"REMOVE_OWN_COMMENT",
+			"EDIT_OWN_COMMENT",
+			"TRANSITION_TICKET",
+			"EDIT_TICKET",
+		},
+		"User": []permission.Permission{
+			"VIEW_PROJECT",
+			"CREATE_TICKET",
+			"COMMENT_TICKET",
+		},
+	}
+
+	for k, v := range perms {
+		for _, prm := range v {
+			roleMapping := models.RolePermission{
+				Role:       k,
+				Permission: prm,
+			}
+
+			p.Permissions = append(p.Permissions, roleMapping)
+		}
 	}
 
 	err = db.C(config.ProjectCollection).Insert(&p)

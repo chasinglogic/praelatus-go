@@ -10,6 +10,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type UserRole struct {
+	Role    Role   `json:"role"`
+	Project string `json:"project"`
+}
+
 // User represents a user of our application
 type User struct {
 	Username   string   `json:"username" bson:"_id"`
@@ -21,8 +26,7 @@ type User struct {
 	IsActive   bool     `json:"isActive,omitempty"`
 	Settings   Settings `json:"settings,omitempty"`
 
-	// Map of project keys to roles.
-	Permissions map[string]Role
+	Roles []UserRole
 }
 
 // CheckPw will verify if the given password matches for this user. Logs any
@@ -44,15 +48,27 @@ func (u *User) String() string {
 // ProjectsMemberOf returns an array of project keys which this user has a
 // role in.
 func (u *User) ProjectsMemberOf() []string {
-	projectKeys := make([]string, len(u.Permissions))
+	projectKeys := make([]string, len(u.Roles))
 
 	i := 0
-	for k := range u.Permissions {
-		projectKeys[i] = k
+	for _, r := range u.Roles {
+		projectKeys[i] = r.Project
 		i++
 	}
 
 	return projectKeys
+}
+
+func (u *User) RolesForProject(p Project) []Role {
+	roles := make([]Role, 0)
+
+	for _, r := range u.Roles {
+		if r.Project == p.Key {
+			roles = append(roles, r.Role)
+		}
+	}
+
+	return roles
 }
 
 // NewUser will create the user after encrypting the password with bcrypt

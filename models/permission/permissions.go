@@ -5,6 +5,19 @@ package permission
 // Permission is an alias type to make it's use more clear inside of models.
 type Permission string
 
+// Permissions is used to add some convenience functions for checking permisisons
+type Permissions []Permission
+
+func (p Permissions) Contains(permName Permission) bool {
+	for _, perm := range p {
+		if perm == permName {
+			return true
+		}
+	}
+
+	return false
+}
+
 // These are the permissions available in Praelatus
 const (
 	ViewProject      Permission = "VIEW_PROJECT"
@@ -20,10 +33,10 @@ const (
 	RemoveTicket                = "REMOVE_TICKET"
 )
 
-// Permissions holds available permissions in a slice. This is valuable for
+// ListOfPermissions holds available permissions in a slice. This is valuable for
 // various areas where we need to return all permissions or iterate
 // permissions.
-var Permissions = [...]Permission{
+var ListOfPermissions = [...]Permission{
 	ViewProject,
 	AdminProject,
 	CreateTicket,
@@ -39,7 +52,7 @@ var Permissions = [...]Permission{
 
 // ValidPermission will verify that a given permission string is valid.
 func ValidPermission(permName Permission) bool {
-	for _, p := range Permissions {
+	for _, p := range ListOfPermissions {
 		if p == permName {
 			return true
 		}

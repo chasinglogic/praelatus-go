@@ -2,7 +2,6 @@ package v1
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strings"
 
@@ -29,16 +28,15 @@ func createWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var wkf map[string]models.Workflow
+	var workflow models.Workflow
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&wkf)
+	err := decoder.Decode(&workflow)
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	workflow := wkf["workflow"]
 	workflow.ID = bson.NewObjectId()
 
 	err = getCollection(config.WorkflowCollection).Insert(workflow)
@@ -97,21 +95,15 @@ func singleWorkflow(w http.ResponseWriter, r *http.Request) {
 	case "DELETE":
 		err = coll.RemoveId(id)
 	case "PUT":
-		var jr map[string]models.Workflow
+		var workflow models.Workflow
 
 		decoder := json.NewDecoder(r.Body)
-		err = decoder.Decode(&jr)
+		err = decoder.Decode(&workflow)
 		if err != nil {
 			break
 		}
 
-		f, ok := jr["fieldScheme"]
-		if !ok {
-			err = errors.New("invalid object schema")
-			break
-		}
-
-		err = coll.UpdateId(id, &f)
+		err = coll.UpdateId(id, &workflow)
 	}
 
 	if err != nil {

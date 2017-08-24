@@ -39,9 +39,7 @@ func disableCors(next http.Handler) http.Handler {
 func alwaysAuth(next http.Handler) http.Handler {
 	u, _ := models.NewUser("testadmin", "test",
 		"Test Testerson", "test@example.com", true)
-
-	u.Permissions = make(map[string]models.Role)
-	u.Permissions["TEST"] = "Administrator"
+	u.Roles = []models.UserRole{{Project: "TEST", Role: "Administrator"}}
 
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
