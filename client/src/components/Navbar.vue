@@ -1,6 +1,5 @@
 <template>
-    <b-navbar fixed=top toggle-breakpoint="md" toggleable
-      :class="bg-praelatus">
+    <b-navbar fixed=top toggle-breakpoint="md" toggleable class="bg-praelatus">
         <b-nav-toggle target="nav_collapse"></b-nav-toggle>
 
         <b-collapse is-nav id="nav_collapse">
@@ -17,7 +16,7 @@
                 </b-nav-item-dropdown>
             </b-nav>
             <b-nav is-nav-bar class="ml-auto">
-              <b-nav-item class="btn btn-success" 
+              <b-nav-item class="btn btn-success"
                 href="/tickets/create">Create</b-nav-item>
                 <li class="nav-item dropdown btn-group">
                     <a class="dropdown-toggle nav-link"
@@ -55,3 +54,9 @@
         </b-collapse>
     </b-navbar>
 </template>
+
+<script>
+export default {
+  name: 'navbar'
+}
+</script>

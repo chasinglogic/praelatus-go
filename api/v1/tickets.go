@@ -3,7 +3,6 @@ package v1
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -151,7 +150,6 @@ func singleTicket(w http.ResponseWriter, r *http.Request) {
 
 // getAllTickets will return all tickets which the user has permissions to.
 func getAllTickets(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("F")
 	u := middleware.GetUserSession(r)
 	if u == nil {
 		u = &models.User{}
@@ -197,6 +195,28 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 		"project": bson.M{
 			"$in": keys,
 		},
+	}
+
+	q := r.FormValue("q")
+	if q != "" {
+		tQuery = bson.M{
+			"$and": []bson.M{
+				tQuery,
+				{
+					"$or": []bson.M{
+						{
+							"key": bson.M{"$regex": q},
+						},
+						{
+							"description": bson.M{"$regex": q},
+						},
+						{
+							"summary": bson.M{"$regex": q},
+						},
+					},
+				},
+			},
+		}
 	}
 
 	var tickets []models.Ticket

@@ -5,6 +5,7 @@ import App from './App'
 import router from './router'
 import resource from 'vue-resource'
 import bootstrap from 'bootstrap-vue'
+import store from './store'
 
 Vue.config.productionTip = false
 
@@ -15,6 +16,7 @@ Vue.use(bootstrap)
 new Vue({
   el: '#app',
   router,
+  store,
   template: '<App/>',
   components: { App }
 })
