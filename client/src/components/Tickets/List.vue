@@ -1,35 +1,37 @@
 <template>
   <div id="ticket-list-root">
     <div id="list-wrapper" v-if="tickets">
-      <div>
-        <h2>Columns</h2>
-        <div v-for="column in columns">
-          <span>{{ column.displayName ? column.displayName : humanizeColumnName(column.name) }}</span>
-          <input type="checkbox" v-model="column.active" />
-        </div>
-      </div>
-      <table id="ticket-list" class="table">
+      <table class="table">
         <thead>
           <tr>
-            <var v-for="column in columns">
-              <th v-if="column.active">
-                {{ column.displayName ? column.displayName : humanizeColumnName(column.name) }}
-              </th>
-            </var>
+            <template v-for="column in columns">
+              <th v-show="column.active">{{ column.displayName ? column.displayName : humanizeColumnName(column.name) }}</th>
+            </template>
+            <th v-if="showColumnPicker">
+              <b-dropdown text="Columns">
+                <div v-for="column in columns">
+                  <span>{{ column.displayName ? column.displayName : humanizeColumnName(column.name) }}</span>
+                  <input type="checkbox" v-model="column.active" />
+                </div>
+                <div>
+                  <b-button @click="resetDefaultColumns">
+                    Reset Defaults
+                  </b-button>
+                </div>
+              </b-dropdown>
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="ticket in tickets">
-            <var v-for="column in columns">
-              <var v-if="column.active">
-                <td v-if="ticket[column.name]">
+            <template v-for="column in columns">
+                <td v-show="column.active" v-if="ticket[column.name]">
                   {{ ticket[column.name] }}
                 </td>
-                <td v-else>
+                <td v-show="column.active" v-else>
                   {{ getFieldValue(ticket, column.name) }}
                 </td>
-              </var>
-            </var>
+            </template>
           </tr>
         </tbody>
       </table>
@@ -44,6 +46,10 @@ import { mapState } from 'vuex'
 export default {
   name: 'ticket-list',
   methods: {
+    resetDefaultColumns: function () {
+      this.columns = this.defaultColumns()
+    },
+
     getFieldValue: function (ticket, fieldName) {
       let field = ticket.fields.filter(f => f.name === fieldName)
       return field ? field.value : 'None'
@@ -55,19 +61,29 @@ export default {
         .replace(/([A-Z])/g, ' $1')
         // uppercase the first character
         .replace(/^./, function (str) { return str.toUpperCase() })
+        .replace(/^ /, '')
+        .replace('\n', '')
     }
   },
 
   watch: {
     tickets: function () {
-      this.columns.concat(this.tickets[0].fields
-        .map(f => { return { name: f.name, active: true } }))
+      if (this.tickets[0]) {
+        return this.columns.concat(this.tickets[0].fields
+          .map(f => { return { name: f.name, active: true } }))
+      }
+
+      this.columns = Array.from(this.defaultColumns)
     }
   },
 
+  props: {
+    'showColumnPicker': false
+  },
+
   data: function () {
-    return {
-      columns: [
+    let defaults = () => {
+      return [
         {
           name: 'key',
           active: true
@@ -113,6 +129,10 @@ export default {
           active: true
         }
       ]
+    }
+    return {
+      defaultColumns: defaults,
+      columns: defaults()
     }
   },
 

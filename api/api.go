@@ -39,6 +39,8 @@ func Routes() *mux.Router {
 	context := config.ContextPath()
 
 	router := mux.NewRouter()
+	router.Handle("/assets", http.FileServer(http.Dir("./client/static/")))
+
 	api := router.PathPrefix(context + "/api").Subrouter()
 	v1r := api.PathPrefix("/v1").Subrouter()
 

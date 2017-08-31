@@ -13,7 +13,7 @@ export default new Router({
       component: Index
     },
     {
-      path: '/tickets',
+      path: '/queries',
       name: 'Tickets/SearchPage',
       component: SearchPage
     }

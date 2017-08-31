@@ -1,35 +1,30 @@
 <template>
   <div>
     <h1>Tickets</h1>
-    <input type="text" placeholder="Search here..."
-      v-model="query" @keyup="loadTickets" />
-    <ticket-list></ticket-list>
+    <search-bar :searchFunction=loadTickets></search-bar>
+    <ticket-list showColumnPicker="true"></ticket-list>
   </div>
 </template>
 
 <script>
 import TicketList from '@/components/Tickets/List'
+import SearchBar from '@/components/General/SearchBar'
 
 export default {
   components: {
+    SearchBar,
     TicketList
   },
 
-  data: function () {
-    return {
-      'query': ''
-    }
-  },
-
   methods: {
-    loadTickets: function () {
+    loadTickets: function (query) {
       console.log('loading...')
       let url = '/api/tickets'
 
-      if (this.query !== '') {
-        url += '?q=' + this.query
+      if (query && query !== '') {
+        url += '?q=' + query
       }
-      console.log(url, this.query)
+      console.log(url, query)
 
       this.$store.dispatch('request', {
         url: url,
