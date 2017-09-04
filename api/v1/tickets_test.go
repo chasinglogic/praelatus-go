@@ -1,58 +1,36 @@
 package v1_test
 
-// import (
-// 	"bytes"
-// 	"encoding/json"
-// 	"net/http/httptest"
-// 	"testing"
+import (
+	"encoding/json"
+	"net/http/httptest"
+	"testing"
 
-// 	"github.com/praelatus/backend/models"
-// )
+	"github.com/praelatus/backend/models"
+)
 
-// func TestGetTicket(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1", nil)
+func TestGetTicket(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1", nil)
 
-// 	router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
-// 	var tk models.Ticket
+	var tk models.Ticket
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
+	e := json.Unmarshal(w.Body.Bytes(), &tk)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+	}
 
-// 	if tk.Key != "TEST-1" {
-// 		t.Errorf("Expected TEST-1 Got %s", tk.Key)
-// 	}
+	if w.Code != 200 {
+		t.Errorf("Expected HTTP Status 200 Got %d", w.Code)
+	}
 
-// 	t.Log(w.Body)
-// }
+	if tk.Key != "TEST-1" {
+		t.Errorf("Expected TEST-1 Got %s", tk.Key)
+	}
 
-// func TestGetTicketPreloadComments(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1?preload=comments", nil)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var tk models.Ticket
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	t.Log(w.Body)
-
-// 	if len(tk.Comments) == 0 {
-// 		t.Errorf("Expected comments got 0 instead.")
-// 		return
-// 	}
-
-// 	if tk.Key != "TEST-1" {
-// 		t.Errorf("Expected TEST-1 Got %s", tk.Key)
-// 	}
-// }
+	t.Log(w.Body)
+}
 
 // func TestGetAllTickets(t *testing.T) {
 // 	w := httptest.NewRecorder()

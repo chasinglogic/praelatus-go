@@ -50,15 +50,15 @@ func (u *User) String() string {
 func (u *User) ProjectsMemberOf() []string {
 	projectKeys := make([]string, len(u.Roles))
 
-	i := 0
-	for _, r := range u.Roles {
-		projectKeys[i] = r.Project
-		i++
+	for i := range u.Roles {
+		projectKeys[i] = u.Roles[i].Project
 	}
 
 	return projectKeys
 }
 
+// RolesForProject will return an array of the roles a this user has for the
+// given project.
 func (u *User) RolesForProject(p Project) []Role {
 	roles := make([]Role, 0)
 

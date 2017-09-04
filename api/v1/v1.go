@@ -13,7 +13,7 @@ var Conn *mgo.Session
 
 // convenience function for getting a collection by name
 func getCollection(collName string) *mgo.Collection {
-	return Conn.Copy().DB(config.DBName()).C(collName)
+	return Conn.DB(config.DBName()).C(collName)
 }
 
 // Routes will set up the appropriate routes on the given mux.Router

@@ -141,6 +141,11 @@ func singleTicket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		if err.Error() == "unauthorized" {
+			utils.APIErr(w, http.StatusForbidden, err.Error())
+			return
+		}
+
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -155,25 +160,27 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 		u = &models.User{}
 	}
 
-	permMaps := make([]models.RolePermission, len(u.Roles))
-	for i, r := range u.Roles {
-		permMaps[i] = models.RolePermission{
-			Role:       r.Role,
-			Permission: permission.ViewProject,
-		}
-	}
+	query := bson.M{}
 
-	query := bson.M{
-		"$or": []bson.M{
-			{
-				"public": true,
-			},
-			{
+	if !u.IsAdmin {
+		viewPerms := make([]bson.M, len(u.Roles)+1)
+		for i, r := range u.Roles {
+			viewPerms[i] = bson.M{
+				"_id": r.Project,
 				"permissions": bson.M{
-					"$in": permMaps,
+					"role":       r.Role,
+					"permission": permission.ViewProject,
 				},
-			},
-		},
+			}
+		}
+
+		viewPerms[len(u.Roles)] = bson.M{
+			"public": true,
+		}
+
+		query = bson.M{
+			"$or": viewPerms,
+		}
 	}
 
 	var projects []models.Project

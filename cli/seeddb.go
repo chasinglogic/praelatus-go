@@ -141,6 +141,7 @@ func seedDB(c *cli.Context) error {
 			"Feature Request",
 		},
 
+		Public:      true,
 		FieldScheme: fs.ID,
 
 		WorkflowScheme: []models.WorkflowMapping{
@@ -150,6 +151,11 @@ func seedDB(c *cli.Context) error {
 			},
 		},
 	}
+
+	p1 := p
+	p1.Public = false
+	p1.Key = "TEST2"
+	p1.Name = "Another TEST Project"
 
 	perms := map[models.Role][]permission.Permission{
 		"Administrator": []permission.Permission{
@@ -188,10 +194,16 @@ func seedDB(c *cli.Context) error {
 			}
 
 			p.Permissions = append(p.Permissions, roleMapping)
+			p1.Permissions = append(p1.Permissions, roleMapping)
 		}
 	}
 
 	err = db.C(config.ProjectCollection).Insert(&p)
+	if err != nil {
+		fmt.Println("ERROR Creating Project:", err)
+	}
+
+	err = db.C(config.ProjectCollection).Insert(&p1)
 	if err != nil {
 		fmt.Println("ERROR Creating Project:", err)
 	}
