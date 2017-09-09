@@ -1,4 +1,4 @@
-package cli
+package commands
 
 import (
 	"log"
@@ -7,8 +7,6 @@ import (
 	"time"
 
 	_ "net/http/pprof"
-
-	mgo "gopkg.in/mgo.v2"
 
 	"github.com/praelatus/praelatus/api"
 	"github.com/praelatus/praelatus/api/middleware"
@@ -49,21 +47,16 @@ func alwaysAuth(next http.Handler) http.Handler {
 		})
 }
 
-func connectDB() *mgo.Session {
-	conn, err := mgo.Dial(config.DBURL())
-	if err != nil {
-		panic(err)
-	}
-
-	return conn
-}
-
-func runServer(c *cli.Context) error {
+// RunServer runes the Praelatus API server
+func RunServer(c *cli.Context) error {
 	log.SetOutput(config.LogWriter())
 
 	log.Println("Starting Praelatus...")
 	log.Println("Connecting to database...")
-	r := api.New(connectDB())
+	repo := config.LoadRepo()
+	cache := config.LoadCache()
+
+	r := api.New(repo, cache)
 	if c.Bool("devmode") || os.Getenv("PRAELATUS_DEV_MODE") == "1" {
 		log.Println("Running in dev mode, disabling cors and authentication...")
 		r = disableCors(r)

@@ -4,17 +4,11 @@ package v1
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/praelatus/backend/config"
-	mgo "gopkg.in/mgo.v2"
+	"github.com/praelatus/praelatus/repo"
 )
 
-// Conn is the global database connection used in our HTTP handlers.
-var Conn *mgo.Session
-
-// convenience function for getting a collection by name
-func getCollection(collName string) *mgo.Collection {
-	return Conn.DB(config.DBName()).C(collName)
-}
+// Repo is the global database connection
+var Repo repo.Repo
 
 // Routes will set up the appropriate routes on the given mux.Router
 func Routes(router *mux.Router) {

@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	mgo "gopkg.in/mgo.v2"
-
 	"github.com/gorilla/mux"
 	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/repo"
 
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/api/utils"
@@ -39,8 +38,6 @@ func Routes() *mux.Router {
 	context := config.ContextPath()
 
 	router := mux.NewRouter()
-	router.Handle("/assets", http.FileServer(http.Dir("./client/static/")))
-
 	api := router.PathPrefix(context + "/api").Subrouter()
 	v1r := api.PathPrefix("/v1").Subrouter()
 
@@ -53,7 +50,9 @@ func Routes() *mux.Router {
 	// setup routes endpoints
 	v1r.HandleFunc("/routes", routes(v1r)).Methods("GET")
 	api.HandleFunc("/routes", routes(api)).Methods("GET")
-	router.HandleFunc("/routes", routes(router)).Methods("GET")
+
+	static := http.StripPrefix(context+"/static/",
+		http.FileServer(http.Dir("client/static/")))
 
 	router.HandleFunc(context+"/",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -70,26 +69,23 @@ func Routes() *mux.Router {
 			switch root {
 			case "api":
 				api.ServeHTTP(w, r)
-			default:
-				router.ServeHTTP(w, r)
+				return
+			case "static":
+				static.ServeHTTP(w, r)
+				return
 			}
 
 			http.ServeFile(w, r, "client/index.html")
 		})
 
-	router.PathPrefix(context + "/static/").Handler(
-		http.StripPrefix(context+"/static/",
-			http.FileServer(http.Dir("client/static/"))))
-
 	return router
 }
 
 // New will start running the api on the given port
-func New(conn *mgo.Session) http.Handler {
-	v1.Conn = conn
+func New(repo repo.Repo, cache repo.Cache) http.Handler {
+	v1.Repo = repo
+	middleware.Cache = cache
 
 	router := Routes()
-
-	middleware.Cache = middleware.NewMongoCache(conn)
 	return middleware.LoadMw(router)
 }

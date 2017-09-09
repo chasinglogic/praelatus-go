@@ -9,6 +9,9 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/praelatus/praelatus/repo"
+	"github.com/praelatus/praelatus/repo/mongo"
 )
 
 // Config holds much of the configuration for praelatus, if reading from the
@@ -133,4 +136,12 @@ func ContextPath() string {
 // requests from hooks
 func WebWorkers() int {
 	return 10
+}
+
+func LoadRepo() repo.Repo {
+	return mongo.New(DBURL())
+}
+
+func LoadCache() repo.Cache {
+	return mongo.NewCache(DBURL())
 }

@@ -77,7 +77,7 @@ func GetUserSession(r *http.Request) *models.User {
 		return nil
 	}
 
-	sess, err := Cache.Get(id)
+	sess, err := Cache.GetSession(id)
 	if err != nil {
 		log.Println("Error fetching session from store: ", err)
 		return nil
@@ -85,7 +85,7 @@ func GetUserSession(r *http.Request) *models.User {
 
 	if sess.Expires.Before(time.Now()) {
 		// session has expired
-		if err := Cache.Remove(id); err != nil {
+		if err := Cache.RemoveSession(id); err != nil {
 			log.Println("Error removing from store:", err)
 		}
 
@@ -120,7 +120,7 @@ func SetUserSession(u models.User, w http.ResponseWriter) error {
 		User:    u,
 	}
 
-	return Cache.Set(id, sess)
+	return Cache.SetSession(id, sess)
 }
 
 // RefreshSession will reset the expiry on the session for the given request
@@ -130,11 +130,11 @@ func RefreshSession(r *http.Request) error {
 		return errors.New("no session on this request")
 	}
 
-	sess, err := Cache.Get(id)
+	sess, err := Cache.GetSession(id)
 	if err != nil {
 		return err
 	}
 
 	sess.Expires = time.Now().Add(time.Hour * 3)
-	return Cache.Set(id, sess)
+	return Cache.SetSession(id, sess)
 }

@@ -1,4 +1,4 @@
-package cli
+package commands
 
 import (
 	"fmt"
@@ -9,12 +9,14 @@ import (
 	"github.com/praelatus/praelatus/config"
 )
 
-func showConfig(c *cli.Context) error {
+// ShowConfig will print the current configuration.
+func ShowConfig(c *cli.Context) error {
 	fmt.Println(config.Cfg)
 	return nil
 }
 
-func genConfig(c *cli.Context) error {
+// GenConfig will generate a config.json based on environment variables
+func GenConfig(c *cli.Context) error {
 	f, err := os.Open("config.json")
 	if err != nil && !os.IsNotExist(err) {
 		fmt.Println(err)
