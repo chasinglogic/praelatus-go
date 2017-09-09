@@ -8,7 +8,7 @@ package main
 import (
 	"os"
 
-	"github.com/praelatus/backend/cli"
+	"github.com/praelatus/praelatus/cli"
 )
 
 func main() {

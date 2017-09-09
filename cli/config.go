@@ -6,7 +6,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/praelatus/backend/config"
+	"github.com/praelatus/praelatus/config"
 )
 
 func showConfig(c *cli.Context) error {

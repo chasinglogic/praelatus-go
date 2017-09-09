@@ -8,8 +8,8 @@ import (
 
 	mgo "gopkg.in/mgo.v2"
 
-	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/models"
 )
 
 type SessionCache interface {

@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/praelatus/backend/api"
-	"github.com/praelatus/backend/api/middleware"
-	"github.com/praelatus/backend/api/v1"
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/api"
+	"github.com/praelatus/praelatus/api/middleware"
+	"github.com/praelatus/praelatus/api/v1"
+	"github.com/praelatus/praelatus/models"
 	mgo "gopkg.in/mgo.v2"
 )
 

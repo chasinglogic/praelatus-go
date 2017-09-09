@@ -6,7 +6,7 @@ package v1_test
 // 	"net/http/httptest"
 // 	"testing"
 
-// 	"github.com/praelatus/backend/models"
+// 	"github.com/praelatus/praelatus/models"
 // )
 
 // func TestGetField(t *testing.T) {

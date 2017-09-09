@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/models"
 	"github.com/urfave/cli"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

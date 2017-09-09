@@ -8,10 +8,10 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/praelatus/backend/api/middleware"
-	"github.com/praelatus/backend/api/utils"
-	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/api/middleware"
+	"github.com/praelatus/praelatus/api/utils"
+	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/models"
 
 	"github.com/gorilla/mux"
 )

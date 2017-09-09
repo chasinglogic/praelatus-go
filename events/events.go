@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/models"
 )
 
 // TODO it's possible that one go routine taking a long time (such as the hook

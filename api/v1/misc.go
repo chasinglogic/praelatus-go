@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/praelatus/backend/api/middleware"
-	"github.com/praelatus/backend/api/utils"
-	"github.com/praelatus/backend/models/permission"
+	"github.com/praelatus/praelatus/api/middleware"
+	"github.com/praelatus/praelatus/api/utils"
+	"github.com/praelatus/praelatus/models/permission"
 )
 
 func miscRouter(router *mux.Router) {

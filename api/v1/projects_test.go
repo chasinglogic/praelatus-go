@@ -6,8 +6,8 @@ package v1_test
 // 	"net/http/httptest"
 // 	"testing"
 
-// 	"github.com/praelatus/backend/api/utils"
-// 	"github.com/praelatus/backend/models"
+// 	"github.com/praelatus/praelatus/api/utils"
+// 	"github.com/praelatus/praelatus/models"
 // )
 
 // func TestGetProject(t *testing.T) {

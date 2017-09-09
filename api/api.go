@@ -9,11 +9,11 @@ import (
 	mgo "gopkg.in/mgo.v2"
 
 	"github.com/gorilla/mux"
-	"github.com/praelatus/backend/config"
+	"github.com/praelatus/praelatus/config"
 
-	"github.com/praelatus/backend/api/middleware"
-	"github.com/praelatus/backend/api/utils"
-	"github.com/praelatus/backend/api/v1"
+	"github.com/praelatus/praelatus/api/middleware"
+	"github.com/praelatus/praelatus/api/utils"
+	"github.com/praelatus/praelatus/api/v1"
 )
 
 func routes(router *mux.Router) http.HandlerFunc {

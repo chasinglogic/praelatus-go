@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/praelatus/backend/models/permission"
+	"github.com/praelatus/praelatus/models/permission"
 
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
