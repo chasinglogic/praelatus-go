@@ -1,12 +1,12 @@
 language: go
 go:
-- 1.6
-- 1.7
 - 1.8
 services:
 - mongodb
 env:
 - PRAELATUS_DB="mongodb://localhost:27017/praelatus"
+install:
+- echo "Nope"
 script:
 - go test ./...
 - cd client && npm run-script test
