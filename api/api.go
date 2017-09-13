@@ -75,6 +75,7 @@ func Routes() *mux.Router {
 				return
 			}
 
+			w.Header().Set("Content-Type", "text/html")
 			http.ServeFile(w, r, "client/index.html")
 		})
 
