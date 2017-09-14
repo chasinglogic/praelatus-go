@@ -1,25 +1,17 @@
-package cli
+package repo
 
 import (
-	"fmt"
 	"math/rand"
 	"strconv"
 	"time"
 
-	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/models/permission"
-	"github.com/urfave/cli"
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
-func seedDB(c *cli.Context) error {
-	conn, err := mgo.Dial(config.DBURL())
-	if err != nil {
-		panic(err)
-	}
-	db := conn.DB(config.DBName())
+// Seed will fill the given repo with test data.
+func Seed(r Repo) error {
+	var err error
 
 	u1, _ := models.NewUser("testadmin", "test", "Test Testerson", "test@example.com", true)
 	u2, _ := models.NewUser("testuser", "test", "Test Testerson II", "test@example.com", false)
@@ -29,14 +21,13 @@ func seedDB(c *cli.Context) error {
 	}
 
 	for _, u := range users {
-		err = db.C(config.UserCollection).Insert(&u)
+		_, err = r.Users().Create(&models.User{IsAdmin: true}, u)
 		if err != nil {
-			fmt.Println("ERROR Creating User:", err)
+			return err
 		}
 	}
 
 	fs := models.FieldScheme{
-		ID:   bson.NewObjectId(),
 		Name: "Test Field Scheme",
 		Fields: map[string][]models.Field{
 			"Story": []models.Field{
@@ -66,14 +57,13 @@ func seedDB(c *cli.Context) error {
 		fs.Fields[""] = append(fs.Fields[""], f)
 	}
 
-	err = db.C(config.FieldSchemeCollection).Insert(&fs)
+	fs, err = r.Fields().Create(u1, fs)
 	if err != nil {
-		fmt.Println("ERROR Creating Field Scheme:", err)
+		return err
 	}
 
 	workflows := []models.Workflow{
 		{
-			ID:   bson.NewObjectId(),
 			Name: "Test Simple Workflow",
 			Transitions: []models.Transition{
 				{
@@ -97,7 +87,6 @@ func seedDB(c *cli.Context) error {
 			},
 		},
 		{
-			ID:   bson.NewObjectId(),
 			Name: "Test One Way Workflow",
 			Transitions: []models.Transition{
 				{
@@ -122,10 +111,10 @@ func seedDB(c *cli.Context) error {
 		},
 	}
 
-	for _, w := range workflows {
-		err = db.C(config.WorkflowCollection).Insert(&w)
+	for i := range workflows {
+		workflows[i], err = r.Workflows().Create(u1, workflows[i])
 		if err != nil {
-			fmt.Println("ERROR Creating Workflow:", err)
+			return err
 		}
 	}
 
@@ -198,22 +187,19 @@ func seedDB(c *cli.Context) error {
 		}
 	}
 
-	err = db.C(config.ProjectCollection).Insert(&p)
+	p, err = r.Projects().Create(u1, p)
 	if err != nil {
-		fmt.Println("ERROR Creating Project:", err)
+		return err
 	}
 
-	err = db.C(config.ProjectCollection).Insert(&p1)
+	p1, err = r.Projects().Create(u1, p1)
 	if err != nil {
-		fmt.Println("ERROR Creating Project:", err)
+		return err
 	}
 
 	for i := 0; i < 100; i++ {
 		t := models.Ticket{
-			CreatedDate: time.Now(),
-			UpdatedDate: time.Now(),
-			Key:         p.Key + "-" + strconv.Itoa(i),
-			Summary:     "This is test ticket #" + strconv.Itoa(i),
+			Summary: "This is test ticket #" + strconv.Itoa(i),
 			Description: `# Refugam in se fuit quae
 
 ## Pariter vel sine frustra
@@ -258,33 +244,31 @@ Mentis vivit tori erubuit, qui flebile natura Echo percussis pallet?
 
 Non Cipe reges, laetitiam filius sceleratum naidas, fortunaque occidit. Laeva et
 ipsa divite, est ille ver verba vicisse, exsiliantque aprica illius, rapta?`,
-			Status:   "Backlog",
 			Reporter: users[rand.Intn(2)].Username,
 			Assignee: users[rand.Intn(2)].Username,
 			Type:     p.TicketTypes[rand.Intn(3)],
 			Project:  p.Key,
 		}
 
-		t.Workflow = p.GetWorkflow(t.Type)
+		t, err = r.Tickets().Create(u1, t)
+		if err != nil {
+			return err
+		}
 
 		for i := 0; i < rand.Intn(50); i++ {
-			t.Comments = append(t.Comments,
-				models.Comment{
-					Author:      users[rand.Intn(2)].Username,
-					CreatedDate: time.Now(),
-					UpdatedDate: time.Now(),
-					Body: `# Yo Dawg
+			c := models.Comment{
+				Author: users[rand.Intn(2)].Username,
+				Body: `# Yo Dawg
 
 I heard you like **markdown**.
 
 So I put markdown in your comment.`,
-				})
-		}
+			}
 
-		err = db.C(config.TicketCollection).Insert(&t)
-		if err != nil {
-			fmt.Println("ERROR Creating Ticket:", err)
-			break
+			_, err = r.Tickets().AddComment(u1, t.Key, c)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

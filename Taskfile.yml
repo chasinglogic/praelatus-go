@@ -1,0 +1,71 @@
+clean:
+  desc: Remove directories containing build files.
+  cmds:
+    - rm -rf build
+    - rm -rf client/dist
+    - rm -rf dist
+
+dev-client:
+  desc: Run the API server in dev mode as well as the client dev server. Client 
+    server runs on port 4000 and the API server listens on port 8080.
+  cmds:
+    # Kill any running go runs
+    - killall go || exit 0
+    # Start API Server
+    - go run praelatus.go --devmode &
+    # Start Client
+    - cd client && PORT=4000 npm run dev
+
+dev-server:
+  desc: Run the API server in dev mode.
+  cmds:
+    - go run praelatus.go --devmode
+
+test-server:
+  desc: Run the API server test suite.
+  cmds:
+    - go test ./...
+
+test-client:
+  desc: Run the frontend test suite.
+  dir: client
+  cmds:
+    - npm run-script test
+    - npm run-script lint
+
+test:
+  desc: Run the both the test-server and test-client tasks.
+  deps: [test-client, test-server]
+
+build-client:
+  desc: Build the client for production.
+  dir: client
+  cmds:
+    - mkdir -p ../build/client
+    - npm run-script build
+    - cp -R dist/* ../build/client/
+
+build-server:
+  desc: Build the API server for production.
+  cmds:
+    - mkdir -p build
+    - go build -tags production -o build/praelatus praelatus.go
+
+build:
+  desc: Run both the build-server and build-client tasks.
+  deps: [build-server, build-client]
+
+snapshot:
+  deps: [build-server, build-client]
+  cmds:
+    - >
+      if [[ $(git branch | grep "*") != "* master" ]]; then
+        echo "ERROR: Must be on master to create a snapshot release"
+        exit 1
+      fi
+    - goreleaser --snapshot
+
+package:
+  deps: [build]
+  cmds:
+    - goreleaser

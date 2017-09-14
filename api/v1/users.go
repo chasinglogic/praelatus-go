@@ -2,15 +2,11 @@ package v1
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strings"
 
-	"gopkg.in/mgo.v2/bson"
-
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/api/utils"
-	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/models"
 
 	"github.com/gorilla/mux"
@@ -66,25 +62,16 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
-	var users []models.User
-
-	var query bson.M
+	u := middleware.GetUserSession(r)
 	q := r.FormValue("q")
 	if q != "" {
 		q = strings.Replace(q, "*", ".*", -1)
-		query = bson.M{
-			"$or": []bson.M{
-				{"username": bson.M{"$regex": q, "$options": "i"}},
-				{"email": bson.M{"$regex": q, "$options": "i"}},
-				{"fullname": bson.M{"$regex": q, "$options": "i"}},
-			},
-		}
+
 	}
 
-	err := getCollection(config.UserCollection).Find(query).All(&users)
+	users, err := Repo.Users().Search(u, q)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(utils.APIError(err.Error()))
+		utils.Error(w, err)
 		return
 	}
 
@@ -92,54 +79,36 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func singleUser(w http.ResponseWriter, r *http.Request) {
-	loggedInUser := middleware.GetUserSession(r)
-	if loggedInUser == nil {
-		loggedInUser = &models.User{}
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		u = &models.User{}
 	}
 
-	var u models.User
+	var user models.User
 	var err error
 
 	username := mux.Vars(r)["username"]
-	coll := getCollection(config.UserCollection)
 
 	switch r.Method {
 	case "GET":
-		err = coll.FindId(username).One(&u)
+		user, err = Repo.Users().Get(u, username)
 	case "DELETE":
-		if !u.IsAdmin && loggedInUser.Username != username {
-			err = errors.New("not authorized")
-			break
-		}
-
-		err = coll.RemoveId(username)
+		err = Repo.Users().Delete(u, username)
 	case "PUT":
-		if !u.IsAdmin && loggedInUser.Username != username {
-			err = errors.New("not authorized")
-			break
-		}
-
-		var u models.User
-
 		decoder := json.NewDecoder(r.Body)
-		err = decoder.Decode(&u)
+		err = decoder.Decode(&user)
 		if err != nil {
 			break
 		}
 
-		err = coll.Update(bson.M{"_id": username},
-			bson.M{"$set": bson.M{
-				"username":   u.Username,
-				"email":      u.Email,
-				"fullname":   u.FullName,
-				"profilePic": u.ProfilePic,
-			}})
+		err = Repo.Users().Update(u, username, user)
 	}
 
 	if err != nil {
-		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		utils.Error(w, err)
 		return
 	}
 
-	utils.SendJSON(w, u)
+	user.Password = ""
+	utils.SendJSON(w, user)
 }

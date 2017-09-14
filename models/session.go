@@ -8,3 +8,7 @@ type Session struct {
 	Expires time.Time
 	User    User
 }
+
+func (s Session) String() string {
+	return jsonString(s)
+}

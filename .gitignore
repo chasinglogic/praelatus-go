@@ -35,5 +35,8 @@ client/dist/*
 *jwt_secret.key*
 
 build/*
+dist/*
+client/build/*
 *.tar.gz
 *.zip
+

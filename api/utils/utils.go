@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/praelatus/praelatus/repo"
 )
 
 // APIMessage is a general purpose struct for sending messages to the client,
@@ -36,20 +38,22 @@ func Success() []byte {
 	return APIMsg("operation completed successfully")
 }
 
-// APIError is a legacy function, deprecated should use APIErr or
-// APIMsg as appropriate
-func APIError(msg string, fields ...string) []byte {
-	return APIMsg(msg, fields...)
+// Error will get the appropriate error code and message based on err
+func Error(w http.ResponseWriter, err error) {
+	code := GetErrorCode(err)
+	switch err {
+	case repo.ErrUnauthorized:
+		APIErr(w, code, http.StatusText(code))
+	default:
+		APIErr(w, code, err.Error())
+	}
 }
 
-// APIErr will send the appropriate message and status code to the
+// APIErr will send the error message and status code to the
 // given ResponseWriter
 func APIErr(w http.ResponseWriter, status int, msg string) {
 	if status >= 500 {
-		log.Println(msg)
-		w.WriteHeader(status)
-		w.Write(APIMsg(http.StatusText(status)))
-		return
+		log.Println("[ISE] ERROR:", msg)
 	}
 
 	w.WriteHeader(status)
@@ -59,7 +63,12 @@ func APIErr(w http.ResponseWriter, status int, msg string) {
 // GetErrorCode returns the appropriate http status code for the given
 // error
 func GetErrorCode(e error) int {
-	return http.StatusInternalServerError
+	switch e {
+	case repo.ErrUnauthorized:
+		return http.StatusUnauthorized
+	default:
+		return http.StatusInternalServerError
+	}
 }
 
 // SendJSON is a convenience function for sending JSON to the given

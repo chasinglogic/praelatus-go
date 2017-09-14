@@ -1,16 +1,15 @@
 language: go
 go:
-- 1.6
-- 1.7
-- 1.8
+- 1.9
 services:
 - mongodb
 env:
 - PRAELATUS_DB="mongodb://localhost:27017/praelatus"
+install:
+- echo "Nope"
 script:
-- go run praelatus.go setupdb
-- go run praelatus.go seeddb
-- go test ./api/... ./config/... ./models/... ./cli/...
+- go test ./...
+- cd client && npm run-script test
 notifications:
   slack:
     secure: XOHAIaxRkxcgIZJx/uQNk84auOQi1x13l3FLiPTJQdr/64D+8zblwSHcpFm6PdyCKLRVu3y2WQNKswnMVC1Q0aZY9AXD6RShGGvRgHucD0198Vi7oCNnFvD19wBb+jnQnYwUClUll6gZQzVKRB5GZ6u1hWDaRIOuTjjzAtlYLy0jRrpngy26o44/eSpt3iv0yQGmB0KRaCIuLEM//qVaPLAFXEeIygf1PAmBPRO5yqBmdcj3kgDLwwUtUeY8N4xyebo7FJznMn9fQWvHMrlRRMNvyKwWjKeXavZubXcBg4N5RKi5LylRSjyDXgbStIoIAAlYXVcdGtSzWI3N2nyMbdF1R0101uRzuwGv3bt98UXnwipY/28cippNx2RE/DIu0qhFgd1tOimqszzLsogpqcksWwjbK91VwounlhHjnqQiIFLIgMEe5gZ0c/cE4jwjpj+4690eRkCll7vFX1QxlfWuG1Ro0KeOp46Wpwj/voIKGYN1Y8hEbg7aQJ+5CiQOGOe1JfHG7LflcYKmXeem8JoOuwd0lFyEN+3rJpHf1ph8VrcQRleTKdSKxaUaZH9iraEAkml+/8+XDjTnY1vLEO3MPT9g5BEVap/YaYtcPwZOBngsuKJSwdNPqIaBo3aRmkhU3pIDHxjgtcpCARJ2pfPUwtrSgWlO4+iaa4rmQG8=

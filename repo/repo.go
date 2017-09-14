@@ -1,0 +1,90 @@
+// Package repo provides definitions for abstracting away database interaction
+// in Praelatus
+package repo
+
+import (
+	"errors"
+
+	"github.com/praelatus/praelatus/models"
+)
+
+// Errors
+var (
+	ErrLoginRequired          = errors.New("you must be logged in")
+	ErrAdminRequired          = errors.New("you must be an administrator")
+	ErrUnauthorized           = errors.New("permission denied")
+	ErrNotFound               = errors.New("not found")
+	ErrInvalidTicketType      = errors.New("invalid ticket type for project")
+	ErrInvalidFieldsForTicket = errors.New("invalid fields for ticket of that type for project")
+)
+
+// TicketRepo handles storing, retrieving, updating, and creating tickets.
+type TicketRepo interface {
+	Get(u *models.User, uid string) (models.Ticket, error)
+	Search(u *models.User, query string) ([]models.Ticket, error)
+	Update(u *models.User, uid string, updated models.Ticket) error
+	Create(u *models.User, ticket models.Ticket) (models.Ticket, error)
+	Delete(u *models.User, uid string) error
+
+	AddComment(u *models.User, uid string, comment models.Comment) (models.Ticket, error)
+	NextTicketKey(u *models.User, projectKey string) (string, error)
+}
+
+// FieldSchemeRepo handles storing, retrieving, updating, and creating field schemes.
+type FieldSchemeRepo interface {
+	Get(u *models.User, uid string) (models.FieldScheme, error)
+	Search(u *models.User, query string) ([]models.FieldScheme, error)
+	Update(u *models.User, uid string, updated models.FieldScheme) error
+	Create(u *models.User, fieldScheme models.FieldScheme) (models.FieldScheme, error)
+	Delete(u *models.User, uid string) error
+}
+
+// ProjectRepo handles storing, retrieving, updating, and creating projects.
+type ProjectRepo interface {
+	Get(u *models.User, uid string) (models.Project, error)
+	Search(u *models.User, query string) ([]models.Project, error)
+	Update(u *models.User, uid string, updated models.Project) error
+	Create(u *models.User, project models.Project) (models.Project, error)
+	Delete(u *models.User, uid string) error
+}
+
+// UserRepo handles storing, retrieving, updating, and creating users.
+type UserRepo interface {
+	Get(u *models.User, uid string) (models.User, error)
+	Search(u *models.User, query string) ([]models.User, error)
+	Update(u *models.User, uid string, updated models.User) error
+	Create(u *models.User, user models.User) (models.User, error)
+	Delete(u *models.User, uid string) error
+}
+
+// WorkflowRepo handles storing, retrieving, updating, and creating workflows.
+type WorkflowRepo interface {
+	Get(u *models.User, uid string) (models.Workflow, error)
+	Search(u *models.User, query string) ([]models.Workflow, error)
+	Update(u *models.User, uid string, updated models.Workflow) error
+	Create(u *models.User, workflow models.Workflow) (models.Workflow, error)
+	Delete(u *models.User, uid string) error
+}
+
+// Repo is a container interface for combining all the other repos.
+type Repo interface {
+	Tickets() TicketRepo
+	Projects() ProjectRepo
+	Users() UserRepo
+	Fields() FieldSchemeRepo
+	Workflows() WorkflowRepo
+
+	Clean() error
+	Test() error
+}
+
+// Cache is used for storing temporary resources. Usually backed by Mongo, Bolt
+// or Redis
+type Cache interface {
+	Get(key string) (interface{}, error)
+	Set(key string, value interface{}) error
+	Remove(key string) error
+	GetSession(key string) (models.Session, error)
+	SetSession(key string, user models.Session) error
+	RemoveSession(key string) error
+}
