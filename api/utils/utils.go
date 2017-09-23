@@ -45,7 +45,7 @@ func Error(w http.ResponseWriter, err error) {
 	case repo.ErrUnauthorized:
 		APIErr(w, code, http.StatusText(code))
 	default:
-		APIErr(w, code, err.Error())
+		APIErr(w, code, err.Error()
 	}
 }
 
