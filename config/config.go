@@ -22,7 +22,6 @@ type Config struct {
 	DBName       string
 	SessionURL   string
 	Port         string
-	ContextPath  string
 	LogLocations []string
 	SessionStore string
 }
@@ -68,8 +67,6 @@ func init() {
 	if Cfg.Port == ":" {
 		Cfg.Port = ":8080"
 	}
-
-	Cfg.ContextPath = os.Getenv("PRAELATUS_CONTEXT_PATH")
 
 	Cfg.LogLocations = strings.Split(os.Getenv("PRAELATUS_LOGLOCATIONS"), ";")
 	if os.Getenv("PRAELATUS_LOGLOCATIONS") == "" {
@@ -125,11 +122,6 @@ func Port() string {
 // SessionURL will get the url to use for redis or file location for boltdb
 func SessionURL() string {
 	return Cfg.SessionURL
-}
-
-// ContextPath will return a context path if any is configured
-func ContextPath() string {
-	return Cfg.ContextPath
 }
 
 // WebWorkers returns the number of web workers to run for sending http
