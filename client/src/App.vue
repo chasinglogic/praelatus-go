@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <navbar></navbar>
-    <router-view></router-view>
+    <div class="content" v-bind:style="{ marginLeft: sidebarWidth }">
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
@@ -10,6 +12,15 @@ import Navbar from '@/components/General/Navbar'
 
 export default {
   name: 'app',
+  computed: {
+    sidebarWidth: function () {
+      if (this.$store.getters.showSidebar) {
+        return this.$store.getters.sidebarWidth
+      }
+
+      return '0px'
+    }
+  },
   components: {
     Navbar
   }

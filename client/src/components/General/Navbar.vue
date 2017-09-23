@@ -3,7 +3,7 @@
     <b-nav-toggle target="nav_collapse"></b-nav-toggle>
 
     <b-navbar-brand href="/">
-      <img src="/assets/static/img/logo_arrow.svg"
+      <img src="/assets/img/logo_arrow.svg"
            height="30"
            width="30">
     </b-navbar-brand>
@@ -18,11 +18,17 @@
         </b-nav-item-dropdown>
       </b-nav>
       <b-nav is-nav-bar class="ml-auto">
-        <b-nav-item class="nav-btn btn-success"
-          href="/tickets/create">Create</b-nav-item>
-        <b-nav-item-dropdown v-if="currentUser">
-          <img width="30" height="30" src="" alt="User">
-          <b-dropdown-item to="/admin/">System Administration</b-dropdown-item>
+        <b-nav-item
+          class="btn-success create-btn"
+          href="/tickets/create">
+          Create
+        </b-nav-item>
+        <b-nav-item-dropdown id="userMenu" right v-if="currentUser">
+          <img slot="button-content" width="30" height="30" class="userMenuPic"
+               v-bind:src="currentUser.profilePic" alt="User">
+          <b-dropdown-item v-if="currentUser.isAdmin" to="/admin/">
+            System Administration
+          </b-dropdown-item>
           <b-dropdown-item to="/logout">Log Out</b-dropdown-item>
         </b-nav-item-dropdown>
         <template v-else>
@@ -47,9 +53,52 @@ export default {
 </script>
 
 
-<style>
-.btn-nav {
-  margin: 0.1rem;
-  border-radius: 5px;
-}
+<style lang="scss">
+  @import './src/assets/styles/globals.scss';
+
+  .create-btn {
+    border-radius: 5px;
+    margin-right: 1rem;
+  }
+
+  .navbar {
+    background-color: $primary-color;
+    color: #fff;
+  }
+
+  .bg-praelatus .nav .nav-item a {
+    color: #fff
+  }
+
+  .bg-praelatus .nav .nav-item a:hover {
+    background-color: $highlight-color;
+    color: #fff
+  }
+
+  .bg-praelatus .dropdown-item {
+    color: #000 !important;
+  }
+
+  .bg-praelatus .dropdown-item:hover {
+    background-color: $primary-color !important;
+    color: #fff !important;
+  }
+
+  .bg-praelatus .dropdown-item.active {
+    background-color: #fff;
+  }
+
+  .b-nav-dropdown .dropdown-item:focus:not(.active), .b-nav-dropdown .dropdown-item:hover:not(.active) {
+    box-shadow: none !important;
+  }
+
+
+  #userMenu .dropdown-toggle {
+    color: #fff;
+    padding: 0;
+  }
+
+  #userMenu {
+    padding: 5px;
+  }
 </style>
