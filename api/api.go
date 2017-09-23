@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/repo"
 
 	"github.com/praelatus/praelatus/api/middleware"
@@ -35,10 +34,8 @@ func routes(router *mux.Router) http.HandlerFunc {
 
 // Routes will return the mux.Router which contains all of the api routes
 func Routes() *mux.Router {
-	context := config.ContextPath()
-
 	router := mux.NewRouter()
-	api := router.PathPrefix(context + "/api").Subrouter()
+	api := router.PathPrefix("/api").Subrouter()
 	v1r := api.PathPrefix("/v1").Subrouter()
 
 	// setup v1 routes
@@ -51,20 +48,13 @@ func Routes() *mux.Router {
 	v1r.HandleFunc("/routes", routes(v1r)).Methods("GET")
 	api.HandleFunc("/routes", routes(api)).Methods("GET")
 
-	static := http.StripPrefix(context+"/static/",
-		http.FileServer(http.Dir("client/static/")))
+	static := http.StripPrefix("/assets/",
+		http.FileServer(http.Dir("client/assets/")))
 
-	router.HandleFunc(context+"/",
+	router.HandleFunc("/",
 		func(w http.ResponseWriter, r *http.Request) {
 			path := strings.Split(r.URL.Path, "/")
 			root := path[1]
-
-			// TODO handle complex context paths (i.e. if
-			// we have a context path of /my/praelatus
-			// this will not work.)
-			if context != "" {
-				root = path[2]
-			}
 
 			switch root {
 			case "api":
