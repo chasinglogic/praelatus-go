@@ -1,3 +1,5 @@
+// +build !release
+
 package repo
 
 import (
@@ -9,143 +11,7 @@ import (
 	"github.com/praelatus/praelatus/models/permission"
 )
 
-// Seed will fill the given repo with test data.
-func Seed(r Repo) error {
-	var err error
-
-	u1, _ := models.NewUser("testadmin", "test", "Test Testerson", "test@example.com", true)
-	u2, _ := models.NewUser("testuser", "test", "Test Testerson II", "test@example.com", false)
-	users := []models.User{
-		*u1,
-		*u2,
-	}
-
-	for _, u := range users {
-		_, err = r.Users().Create(&models.User{IsAdmin: true}, u)
-		if err != nil {
-			return err
-		}
-	}
-
-	fs := models.FieldScheme{
-		Name: "Test Field Scheme",
-		Fields: map[string][]models.Field{
-			"Story": []models.Field{
-				{
-					Name:     "Story Points",
-					DataType: "INT",
-				},
-			},
-			"": []models.Field{},
-		},
-	}
-
-	for _, dataType := range models.DataTypes {
-		f := models.Field{
-			Name:     "Test " + dataType + " Field",
-			DataType: dataType,
-		}
-
-		if dataType == "OPT" {
-			f.Options = []string{
-				"High",
-				"Medium",
-				"Low",
-			}
-		}
-
-		fs.Fields[""] = append(fs.Fields[""], f)
-	}
-
-	fs, err = r.Fields().Create(u1, fs)
-	if err != nil {
-		return err
-	}
-
-	workflows := []models.Workflow{
-		{
-			Name: "Test Simple Workflow",
-			Transitions: []models.Transition{
-				{
-					Name:       "In Progress",
-					FromStatus: "",
-					ToStatus:   "In Progress",
-					Hooks:      []models.Hook{},
-				},
-				{
-					Name:       "Done",
-					FromStatus: "",
-					ToStatus:   "Done",
-					Hooks:      []models.Hook{},
-				},
-				{
-					Name:       "Backlog",
-					FromStatus: "Create",
-					ToStatus:   "Backlog",
-					Hooks:      []models.Hook{},
-				},
-			},
-		},
-		{
-			Name: "Test One Way Workflow",
-			Transitions: []models.Transition{
-				{
-					Name:       "In Progress",
-					FromStatus: "Backlog",
-					ToStatus:   "In Progress",
-					Hooks:      []models.Hook{},
-				},
-				{
-					Name:       "Done",
-					FromStatus: "In Progress",
-					ToStatus:   "Done",
-					Hooks:      []models.Hook{},
-				},
-				{
-					Name:       "Backlog",
-					FromStatus: "Create",
-					ToStatus:   "Backlog",
-					Hooks:      []models.Hook{},
-				},
-			},
-		},
-	}
-
-	for i := range workflows {
-		workflows[i], err = r.Workflows().Create(u1, workflows[i])
-		if err != nil {
-			return err
-		}
-	}
-
-	p := models.Project{
-		Key:         "TEST",
-		Name:        "Test Project",
-		CreatedDate: time.Now(),
-		Lead:        "testadmin",
-		TicketTypes: []string{
-			"Epic",
-			"Story",
-			"Bug",
-			"Feature Request",
-		},
-
-		Public:      true,
-		FieldScheme: fs.ID,
-
-		WorkflowScheme: []models.WorkflowMapping{
-			{
-				TicketType: "",
-				Workflow:   workflows[0].ID,
-			},
-		},
-	}
-
-	p1 := p
-	p1.Public = false
-	p1.Key = "TEST2"
-	p1.Name = "Another TEST Project"
-
+func init() {
 	perms := map[models.Role][]permission.Permission{
 		"Administrator": []permission.Permission{
 			"VIEW_PROJECT",
@@ -183,7 +49,155 @@ func Seed(r Repo) error {
 			}
 
 			p.Permissions = append(p.Permissions, roleMapping)
-			p1.Permissions = append(p1.Permissions, roleMapping)
+		}
+	}
+
+	p1 = p
+	p1.Public = false
+	p1.Key = "TEST2"
+	p1.Name = "Another TEST Project"
+}
+
+var u1, _ = models.NewUser("testadmin", "test", "Test Testerson", "test@example.com", true)
+var u2, _ = models.NewUser("testuser", "test", "Test Testerson II", "test@example.com", false)
+var users = []models.User{
+	*u1,
+	*u2,
+}
+
+var fs = models.FieldScheme{
+	Name: "Test Field Scheme",
+	Fields: map[string][]models.Field{
+		"Story": []models.Field{
+			{
+				Name:     "Story Points",
+				DataType: "INT",
+			},
+		},
+		"": []models.Field{
+			{
+				Name:     "Test Float Field",
+				DataType: "FLOAT",
+			},
+			{
+				Name:     "Test String Field",
+				DataType: "STRING",
+			},
+			{
+				Name:     "Test Int Field",
+				DataType: "INT",
+			},
+			{
+				Name:     "Test Date Field",
+				DataType: "DATE",
+			},
+			{
+				Name:     "Test Opt Field",
+				DataType: "OPT",
+				Options: []string{
+					"High",
+					"Medium",
+					"Low",
+				},
+			},
+		},
+	},
+}
+
+var workflows = []models.Workflow{
+	{
+		Name: "Test Simple Workflow",
+		Transitions: []models.Transition{
+			{
+				Name:       "In Progress",
+				FromStatus: "",
+				ToStatus:   "In Progress",
+				Hooks:      []models.Hook{},
+			},
+			{
+				Name:       "Done",
+				FromStatus: "",
+				ToStatus:   "Done",
+				Hooks:      []models.Hook{},
+			},
+			{
+				Name:       "Backlog",
+				FromStatus: "Create",
+				ToStatus:   "Backlog",
+				Hooks:      []models.Hook{},
+			},
+		},
+	},
+	{
+		Name: "Test One Way Workflow",
+		Transitions: []models.Transition{
+			{
+				Name:       "In Progress",
+				FromStatus: "Backlog",
+				ToStatus:   "In Progress",
+				Hooks:      []models.Hook{},
+			},
+			{
+				Name:       "Done",
+				FromStatus: "In Progress",
+				ToStatus:   "Done",
+				Hooks:      []models.Hook{},
+			},
+			{
+				Name:       "Backlog",
+				FromStatus: "Create",
+				ToStatus:   "Backlog",
+				Hooks:      []models.Hook{},
+			},
+		},
+	},
+}
+
+var p = models.Project{
+	Key:         "TEST",
+	Name:        "Test Project",
+	CreatedDate: time.Now(),
+	Lead:        "testadmin",
+	TicketTypes: []string{
+		"Epic",
+		"Story",
+		"Bug",
+		"Feature Request",
+	},
+
+	Public:      true,
+	FieldScheme: fs.ID,
+
+	WorkflowScheme: []models.WorkflowMapping{
+		{
+			TicketType: "",
+			Workflow:   workflows[0].ID,
+		},
+	},
+}
+
+var p1 = p
+
+// Seed will fill the given repo with test data.
+func Seed(r Repo) error {
+	var err error
+
+	for _, u := range users {
+		_, err = r.Users().Create(&models.User{IsAdmin: true}, u)
+		if err != nil {
+			return err
+		}
+	}
+
+	fs, err = r.Fields().Create(u1, fs)
+	if err != nil {
+		return err
+	}
+
+	for i := range workflows {
+		workflows[i], err = r.Workflows().Create(u1, workflows[i])
+		if err != nil {
+			return err
 		}
 	}
 
