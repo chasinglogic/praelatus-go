@@ -8,13 +8,13 @@ import (
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/api/v1"
 	"github.com/praelatus/praelatus/models"
-	mgo "gopkg.in/mgo.v2"
+	"github.com/praelatus/praelatus/repo"
 )
 
 var router *mux.Router
 
 func init() {
-	v1.Conn, _ = mgo.Dial("mongodb://localhost/praelatus")
+	v1.Repo = repo.NewMockRepo()
 	router = api.Routes()
 }
 
