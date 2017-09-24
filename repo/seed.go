@@ -3,6 +3,7 @@
 package repo
 
 import (
+	"errors"
 	"math/rand"
 	"strconv"
 	"time"
@@ -165,15 +166,7 @@ var p = models.Project{
 		"Feature Request",
 	},
 
-	Public:      true,
-	FieldScheme: fs.ID,
-
-	WorkflowScheme: []models.WorkflowMapping{
-		{
-			TicketType: "",
-			Workflow:   workflows[0].ID,
-		},
-	},
+	Public: true,
 }
 
 var p1 = p
@@ -185,30 +178,46 @@ func Seed(r Repo) error {
 	for _, u := range users {
 		_, err = r.Users().Create(&models.User{IsAdmin: true}, u)
 		if err != nil {
-			return err
+			return errors.New("ERROR SEEDING USERS: " + err.Error())
 		}
 	}
 
 	fs, err = r.Fields().Create(u1, fs)
 	if err != nil {
-		return err
+		return errors.New("ERROR SEEDING FIELD_SCHEMES: " + err.Error())
 	}
 
 	for i := range workflows {
 		workflows[i], err = r.Workflows().Create(u1, workflows[i])
 		if err != nil {
-			return err
+			return errors.New("ERROR SEEDING WORKFLOWS: " + err.Error())
 		}
+	}
+
+	p.FieldScheme = fs.ID
+	p.WorkflowScheme = []models.WorkflowMapping{
+		{
+			TicketType: "",
+			Workflow:   workflows[0].ID,
+		},
+	}
+
+	p1.FieldScheme = fs.ID
+	p1.WorkflowScheme = []models.WorkflowMapping{
+		{
+			TicketType: "",
+			Workflow:   workflows[0].ID,
+		},
 	}
 
 	p, err = r.Projects().Create(u1, p)
 	if err != nil {
-		return err
+		return errors.New("ERROR SEEDING PROJECTS: " + err.Error())
 	}
 
 	p1, err = r.Projects().Create(u1, p1)
 	if err != nil {
-		return err
+		return errors.New("ERROR SEEDING PROJECTS: " + err.Error())
 	}
 
 	for i := 0; i < 100; i++ {
@@ -266,7 +275,7 @@ ipsa divite, est ille ver verba vicisse, exsiliantque aprica illius, rapta?`,
 
 		t, err = r.Tickets().Create(u1, t)
 		if err != nil {
-			return err
+			return errors.New("ERROR SEEDING TICKETS: " + err.Error())
 		}
 
 		for i := 0; i < rand.Intn(50); i++ {
@@ -281,7 +290,7 @@ So I put markdown in your comment.`,
 
 			_, err = r.Tickets().AddComment(u1, t.Key, c)
 			if err != nil {
-				return err
+				return errors.New("ERROR SEEDING TICKETS: " + err.Error())
 			}
 		}
 	}

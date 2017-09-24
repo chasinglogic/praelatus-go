@@ -13,7 +13,17 @@ import (
 
 // SeedDB will seed the database with test data.
 func SeedDB(c *cli.Context) error {
-	return repo.Seed(config.LoadRepo())
+	fmt.Println("Connecting to database...")
+	r := config.LoadRepo()
+
+	fmt.Println("Seeding database with test data...")
+	err := repo.Seed(r)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("Done!")
+	return err
 }
 
 // CleanDB will remove all data from the database. Useful for testing.

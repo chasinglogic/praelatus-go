@@ -13,14 +13,20 @@ import (
 
 var (
 	hookEventChan = make(chan models.Event)
-	requestChan   = make(chan http.Request)
-
-	webWorkers = config.WebWorkers()
+	webWorkers    = config.WebWorkers()
 )
 
+type hookEvent struct {
+	ticket     models.Ticket
+	transition models.Transition
+	hook       models.Hook
+}
+
 func handleHookEvent(result chan Result) {
-	for range webWorkers {
-		go sendRequest(result)
+	outEvents := make(chan hookEvent)
+
+	for i := 0; i < webWorkers; i++ {
+		go sendRequest(outEvents, result)
 	}
 
 	for {
@@ -32,62 +38,70 @@ func handleHookEvent(result chan Result) {
 		}
 
 		for _, hook := range transition.Hooks {
-			res := Result{Reporter: "Hook Handler", Success: true}
-
-			tmpl, err := template.New("hook-body").Parse(hook.Body)
-			if err != nil {
-				e := fmt.Sprintf("Error parsing body %s: %s %s\n",
-					event.Ticket.Key, transition.Name, err.Error())
-				res.Success = false
-				res.Error = errors.New(e)
-				result <- res
-				continue
+			outEvents <- hookEvent{
+				ticket:     event.Ticket,
+				transition: transition,
+				hook:       hook,
 			}
-
-			body := bytes.NewBuffer([]byte{})
-
-			err = tmpl.Execute(body, event.Ticket)
-			if err != nil {
-				e := fmt.Sprintf("Error rendering body %s: %s %s\n",
-					event.Ticket.Key, transition.Name, err.Error())
-				res.Success = false
-				res.Error = errors.New(e)
-				result <- res
-				continue
-			}
-
-			r, err := http.NewRequest(hook.Method, hook.Endpoint, body)
-			if err != nil {
-				e := fmt.Sprintf("Error creating request %s: %s %s\n",
-					event.Ticket.Key, transition.Name, err.Error())
-				res.Success = false
-				res.Error = errors.New(e)
-				result <- res
-				continue
-			}
-
-			client := http.Client{}
-			_, err = client.Do(r)
-			if err != nil {
-				e := fmt.Sprintf("Error sending request %s: %s %s\n",
-					event.Ticket.Key, transition.Name, err.Error())
-				res.Success = false
-				res.Error = errors.New(e)
-				result <- res
-				continue
-			}
-
-			result <- res
-		}
-
-		result <- Result{
-			Reporter: "Hook Handler",
-			Success:  true,
-			Error:    nil,
 		}
 	}
 }
 
-func sendRequest(result chan Result) {
+func sendRequest(events chan hookEvent, result chan Result) {
+	for {
+		event := <-events
 
+		res := Result{Reporter: "Hook Handler", Success: true}
+
+		tmpl, err := template.New("hook-body").Parse(event.hook.Body)
+		if err != nil {
+			e := fmt.Sprintf("Error parsing body %s: %s %s\n",
+				event.ticket.Key, event.transition.Name, err.Error())
+			res.Success = false
+			res.Error = errors.New(e)
+			result <- res
+			continue
+		}
+
+		body := bytes.NewBuffer([]byte{})
+
+		err = tmpl.Execute(body, event.ticket)
+		if err != nil {
+			e := fmt.Sprintf("Error rendering body %s: %s %s\n",
+				event.ticket.Key, event.transition.Name, err.Error())
+			res.Success = false
+			res.Error = errors.New(e)
+			result <- res
+			continue
+		}
+
+		r, err := http.NewRequest(event.hook.Method, event.hook.Endpoint, body)
+		if err != nil {
+			e := fmt.Sprintf("Error creating request %s: %s %s\n",
+				event.ticket.Key, event.transition.Name, err.Error())
+			res.Success = false
+			res.Error = errors.New(e)
+			result <- res
+			continue
+		}
+
+		client := http.Client{}
+
+		resp, err := client.Do(r)
+
+		if resp != nil {
+			_ = resp.Body.Close()
+		}
+
+		if err != nil {
+			e := fmt.Sprintf("REQUEST FAILED Ticket=%s: Status=%s Error=%s\n",
+				event.ticket.Key, event.transition.Name, err.Error())
+			res.Success = false
+			res.Error = errors.New(e)
+			result <- res
+			continue
+		}
+
+		result <- res
+	}
 }
