@@ -47,7 +47,7 @@ View our deployment guides for your platform:
 
 ## License
 
-Praelatus is distributed under the Apache License.
+Praelatus is distributed under the GNU Affero General Public License.
 
 ```
  Praelatus, a Free and Open Source bug tracker.
