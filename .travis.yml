@@ -6,7 +6,7 @@ services:
 env:
 - PRAELATUS_DB="mongodb://localhost:27017/praelatus"
 install:
-- cd client && npm install
+- cd client && npm install && cd ..
 script:
 - go test ./...
 - cd client && npm run-script test
