@@ -11,6 +11,14 @@
     props: {
       shown: { type: Boolean, default: true },
       width: { type: String, default: '250px' }
+    },
+
+    created: function () {
+      this.$store.dispatch('sidebarShown', this.shown)
+    },
+
+    destroyed: function () {
+      this.$store.dispatch('sidebarShown', false)
     }
   }
 </script>

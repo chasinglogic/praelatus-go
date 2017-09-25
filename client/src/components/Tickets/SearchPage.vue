@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <h1>Tickets</h1>
     <search-bar :searchFunction=loadTickets></search-bar>
     <ticket-list showColumnPicker="true"></ticket-list>
@@ -7,34 +7,32 @@
 </template>
 
 <script>
-import TicketList from '@/components/Tickets/List'
-import SearchBar from '@/components/General/SearchBar'
+ import TicketList from '@/components/Tickets/List'
+ import SearchBar from '@/components/General/SearchBar'
 
-export default {
-  components: {
-    SearchBar,
-    TicketList
-  },
+ export default {
+   components: {
+     SearchBar,
+     TicketList
+   },
 
-  methods: {
-    loadTickets: function (query) {
-      console.log('loading...')
-      let url = '/api/tickets'
+   methods: {
+     loadTickets: function (query) {
+       let url = '/api/tickets'
 
-      if (query && query !== '') {
-        url += '?q=' + query
-      }
-      console.log(url, query)
+       if (query && query !== '') {
+         url += '?q=' + query
+       }
 
-      this.$store.dispatch('request', {
-        url: url,
-        key: 'tickets'
-      })
-    }
-  },
+       this.$store.dispatch('request', {
+         url: url,
+         key: 'tickets'
+       })
+     }
+   },
 
-  created: function () {
-    this.loadTickets()
-  }
-}
+   created: function () {
+     this.loadTickets()
+   }
+ }
 </script>

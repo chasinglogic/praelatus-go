@@ -19,6 +19,7 @@ const (
 	tickets      = "tickets"
 	users        = "users"
 	sessions     = "sessions"
+	cache        = "cache"
 	workflows    = "workflows"
 )
 
@@ -29,9 +30,13 @@ func mongoErr(e error) error {
 
 	log.Println("[MONGO] ERROR:", e)
 
-	// TODO: Convert to a repo error
-
-	return e
+	// TODO: Catch other repo errors
+	switch e.Error() {
+	case "not found":
+		return repo.ErrNotFound
+	default:
+		return e
+	}
 }
 
 func permQuery(u *models.User) bson.M {

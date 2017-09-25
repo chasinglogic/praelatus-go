@@ -11,6 +11,7 @@ export default new Vuex.Store({
   state: {
     sidebarWidth: '250px',
     showSidebar: false,
+    currentTicket: {},
     tickets: [],
     errors: []
   },
@@ -30,6 +31,10 @@ export default new Vuex.Store({
 
     sidebarWidth: function (state) {
       return state.sidebarWidth
+    },
+
+    currentTicket: function (state) {
+      return state.currentTicket
     }
   },
 
@@ -44,8 +49,8 @@ export default new Vuex.Store({
       }
     },
 
-    setSidebarShown: function (state, show) {
-      state.sidebarShown = show
+    SET_SIDEBAR_SHOWN: function (state, show) {
+      state.showSidebar = show
     },
 
     API_SUCCESS: function (state, payload) {
@@ -67,9 +72,13 @@ export default new Vuex.Store({
         console.log(res)
         context.commit('API_SUCCESS', { key: key, data: res.data })
       })
-      .catch(err => {
-        context.commit('API_FAILURE', { key: key, data: err.response.data })
-      })
+        .catch(err => {
+          context.commit('API_FAILURE', { key: key, data: err.response.data })
+        })
+    },
+
+    sidebarShown: function (context, val) {
+      context.commit('SET_SIDEBAR_SHOWN', val)
     }
   }
 })

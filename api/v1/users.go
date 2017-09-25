@@ -17,6 +17,7 @@ func userRouter(router *mux.Router) {
 	router.HandleFunc("/users", createUser).Methods("POST")
 
 	router.HandleFunc("/users/{username}", singleUser)
+	router.HandleFunc("/users/{username}/avatar", avatar)
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {
@@ -111,4 +112,24 @@ func singleUser(w http.ResponseWriter, r *http.Request) {
 
 	user.Password = ""
 	utils.SendJSON(w, user)
+}
+
+func avatar(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		u = &models.User{}
+	}
+
+	var user models.User
+	var err error
+
+	username := mux.Vars(r)["username"]
+
+	user, err = Repo.Users().Get(u, username)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	w.Write([]byte(user.ProfilePic))
 }

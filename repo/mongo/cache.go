@@ -15,14 +15,12 @@ type Cache struct {
 }
 
 func (m Cache) sessions() *mgo.Collection {
-	return m.conn.DB(dbName).C("sessions")
+	return m.conn.DB(dbName).C(sessions)
 }
 
 func (m Cache) cache() *mgo.Collection {
-	return m.conn.DB(dbName).C("cache")
+	return m.conn.DB(dbName).C(cache)
 }
-
-// TODO: General cache functions
 
 func (m Cache) Get(key string) (interface{}, error) {
 	data := bson.M{}
