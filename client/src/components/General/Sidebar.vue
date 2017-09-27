@@ -14,11 +14,11 @@
     },
 
     created: function () {
-      this.$store.dispatch('sidebarShown', this.shown)
+      this.$store.commit('sidebarShown', this.shown)
     },
 
     destroyed: function () {
-      this.$store.dispatch('sidebarShown', false)
+      this.$store.commit('sidebarShown', false)
     }
   }
 </script>
@@ -39,6 +39,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     border-right: 1px solid #eee;
+    background-color: #f7f7f9;
   }
 
   #sidebar-toggle-button {

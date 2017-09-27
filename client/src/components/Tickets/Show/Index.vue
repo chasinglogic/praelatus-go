@@ -1,5 +1,8 @@
 <template>
-  <div class="container-fluid ticket-layout">
+  <div v-if="loading">
+    <h1>Loading your ticket...</h1>
+  </div>
+  <div v-else class="container-fluid ticket-layout">
     <sidebar></sidebar>
     <div class="container-fluid">
       <div class="ticket-header card">
@@ -20,6 +23,13 @@
             </div>
           </div>
           <comments :comments="ticket.comments" />
+          <comment-form />
+          <comment-form v-if="currentUser" />
+          <div class="card comment" v-else>
+            <div class="comment card-block">
+              You must be <a href="/#/login">logged in</a> to comment.
+            </div>
+          </div>
         </div>
         <div class="col-md-3" >
           <ticket-details :ticket="ticket" />
@@ -31,11 +41,14 @@
 </template>
 
 <script>
- import BreadCrumb from './BreadCrumb'
- import Comments from './Comments'
- import TicketDetails from './Details'
+ import BreadCrumb from './Children/BreadCrumb'
+ import TicketDetails from './Children/Details'
+ import TicketFields from './Children/Fields'
+
+ import Comments from '@/components/Comments/List'
  import Sidebar from '@/components/General/Sidebar'
 
+ import Axios from 'axios'
  import Showdown from 'showdown'
  const converter = new Showdown.Converter()
 
@@ -44,23 +57,39 @@
    components: {
      Sidebar,
      BreadCrumb,
-     'ticket-details': TicketDetails,
-     Comments
+     Comments,
+     'ticket-fields': TicketFields,
+     'ticket-details': TicketDetails
    },
 
-   computed: {
-     ticket: function () {
-       return this.$store.getters.currentTicket
+   data: () => {
+     return {
+       'loading': true,
+       'ticket': {
+         'labels': [],
+         'fields': [],
+         'comments': []
+       }
      }
    },
 
    methods: {
      loadTicket: function () {
        let url = '/api/tickets/' + this.$route.params.key
-       this.$store.dispatch('request', {
-         url: url,
-         key: 'currentTicket'
-       })
+       let inst = this
+
+       Axios.get(url)
+            .then((res) => {
+              inst.ticket = res.data
+              inst.loading = false
+            })
+            .catch((err) => {
+              if (err.response.status === 404) {
+                this.$route.router.go('*')
+              }
+
+              console.log('ERROR', err.response.data)
+            })
      },
 
      markdown (text) {

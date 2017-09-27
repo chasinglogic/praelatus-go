@@ -7,7 +7,7 @@
 </template>
 
 <script>
- import Comment from './Comment'
+ import Comment from './Show'
 
  export default {
    name: 'comments',

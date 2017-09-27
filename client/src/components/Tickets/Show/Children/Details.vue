@@ -48,8 +48,8 @@
 </template>
 
 <script>
- import UserStub from '../Users/UserStub'
- import StatusPill from './StatusPill'
+ import UserStub from '@/components/Users/Stub'
+ import StatusPill from '@/components/Status/Pill'
  import dateUtils from '@/lib/dates'
 
  export default {
@@ -67,7 +67,9 @@
    props: {
      ticket: {
        name: 'ticket',
-       default: {}
+       default: {
+         'labels': []
+       }
      }
    }
  }

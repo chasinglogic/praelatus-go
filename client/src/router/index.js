@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '@/components/Index'
 import SearchPage from '@/components/Tickets/SearchPage'
-import Ticket from '@/components/Tickets/Ticket'
+import Ticket from '@/components/Tickets/Show'
 
 Vue.use(Router)
 
@@ -19,7 +19,7 @@ export default new Router({
       component: SearchPage
     },
     {
-      path: '/ticket/:key',
+      path: '/tickets/:key',
       name: 'Tickets/Ticket',
       component: Ticket
     },

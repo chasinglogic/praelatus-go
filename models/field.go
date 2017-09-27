@@ -11,21 +11,33 @@ import (
 // data type
 var ErrInvalidDataType = errors.New("Invalid data type for field")
 
+// DataType is a string which indicates the type of data in a given field.
+type DataType string
+
+// These are the available data types for fields on Tickets.
+const (
+	FloatField  DataType = "FLOAT"
+	StringField          = "STRING"
+	IntField             = "INT"
+	DateField            = "DATE"
+	OptionField          = "OPTION"
+)
+
 // DataTypes holds the available data types
-var DataTypes = []string{
-	"FLOAT",
-	"STRING",
-	"INT",
-	"DATE",
-	"OPT",
+var DataTypes = []DataType{
+	FloatField,
+	StringField,
+	IntField,
+	DateField,
+	OptionField,
 }
 
 // Field is a ticket field
 type Field struct {
-	Name     string `json:"name"`
-	DataType string `json:"dataType"`
+	Name     string   `json:"name"`
+	DataType DataType `json:"dataType"`
 
-	// Options is only relevant for Fields of DataType OPT
+	// Options is only relevant for Fields of DataType OPTION
 	Options []string `json:"options,omitempty" bson:"options,omitempty"`
 
 	// Value holds the value of the given field

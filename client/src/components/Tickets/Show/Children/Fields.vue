@@ -1,11 +1,15 @@
 <template>
-  <div class="fields">
-    <template v-for="field in ticket.fields" >
-      <p>
-        <span class="bold">{{ field.name }}</span>
-        {{ field.value }}
-      </p>
-    </template>
+  <div class="card fields">
+    <h2 class="card-header" >
+      Fields
+    </h2>
+
+    <div class="card-block" >
+      <div v-for="field in fields">
+        <p class="bold">{{ field.name }}</p>
+        <p>{{ getValue(field) }}</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -34,3 +38,9 @@
    }
  }
 </script>
+
+<style>
+ .fields {
+   margin-top: 1rem;
+ }
+</style>

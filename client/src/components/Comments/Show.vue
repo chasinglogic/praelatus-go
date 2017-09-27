@@ -14,7 +14,7 @@
 </template>
 
 <script>
- import UserStub from '../Users/UserStub'
+ import UserStub from '@/components/Users/Stub'
 
  import dateUtils from '@/lib/dates'
  import Showdown from 'showdown'

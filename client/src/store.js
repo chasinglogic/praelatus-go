@@ -1,30 +1,17 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import Axios from 'axios'
-
-// TODO: Set this during build time.
-Axios.defaults.baseURL = 'http://localhost:8080'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     sidebarWidth: '250px',
-    showSidebar: false,
-    currentTicket: {},
-    tickets: [],
-    errors: []
+    currentUser: null,
+    token: '',
+    showSidebar: false
   },
 
   getters: {
-    tickets: function (state) {
-      return state.tickets
-    },
-
-    errors: function (state) {
-      return state.errors
-    },
-
     showSidebar: function (state) {
       return state.showSidebar
     },
@@ -33,8 +20,12 @@ export default new Vuex.Store({
       return state.sidebarWidth
     },
 
-    currentTicket: function (state) {
-      return state.currentTicket
+    currentUser: function (state) {
+      return state.currentUser
+    },
+
+    token: function (state) {
+      return state.token
     }
   },
 
@@ -49,36 +40,13 @@ export default new Vuex.Store({
       }
     },
 
-    SET_SIDEBAR_SHOWN: function (state, show) {
+    login: function (state, { token, user }) {
+      state.currentUser = user
+      state.token = token
+    },
+
+    sidebarShown: function (state, show) {
       state.showSidebar = show
-    },
-
-    API_SUCCESS: function (state, payload) {
-      state[payload.key] = payload.data
-    },
-
-    API_FAILURE: function (state, payload) {
-      if (state[payload.key]) {
-        state[payload.key] = Array.isArray(state[payload.key]) ? [] : {}
-      }
-
-      state.errors.push(payload.data)
-    }
-  },
-
-  actions: {
-    request: function (context, { url, key }) {
-      Axios.get(url).then(res => {
-        console.log(res)
-        context.commit('API_SUCCESS', { key: key, data: res.data })
-      })
-        .catch(err => {
-          context.commit('API_FAILURE', { key: key, data: err.response.data })
-        })
-    },
-
-    sidebarShown: function (context, val) {
-      context.commit('SET_SIDEBAR_SHOWN', val)
     }
   }
 })
