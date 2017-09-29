@@ -86,7 +86,12 @@ func (t ticketRepo) Create(u *models.User, ticket models.Ticket) (models.Ticket,
 	}
 
 	if err := fs.ValidateTicket(ticket); err != nil {
-		return models.Ticket{}, repo.ErrInvalidFieldsForTicket
+		if err.Error() == "no fields set for this ticket type and default not set" {
+
+			return models.Ticket{}, repo.ErrInvalidFieldsForTicket
+		}
+
+		return models.Ticket{}, mongoErr(err)
 	}
 
 	ticket.Workflow = p.GetWorkflow(ticket.Type)

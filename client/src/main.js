@@ -7,6 +7,10 @@ import resource from 'vue-resource'
 import bootstrap from 'bootstrap-vue'
 import store from './store'
 
+import Axios from 'axios'
+// TODO: Set this during build time.
+Axios.defaults.baseURL = 'http://localhost:8080'
+
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 

@@ -1,40 +1,53 @@
 <template>
-  <div>
+  <div class="container">
     <h1>Tickets</h1>
-    <search-bar :searchFunction=loadTickets></search-bar>
-    <ticket-list showColumnPicker="true"></ticket-list>
+    <b-form-fieldset class="mr-auto ml-auto">
+      <b-form-input v-model="query" @keyup="loadTickets"
+        placeholder="Type to Search" />
+    </b-form-fieldset>
+    <ticket-list :tickets="tickets" showColumnPicker="true"></ticket-list>
   </div>
 </template>
 
 <script>
-import TicketList from '@/components/Tickets/List'
-import SearchBar from '@/components/General/SearchBar'
+ import TicketList from '@/components/Tickets/List'
+ import SearchBar from '@/components/General/SearchBar'
+ import Axios from 'axios'
 
-export default {
-  components: {
-    SearchBar,
-    TicketList
-  },
+ export default {
+   components: {
+     SearchBar,
+     TicketList
+   },
 
-  methods: {
-    loadTickets: function (query) {
-      console.log('loading...')
-      let url = '/api/tickets'
+   data: () => {
+     return {
+       'query': '',
+       'tickets': []
+     }
+   },
 
-      if (query && query !== '') {
-        url += '?q=' + query
-      }
-      console.log(url, query)
+   methods: {
+     loadTickets: function () {
+       let url = '/api/tickets'
+       let inst = this
 
-      this.$store.dispatch('request', {
-        url: url,
-        key: 'tickets'
-      })
-    }
-  },
+       if (this.query && this.query !== '') {
+         url += '?q=' + this.query
+       }
 
-  created: function () {
-    this.loadTickets()
-  }
-}
+       Axios.get(url)
+            .then((res) => {
+              inst.tickets = res.data
+            })
+            .catch((err) => {
+              console.log('ERROR', err)
+            })
+     }
+   },
+
+   created: function () {
+     this.loadTickets()
+   }
+ }
 </script>

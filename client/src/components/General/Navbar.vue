@@ -4,8 +4,8 @@
 
     <b-navbar-brand href="/">
       <img src="/assets/img/logo_arrow.svg"
-           height="30"
-           width="30">
+        height="30"
+        width="30">
     </b-navbar-brand>
 
     <b-collapse is-nav id="nav_collapse">
@@ -25,7 +25,7 @@
         </b-nav-item>
         <b-nav-item-dropdown id="userMenu" right v-if="currentUser">
           <img slot="button-content" width="30" height="30" class="userMenuPic"
-               v-bind:src="currentUser.profilePic" alt="User">
+            v-bind:src="currentUser.profilePic" alt="User">
           <b-dropdown-item v-if="currentUser.isAdmin" to="/admin/">
             System Administration
           </b-dropdown-item>
@@ -42,63 +42,63 @@
 </template>
 
 <script>
-export default {
-  name: 'navbar',
-  computed: {
-    currentUser: function () {
-      return this.$store.getters.currentUser
-    }
-  }
-}
+ export default {
+   name: 'navbar',
+   computed: {
+     currentUser: function () {
+       return this.$store.getters.currentUser
+     }
+   }
+ }
 </script>
 
 
 <style lang="scss">
-  @import './src/assets/styles/globals.scss';
+ @import './src/assets/styles/globals.scss';
 
-  .create-btn {
-    border-radius: 5px;
-    margin-right: 1rem;
-  }
+ .create-btn {
+   border-radius: 5px;
+   margin-right: 1rem;
+ }
 
-  .navbar {
-    background-color: $primary-color;
-    color: #fff;
-  }
+ .navbar {
+   background-color: $primary-color;
+   color: #fff;
+ }
 
-  .bg-praelatus .nav .nav-item a {
-    color: #fff
-  }
+ .bg-praelatus .nav .nav-item a {
+   color: #fff
+ }
 
-  .bg-praelatus .nav .nav-item a:hover {
-    background-color: $highlight-color;
-    color: #fff
-  }
+ .bg-praelatus .nav .nav-item a:hover {
+   background-color: $highlight-color;
+   color: #fff
+ }
 
-  .bg-praelatus .dropdown-item {
-    color: #000 !important;
-  }
+ .bg-praelatus .dropdown-item {
+   color: #000 !important;
+ }
 
-  .bg-praelatus .dropdown-item:hover {
-    background-color: $primary-color !important;
-    color: #fff !important;
-  }
+ .bg-praelatus .dropdown-item:hover {
+   background-color: $primary-color !important;
+   color: #fff !important;
+ }
 
-  .bg-praelatus .dropdown-item.active {
-    background-color: #fff;
-  }
+ .bg-praelatus .dropdown-item.active {
+   background-color: #fff;
+ }
 
-  .b-nav-dropdown .dropdown-item:focus:not(.active), .b-nav-dropdown .dropdown-item:hover:not(.active) {
-    box-shadow: none !important;
-  }
+ .b-nav-dropdown .dropdown-item:focus:not(.active), .b-nav-dropdown .dropdown-item:hover:not(.active) {
+   box-shadow: none !important;
+ }
 
 
-  #userMenu .dropdown-toggle {
-    color: #fff;
-    padding: 0;
-  }
+ #userMenu .dropdown-toggle {
+   color: #fff;
+   padding: 0;
+ }
 
-  #userMenu {
-    padding: 5px;
-  }
+ #userMenu {
+   padding: 5px;
+ }
 </style>

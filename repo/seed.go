@@ -273,6 +273,33 @@ ipsa divite, est ille ver verba vicisse, exsiliantque aprica illius, rapta?`,
 			Project:  p.Key,
 		}
 
+		fields, ok := fs.Fields[t.Type]
+		if !ok {
+			fields = fs.Fields[""]
+		}
+
+		for _, f := range fields {
+			fieldValue := models.Field{
+				Name:     f.Name,
+				DataType: f.DataType,
+				Options:  f.Options,
+			}
+
+			if f.DataType == models.DateField {
+				fieldValue.Value = time.Now()
+			} else if f.DataType == models.StringField {
+				fieldValue.Value = "Some String"
+			} else if f.DataType == models.IntField {
+				fieldValue.Value = rand.Int()
+			} else if f.DataType == models.FloatField {
+				fieldValue.Value = rand.Float64()
+			} else if f.DataType == models.OptionField {
+				fieldValue.Value = fieldValue.Options[rand.Intn(len(fieldValue.Options))]
+			}
+
+			t.Fields = append(t.Fields, fieldValue)
+		}
+
 		t, err = r.Tickets().Create(u1, t)
 		if err != nil {
 			return errors.New("ERROR SEEDING TICKETS: " + err.Error())

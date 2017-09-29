@@ -11,6 +11,14 @@
     props: {
       shown: { type: Boolean, default: true },
       width: { type: String, default: '250px' }
+    },
+
+    created: function () {
+      this.$store.commit('sidebarShown', this.shown)
+    },
+
+    destroyed: function () {
+      this.$store.commit('sidebarShown', false)
     }
   }
 </script>
@@ -31,6 +39,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     border-right: 1px solid #eee;
+    background-color: #f7f7f9;
   }
 
   #sidebar-toggle-button {
