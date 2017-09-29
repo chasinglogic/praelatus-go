@@ -2,7 +2,7 @@
   <b-navbar fixed=top toggle-breakpoint="md" toggleable class="bg-praelatus">
     <b-nav-toggle target="nav_collapse"></b-nav-toggle>
 
-    <b-navbar-brand href="/">
+    <b-navbar-brand href="/#/">
       <img src="/assets/img/logo_arrow.svg"
         height="30"
         width="30">
@@ -11,10 +11,10 @@
     <b-collapse is-nav id="nav_collapse">
 
       <b-nav is-nav-bar>
-        <b-nav-item href="/projects/search">Projects</b-nav-item>
+        <b-nav-item href="/#/projects">Projects</b-nav-item>
         <b-nav-item-dropdown text="Tickets">
-          <b-dropdown-item to="/queries/mine">Manage Queries</b-dropdown-item>
-          <b-dropdown-item to="/queries">Search</b-dropdown-item>
+          <b-dropdown-item to="/#/queries/mine">Manage Queries</b-dropdown-item>
+          <b-dropdown-item to="/#/tickets">Search</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-nav>
       <b-nav is-nav-bar class="ml-auto">
@@ -29,12 +29,12 @@
           <b-dropdown-item v-if="currentUser.isAdmin" to="/admin/">
             System Administration
           </b-dropdown-item>
-          <b-dropdown-item to="/logout">Log Out</b-dropdown-item>
+          <b-dropdown-item to="/#/logout">Log Out</b-dropdown-item>
         </b-nav-item-dropdown>
         <template v-else>
-          <b-nav-item href="/login">Sign In</b-nav-item>
+          <b-nav-item href="/#/login">Sign In</b-nav-item>
           <b-nav-item >/</b-nav-item>
-          <b-nav-item href="/signup">Sign Up</b-nav-item>
+          <b-nav-item href="/#/signup">Sign Up</b-nav-item>
         </template>
       </b-nav>
     </b-collapse>
