@@ -46,3 +46,7 @@
 
 [[constraint]]
   name = "gopkg.in/mgo.v2"
+
+[[constraint]]
+  name = "github.com/dgrijalva/jwt-go"
+  version = "3.0.0"

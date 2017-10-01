@@ -1,140 +1,145 @@
 package middleware
 
 import (
-	"encoding/base64"
 	"errors"
-	"log"
+	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/securecookie"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/praelatus/praelatus/models"
 )
 
-var hashKey = securecookie.GenerateRandomKey(64)
-var blockKey = securecookie.GenerateRandomKey(32)
-var sec = securecookie.New(hashKey, blockKey)
+// TODO: create a way to invalidate a session
+// TODO: prevent session hijacking
+// TODO: Make this actually secure
+var signingKey = []byte("CHANGE ME")
 
-// TODO fix this
-// func init() {
-// 	bKey, _ := Cache.GetRaw("blockKey")
-// 	hKey, _ := Cache.GetRaw("hashKey")
-
-// 	if bKey != nil && hKey != nil {
-// 		blockKey = bKey
-// 		hashKey = hKey
-// 		sec = securecookie.New(hashKey, blockKey)
-// 	}
-
-// 	ferr := Cache.SetRaw("hashKey", hashKey)
-// 	serr := Cache.SetRaw("blockKey", blockKey)
-
-// 	// We don't really care about the errors just want to be
-// 	// notified if there's can issue
-// 	if ferr != nil || serr != nil {
-// 		log.Println(ferr)
-// 		log.Println(serr)
-// 	}
-// }
-
-// generateSessionID generates a secure Session ID
-func generateSessionID() string {
-	b := securecookie.GenerateRandomKey(32)
-	return base64.URLEncoding.EncodeToString(b)
+func makeClaims(user models.User) jwt.MapClaims {
+	now := time.Now()
+	return jwt.MapClaims{
+		"username": user.Username,
+		"email":    user.Email,
+		"is_admin": user.IsAdmin,
+		"iat":      now,
+		"exp":      now.Add(time.Hour * 24),
+	}
 }
 
-func getSessionID(r *http.Request) string {
-	var encoded string
-
-	cookie, _ := r.Cookie("PRAESESSION")
-	if cookie != nil {
-		encoded = cookie.Value
+func userFromClaims(claims jwt.MapClaims) models.User {
+	maybeUsername, ok := claims["username"]
+	if !ok {
+		return models.User{}
 	}
 
-	if cookie == nil {
-		// if the cookie is not set check the header
-		encoded = r.Header.Get("Authorization")
+	maybeEmail, ok := claims["email"]
+	if !ok {
+		return models.User{}
 	}
 
-	if encoded == "" {
-		return ""
+	maybeAdmin, ok := claims["is_admin"]
+	if !ok {
+		return models.User{}
 	}
 
-	var id string
-	if err := sec.Decode("PRAESESSION", encoded, &id); err != nil {
-		log.Println("Error decoding cookie:", err)
-		return ""
+	username, ok := maybeUsername.(string)
+	if !ok {
+		return models.User{}
 	}
 
-	return id
+	email, ok := maybeEmail.(string)
+	if !ok {
+		return models.User{}
+	}
+
+	isAdmin, ok := maybeAdmin.(bool)
+	if !ok {
+		return models.User{}
+	}
+
+	return models.User{
+		Username: username,
+		Email:    email,
+		IsAdmin:  isAdmin,
+	}
+}
+
+func getToken(r *http.Request) *jwt.Token {
+	auth := r.Header.Get("Authorization")
+	if len(auth) == 0 {
+		return nil
+	}
+
+	tokenString := auth[len("Bearer "):]
+	if tokenString == "" {
+		return nil
+	}
+
+	token, err := jwt.Parse(tokenString,
+		func(t *jwt.Token) (interface{}, error) {
+			return signingKey, nil
+		})
+	if err != nil {
+		fmt.Println("ERROR: [TOKEN_VALIDATION]", err.Error())
+		return nil
+	}
+
+	return token
+}
+
+func getClaims(token *jwt.Token) jwt.MapClaims {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		fmt.Println("ERROR: [TOKEN_VALIDATION] Invalid Claims", claims)
+		return nil
+	}
+
+	return claims
 }
 
 // GetUserSession will check the given http.Request for a session token and if
 // found it will return the corresponding user.
 func GetUserSession(r *http.Request) *models.User {
-	id := getSessionID(r)
-	if id == "" {
+	token := getToken(r)
+	if token == nil {
 		return nil
 	}
 
-	sess, err := Cache.GetSession(id)
-	if err != nil {
-		log.Println("Error fetching session from store: ", err)
+	claims := getClaims(token)
+	if claims == nil {
 		return nil
 	}
 
-	if sess.Expires.Before(time.Now()) {
-		// session has expired
-		if err := Cache.RemoveSession(id); err != nil {
-			log.Println("Error removing from store:", err)
-		}
-
-		return nil
-	}
-
-	return &sess.User
+	user := userFromClaims(claims)
+	return &user
 }
 
 // SetUserSession will generate a secure cookie for user u, will set the cookie
-// on the request r and will add the user session to the session store
+// on the response w and will add the user session to the session store
 func SetUserSession(u models.User, w http.ResponseWriter) error {
-	id := generateSessionID()
-	encoded, err := sec.Encode("PRAESESSION", id)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, makeClaims(u))
+	signed, err := token.SignedString(signingKey)
 	if err != nil {
 		return err
 	}
 
-	exp := time.Now().Add(time.Hour * 3)
-	c := http.Cookie{
-		Name:    "PRAESESSION",
-		Value:   encoded,
-		Expires: exp,
-		Secure:  true,
-	}
-
-	http.SetCookie(w, &c)
-	w.Header().Add("Token", encoded)
-
-	sess := models.Session{
-		Expires: exp,
-		User:    u,
-	}
-
-	return Cache.SetSession(id, sess)
+	// TODO: Store the session with the client specific ID for session hijacking
+	w.Header().Set("X-Praelatus-Token", signed)
+	return nil
 }
 
 // RefreshSession will reset the expiry on the session for the given request
 func RefreshSession(r *http.Request) error {
-	id := getSessionID(r)
-	if id == "" {
+	token := getToken(r)
+	if token == nil {
 		return errors.New("no session on this request")
 	}
 
-	sess, err := Cache.GetSession(id)
-	if err != nil {
-		return err
+	claims := getClaims(token)
+	if claims == nil {
+		return errors.New("no claims on token")
 	}
 
-	sess.Expires = time.Now().Add(time.Hour * 3)
-	return Cache.SetSession(id, sess)
+	claims["exp"] = time.Now().Add(time.Hour * 24)
+	return nil
 }
