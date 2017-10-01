@@ -1,8 +1,8 @@
 <template>
   <span>
-    <a v-bind:href="'/#/projects/' + ticket.project">
+    <router-link v-bind:to="'/projects/' + ticket.project">
       {{ ticket.project }}
-    </a>
+    </router-link>
     <span>
       /
     </span>
@@ -14,9 +14,9 @@
         /
         </span>
     </template>
-    <a v-bind:href="'/#/tickets/' + ticket.key">
+    <router-link v-bind:to="'/tickets/' + ticket.key">
       {{ ticket.key }}
-    </a>
+    </router-link>
   </span>
 </template>
 

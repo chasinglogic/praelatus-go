@@ -11,12 +11,10 @@
 
 <script>
  import TicketList from '@/components/Tickets/List'
- import SearchBar from '@/components/General/SearchBar'
  import Axios from 'axios'
 
  export default {
    components: {
-     SearchBar,
      TicketList
    },
 
@@ -38,9 +36,16 @@
 
        Axios.get(url)
             .then((res) => {
+              console.log(res.data)
               inst.tickets = res.data
             })
             .catch((err) => {
+              if (err.response.status === 404) {
+                inst.tickets = []
+                return
+              }
+
+              // TODO: Visually que the user that there's been an error
               console.log('ERROR', err)
             })
      }

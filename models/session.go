@@ -1,12 +1,9 @@
 package models
 
-import "time"
-
-// Session stores a user with the expiration time of the session
+// Session ties a token to a specific client
 type Session struct {
-	ID      string `bson:"_id"`
-	Expires time.Time
-	User    User
+	Token    string `bson:"_id"`
+	ClientID string
 }
 
 func (s Session) String() string {

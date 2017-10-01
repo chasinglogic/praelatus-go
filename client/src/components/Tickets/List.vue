@@ -26,9 +26,9 @@
           <tr v-for="ticket in tickets">
             <template v-for="column in columns">
               <td v-show="column.active" v-if="column.name === 'key'">
-                <a v-bind:href="'/#/tickets/' + ticket.key">
+                <router-link v-bind:to="'/tickets/' + ticket.key">
                   {{ ticket.key }}
-                </a>
+                </router-link>
               </td>
               <td v-show="column.active" v-else-if="ticket[column.name]">
                 {{ ticket[column.name] }}
