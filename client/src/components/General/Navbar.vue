@@ -1,3 +1,7 @@
+<!-- Copyright 2017 Mathew Robinson <mrobinson@praelatus.io>. All rights
+     reserved. Use of this source code is governed by the AGPLv3 license that
+     can be found in the LICENSE file. -->
+
 <template>
   <b-navbar fixed=top toggle-breakpoint="md" toggleable class="bg-praelatus">
     <b-nav-toggle target="nav_collapse"></b-nav-toggle>

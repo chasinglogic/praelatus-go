@@ -1,3 +1,7 @@
+// Copyright 2017 Mathew Robinson <mrobinson@praelatus.io>. All rights reserved.
+// Use of this source code is governed by the AGPLv3 license that can be found in
+// the LICENSE file.
+
 // Package events handles sending notifications to users and websockets
 // when system events happen. Such as firing webhooks on workflow
 // transitions.

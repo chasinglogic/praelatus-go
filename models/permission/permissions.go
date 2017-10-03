@@ -1,3 +1,7 @@
+// Copyright 2017 Mathew Robinson <mrobinson@praelatus.io>. All rights reserved.
+// Use of this source code is governed by the AGPLv3 license that can be found in
+// the LICENSE file.
+
 // Package permission is used to store the various permission in
 // praelatus, it acts as a pseudo-enumeration
 package permission
