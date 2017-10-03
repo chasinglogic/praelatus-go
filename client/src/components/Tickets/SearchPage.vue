@@ -18,7 +18,7 @@
      TicketList
    },
 
-   data: () => {
+   data: function () {
      return {
        'query': '',
        'tickets': []
