@@ -47,7 +47,7 @@ func (m Cache) Remove(key string) error {
 
 // GetSession will return the session with the given id (Token)
 func (m Cache) GetSession(id string) (models.Session, error) {
-	var s models.Session
+	var s sess
 
 	err := m.sessions().FindId(id).One(&s)
 	if err != nil {
@@ -58,14 +58,22 @@ func (m Cache) GetSession(id string) (models.Session, error) {
 		return models.Session{}, err
 	}
 
-	return s, nil
+	return s.s, nil
+}
+
+type sess struct {
+	ID bson.ObjectId `bson:"_id"`
+	s  models.Session
 }
 
 // SetSession will store a session with the given id (Token)
-func (m Cache) SetSession(id string, sess models.Session) error {
-	sess.ID = id
+func (m Cache) SetSession(id string, s models.Session) error {
+	se := sess{
+		ID: bson.NewObjectId(),
+		s:  s,
+	}
 
-	err := m.sessions().Insert(&sess)
+	err := m.sessions().Insert(&se)
 	return err
 }
 
