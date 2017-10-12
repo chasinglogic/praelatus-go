@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import createPersistedState from 'vuex-persistedState'
 
 Vue.use(Vuex)
 
@@ -45,8 +46,15 @@ export default new Vuex.Store({
       state.token = token
     },
 
+    logout: function (state) {
+      state.currentUser = null
+      state.token = null
+    },
+
     sidebarShown: function (state, show) {
       state.showSidebar = show
     }
-  }
+  },
+
+  plugins: [createPersistedState()]
 })

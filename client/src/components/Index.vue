@@ -11,8 +11,9 @@
  export default {
    name: 'index',
    created: function () {
-     if (this.$store.getters.currentUser !== {}) {
-       this.$route.router.go('/dashboard')
+     if (this.$store.getters.currentUser !== {} &&
+         this.$store.getters.currentUser !== null) {
+       this.$router.push('/dashboard')
      }
    }
  }

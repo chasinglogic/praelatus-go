@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/repo"
 )
 
@@ -76,11 +77,16 @@ func GetErrorCode(e error) int {
 }
 
 // SendJSON is a convenience function for sending JSON to the given
-// ResponseWriter it will attempt to convert v into a JSONRepr appropriately
-// based on the struct name it's only really useful if v is a single record.
-// For a result set convert to JSONRepr yourself then use SendJSONR
+// ResponseWriter. If v is a models.Sanitizer SendJSON will call
+// v.Sanitize() before serializing to JSON.
 func SendJSON(w http.ResponseWriter, v interface{}) {
-	resp, err := json.Marshal(v)
+	toJsn := v
+
+	if s, ok := v.(models.Sanitizer); ok {
+		toJsn = s.Sanitize()
+	}
+
+	resp, err := json.Marshal(toJsn)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(APIMsg("Failed to marshal database response to JSON."))
