@@ -19,9 +19,54 @@ import (
 func userRouter(router *mux.Router) {
 	router.HandleFunc("/users", getAllUsers).Methods("GET")
 	router.HandleFunc("/users", createUser).Methods("POST")
+	router.HandleFunc("/tokens", login).Methods("POST")
 
+	router.HandleFunc("/users/me", loggedInUser)
 	router.HandleFunc("/users/{username}", singleUser)
 	router.HandleFunc("/users/{username}/avatar", avatar)
+}
+
+func loggedInUser(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		utils.APIErr(w, http.StatusNotFound, "no session found")
+		return
+	}
+
+	utils.SendJSON(w, *u)
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
+	var loginReq struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&loginReq)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	user, err := Repo.Users().Get(&models.User{}, loginReq.Username)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	if user.CheckPw([]byte(loginReq.Password)) {
+		err := middleware.SetUserSession(user, w)
+		if err != nil {
+			utils.Error(w, err)
+			return
+		}
+
+		utils.SendJSON(w, user)
+		return
+	}
+
+	utils.APIErr(w, http.StatusForbidden, "invalid password")
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {
@@ -55,15 +100,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tokenResponse struct {
-		Token string      `json:"token"`
-		User  models.User `json:"user"`
-	}
-
-	tokenResponse.Token = w.Header().Get("Token")
-	tokenResponse.User = *u
-
-	utils.SendJSON(w, tokenResponse)
+	utils.SendJSON(w, u)
 }
 
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +111,10 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	users, err := Repo.Users().Search(u, q)
+	var users models.Users
+	var err error
+
+	users, err = Repo.Users().Search(u, q)
 	if err != nil {
 		utils.Error(w, err)
 		return

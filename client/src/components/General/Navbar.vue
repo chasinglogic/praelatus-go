@@ -29,16 +29,16 @@
         </b-nav-item>
         <b-nav-item-dropdown id="userMenu" right v-if="currentUser">
           <img slot="button-content" width="30" height="30" class="userMenuPic"
-            v-bind:src="currentUser.profilePic" alt="User">
+            v-bind:src="currentUser.profilePicture" alt="User">
           <b-dropdown-item v-if="currentUser.isAdmin" to="/admin/">
             System Administration
           </b-dropdown-item>
-          <b-dropdown-item to="/#/logout">Log Out</b-dropdown-item>
+          <b-dropdown-item @click="logout">Log Out</b-dropdown-item>
         </b-nav-item-dropdown>
         <template v-else>
           <b-nav-item to="/login">Sign In</b-nav-item>
           <b-nav-item >/</b-nav-item>
-          <b-nav-item to="/signup">Sign Up</b-nav-item>
+          <b-nav-item to="/register">Sign Up</b-nav-item>
         </template>
       </b-nav>
     </b-collapse>
@@ -48,6 +48,13 @@
 <script>
  export default {
    name: 'navbar',
+   methods: {
+     logout: function (e) {
+       e.preventDefault()
+       this.$store.commit('logout', {})
+       this.$router.push('/')
+     }
+   },
    computed: {
      currentUser: function () {
        return this.$store.getters.currentUser

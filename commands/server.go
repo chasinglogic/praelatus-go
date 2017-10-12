@@ -2,6 +2,7 @@
 // Use of this source code is governed by the AGPLv3 license that can be found in
 // the LICENSE file.
 
+// Package commands holds all the logic for the CLI of Praelatus
 package commands
 
 import (
@@ -26,7 +27,7 @@ func disableCors(next http.Handler) http.Handler {
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Access-Control-Allow-Origin", "*")
 			w.Header().Add("Access-Control-Allow-Headers", "Content-Type,Authorization,Token")
-			w.Header().Add("Access-Control-Expose-Headers", "*")
+			w.Header().Add("Access-Control-Expose-Headers", "X-Praelatus-Token")
 			w.Header().Add("Access-Control-Allow-Credentials", "true")
 
 			if r.Method == "OPTIONS" {

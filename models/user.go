@@ -14,6 +14,24 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Sanitizer is implemented by any model which needs to be sanitized before
+// being JSON serialized
+type Sanitizer interface {
+	Sanitize() interface{}
+}
+
+type Users []User
+
+func (ur Users) Sanitize() interface{} {
+	newUsers := make([]interface{}, len(ur))
+
+	for i := range ur {
+		newUsers[i] = ur[i].Sanitize()
+	}
+
+	return newUsers
+}
+
 type UserRole struct {
 	Role    Role   `json:"role"`
 	Project string `json:"project"`
@@ -35,7 +53,7 @@ type User struct {
 
 // CheckPw will verify if the given password matches for this user. Logs any
 // errors it encounters
-func (u *User) CheckPw(pw []byte) bool {
+func (u User) CheckPw(pw []byte) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), pw)
 	if err == nil {
 		return true
@@ -45,13 +63,18 @@ func (u *User) CheckPw(pw []byte) bool {
 	return false
 }
 
-func (u *User) String() string {
+func (u User) Sanitize() interface{} {
+	u.Password = ""
+	return u
+}
+
+func (u User) String() string {
 	return jsonString(u)
 }
 
 // ProjectsMemberOf returns an array of project keys which this user has a
 // role in.
-func (u *User) ProjectsMemberOf() []string {
+func (u User) ProjectsMemberOf() []string {
 	projectKeys := make([]string, len(u.Roles))
 
 	for i := range u.Roles {
@@ -63,7 +86,7 @@ func (u *User) ProjectsMemberOf() []string {
 
 // RolesForProject will return an array of the roles a this user has for the
 // given project.
-func (u *User) RolesForProject(p Project) []Role {
+func (u User) RolesForProject(p Project) []Role {
 	roles := make([]Role, 0)
 
 	for _, r := range u.Roles {

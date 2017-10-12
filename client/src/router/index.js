@@ -3,6 +3,8 @@ import Router from 'vue-router'
 import Index from '@/components/Index'
 import SearchPage from '@/components/Tickets/SearchPage'
 import Ticket from '@/components/Tickets/Show'
+import Login from '@/components/Users/Login'
+import Dashboard from '@/components/Dashboard'
 
 Vue.use(Router)
 
@@ -22,6 +24,22 @@ export default new Router({
       path: '/tickets/:key',
       name: 'Tickets/Ticket',
       component: Ticket
+    },
+    {
+      path: '/login',
+      name: 'Users/Login',
+      component: Login
+    },
+    {
+      path: '/register',
+      name: 'Users/Register',
+      component: Login,
+      props: { register: true }
+    },
+    {
+      path: '/dashboard',
+      name: 'Dashboard',
+      component: Dashboard
     },
     {
       path: '/',

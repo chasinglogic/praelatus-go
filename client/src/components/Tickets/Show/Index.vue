@@ -89,7 +89,7 @@
             })
             .catch((err) => {
               if (err.response.status === 404) {
-                this.$route.router.go('*')
+                this.$router.push('*')
               }
 
               console.log('ERROR', err.response.data)
