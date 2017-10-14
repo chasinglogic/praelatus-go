@@ -11,12 +11,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/praelatus/praelatus/repo"
 	"github.com/praelatus/praelatus/repo/mongo"
 )
+
+type AWSConfig struct {
+	Region  string
+	BaseURL *string
+}
 
 // Config holds much of the configuration for praelatus, if reading from the
 // configuration you should use the helper methods in this package as they do
@@ -28,6 +35,7 @@ type Config struct {
 	Port         string
 	LogLocations []string
 	SessionStore string
+	AWS          AWSConfig
 }
 
 func (c Config) String() string {
@@ -104,6 +112,8 @@ func init() {
 	}
 
 	Cfg = c
+
+	Logger = log.New(LogWriter(), "", log.LstdFlags)
 }
 
 // DBURL will return the environment variable PRAELATUS_DB if set, otherwise
@@ -140,4 +150,15 @@ func LoadRepo() repo.Repo {
 
 func LoadCache() repo.Cache {
 	return mongo.NewCache(DBURL())
+}
+
+var Logger *log.Logger
+
+func DataDir() string {
+	path, err := filepath.Abs("data")
+	if err != nil {
+		return "data"
+	}
+
+	return path
 }
