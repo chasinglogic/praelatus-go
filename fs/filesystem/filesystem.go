@@ -29,7 +29,7 @@ func (f FS) Init() error {
 }
 
 // Get will retrieve the file by joining the given path with FS.baseDir
-func (f FS) Get(path string) (io.Reader, error) {
+func (f FS) Get(path string) (io.ReadCloser, error) {
 	return os.Open(filepath.Join(f.baseDir, path))
 }
 

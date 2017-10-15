@@ -19,7 +19,7 @@ import (
 type FS interface {
 	Init() error
 
-	Get(path string) (io.Reader, error)
+	Get(path string) (io.ReadCloser, error)
 	Save(file *os.File) (string, error)
 }
 
