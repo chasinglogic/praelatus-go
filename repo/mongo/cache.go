@@ -38,7 +38,7 @@ func (m Cache) Set(key string, value interface{}) error {
 		"data": value,
 	}
 
-	return m.cache().Insert(data)
+	return m.cache().Insert(&data)
 }
 
 func (m Cache) Remove(key string) error {
@@ -58,19 +58,19 @@ func (m Cache) GetSession(id string) (models.Session, error) {
 		return models.Session{}, err
 	}
 
-	return s.s, nil
+	return s.Session, nil
 }
 
 type sess struct {
-	ID bson.ObjectId `bson:"_id"`
-	s  models.Session
+	ID      string         `bson:"_id"`
+	Session models.Session `bson:"session"`
 }
 
 // SetSession will store a session with the given id (Token)
 func (m Cache) SetSession(id string, s models.Session) error {
 	se := sess{
-		ID: bson.NewObjectId(),
-		s:  s,
+		ID:      id,
+		Session: s,
 	}
 
 	err := m.sessions().Insert(&se)

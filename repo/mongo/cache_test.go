@@ -6,10 +6,8 @@ package mongo_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/praelatus/praelatus/models"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func TestSetRemoveAndGet(t *testing.T) {
@@ -54,27 +52,36 @@ func TestSetRemoveAndGet(t *testing.T) {
 
 func TestSetRemoveAndGetSession(t *testing.T) {
 	sess := models.Session{
-		ID:      string(bson.NewObjectId()),
-		Expires: time.Now(),
-		User:    models.User{Username: "testuser"},
+		Token:    "faketoken",
+		ClientID: "fake",
 	}
 
-	err := c.SetSession(sess.ID, sess)
+	err := c.SetSession(sess.Token, sess)
 	if err != nil {
 		t.Errorf("Failed With Error: %s\n", err.Error())
 		return
 	}
 
-	d, err := c.GetSession(sess.ID)
+	d, err := c.GetSession(sess.Token)
 	if err != nil {
 		t.Errorf("Failed With Error: %s\n", err.Error())
 		return
 	}
 
-	if sess.ID != d.ID || sess.Expires.Sub(d.Expires) == 0 || sess.User.Username != d.User.Username {
+	if sess.Token != d.Token || sess.ClientID != d.ClientID {
 		t.Errorf("Expected d and sess to match Got %s\n", d)
-		t.Log("ID match", sess.ID == d.ID)
-		t.Log("Expires match", sess.Expires.Sub(d.Expires) == 0)
-		t.Log("Username match", sess.User.Username == d.User.Username)
+		t.Log("Token match", sess.Token == d.Token)
+		t.Log("ClientID match", sess.ClientID != d.ClientID)
+	}
+
+	err = c.RemoveSession(sess.Token)
+	if err != nil {
+		t.Errorf("Failed With Error: %s\n", err.Error())
+		return
+	}
+
+	_, err = c.GetSession(sess.Token)
+	if err == nil {
+		t.Errorf("Expected no session to return, instead failed to remove.")
 	}
 }
