@@ -20,9 +20,13 @@ import (
 	"github.com/praelatus/praelatus/repo/mongo"
 )
 
+// AWSConfig is a nested configuration object used specificall for s3 storage
 type AWSConfig struct {
-	Region  string
-	BaseURL *string
+	Region      string
+	BaseURL     *string
+	AccessKeyID string
+	SecretKey   string
+	Bucket      string
 }
 
 // Config holds much of the configuration for praelatus, if reading from the
@@ -113,7 +117,8 @@ func init() {
 
 	Cfg = c
 
-	Logger = log.New(LogWriter(), "", log.LstdFlags)
+	l := log.New(LogWriter(), "", log.LstdFlags)
+	Logger = &logger{l}
 }
 
 // DBURL will return the environment variable PRAELATUS_DB if set, otherwise
@@ -144,16 +149,17 @@ func WebWorkers() int {
 	return 10
 }
 
+// LoadRepo loads the configured storage backend
 func LoadRepo() repo.Repo {
 	return mongo.New(DBURL())
 }
 
+// LoadCache loads the configured cache implementation
 func LoadCache() repo.Cache {
 	return mongo.NewCache(DBURL())
 }
 
-var Logger *log.Logger
-
+// DataDir returns the data directory to use for fs/filesystem
 func DataDir() string {
 	path, err := filepath.Abs("data")
 	if err != nil {
@@ -162,3 +168,15 @@ func DataDir() string {
 
 	return path
 }
+
+type logger struct {
+	*log.Logger
+}
+
+func (l logger) Log(inp ...interface{}) {
+	l.Logger.Println(inp...)
+}
+
+// Logger is the custom logging type that is a log.Logger but extends to
+// implement aws.Logger for the s3fs package.
+var Logger *logger
