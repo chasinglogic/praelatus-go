@@ -37,7 +37,17 @@ func createTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := utils.ValidateModel(t); err != nil {
+		utils.APIErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	t, err = Repo.Tickets().Create(u, t)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
 	utils.SendJSON(w, t)
 }
 

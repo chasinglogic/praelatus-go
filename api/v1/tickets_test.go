@@ -6,179 +6,127 @@ package v1_test
 
 import (
 	"encoding/json"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/praelatus/praelatus/models"
 )
 
-func TestGetTicket(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1", nil)
-
-	router.ServeHTTP(w, r)
-
+func ticketFromJSON(jsn []byte) (interface{}, error) {
 	var tk models.Ticket
-
-	e := json.Unmarshal(w.Body.Bytes(), &tk)
-	if e != nil {
-		t.Errorf("Failed with error %s", e.Error())
-	}
-
-	if w.Code != 200 {
-		t.Errorf("Expected HTTP Status 200 Got %d", w.Code)
-	}
-
-	if tk.Key != "TEST-1" {
-		t.Errorf("Expected TEST-1 Got %s", tk.Key)
-	}
-
-	t.Log(w.Body)
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
 }
 
-// func TestGetAllTickets(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/tickets", nil)
+func ticketsFromJSON(jsn []byte) (interface{}, error) {
+	var tk []models.Ticket
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	router.ServeHTTP(w, r)
+func toTickets(v interface{}) []models.Ticket {
+	return v.([]models.Ticket)
+}
 
-// 	var tk []models.Ticket
+func toTicket(v interface{}) models.Ticket {
+	return v.(models.Ticket)
+}
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 		t.Log(w.Body)
-// 	}
+var ticketRouteTests = []routeTest{
+	{
+		Name:         "Read Ticket",
+		Endpoint:     "/api/v1/tickets/TEST-1",
+		Method:       "GET",
+		ExpectedCode: 200,
+		Converter:    ticketFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			tk := toTicket(v)
 
-// 	t.Log(w.Body)
+			if tk.Key != "TEST-1" {
+				t.Errorf("Expected TEST-1 Got %s", tk.Key)
+			}
+		},
+	},
 
-// 	if len(tk) != 2 {
-// 		t.Errorf("Expected 2 tickets got %d", len(tk))
-// 		return
-// 	}
+	{
+		Name:         "Read All Tickets",
+		Endpoint:     "/api/v1/tickets",
+		Method:       "GET",
+		ExpectedCode: 200,
+		Converter:    ticketsFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			tk := toTickets(v)
 
-// 	if tk[0].Key != "TEST-1" {
-// 		t.Errorf("Expected TEST-1 Got %s", tk[0].Key)
-// 	}
-// }
+			if len(tk) <= 1 {
+				t.Errorf("Expected More Than 1 Ticket Got: %d", len(tk))
+			}
 
-// func TestGetAllTicketsByProject(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/projects/TEST/tickets", nil)
+			if tk[0].Key != "TEST-1" {
+				t.Errorf("Expected TEST-1 Got: %s", tk[0].Key)
+			}
+		},
+	},
 
-// 	router.ServeHTTP(w, r)
+	{
+		Name:         "Create Ticket",
+		Endpoint:     "/api/v1/tickets",
+		Method:       "POST",
+		Admin:        true,
+		ExpectedCode: 200,
+		Body: models.Ticket{
+			Summary:     "A fake test ticket.",
+			Description: "Not a useful description.",
+			Reporter:    "testuser",
+		},
+		Converter: ticketFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			tk := toTicket(v)
 
-// 	var tk []models.Ticket
+			if tk.Key != "" {
+				t.Errorf("Expected A Ticket Key Got None\n")
+			}
+		},
+	},
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
+	// TODO: Implement these routes
+	// {
+	// 	Name:     "Add Comment",
+	// 	Endpoint: "/api/v1/tickets/TEST-1/comments",
+	// 	Method:   "POST",
+	// 	Admin:    true,
+	// 	Body: models.Comment{
+	// 		Body: "THIS IS A TEST COMMENT",
+	// 	},
+	// 	ExpectedCode: 200,
+	// 	Converter:    ticketFromJSON,
+	// 	Validator: func(v interface{}, t *testing.T) {
+	// 		tk := toTicket(v)
 
-// 	t.Log(w.Body)
+	// 		for _, comment := range tk.Comments {
+	// 			if comment.Body == "THIS IS A TEST COMMENT" && comment.Author == "testadmin" {
+	// 				return
+	// 			}
+	// 		}
 
-// 	if len(tk) != 2 {
-// 		t.Errorf("Expected 2 tickets got %d", len(tk))
-// 		return
-// 	}
+	// 		t.Fail()
+	// 	},
+	// },
 
-// 	if tk[0].Key != "TEST-1" {
-// 		t.Errorf("Expected TEST-1 Got %s", tk[0].Key)
-// 	}
+	// {
+	// 	Name:      "Transition Ticket",
+	// 	Login:     true,
+	// 	Method:    "POST",
+	// 	Endpoint:  "/api/v1/tickets/TEST-1/transition?name=In%20Progress",
+	// 	Converter: ticketFromJSON,
+	// 	Validator: func(v interface{}, t *testing.T) {
+	// 		tk := toTicket(v)
 
-// }
+	// 		if tk.Status != "In Progress" {
+	// 			t.Errorf("Expected In Progress Got: %s", tk.Status)
+	// 		}
+	// 	},
+	// },
+}
 
-// func TestCreateTicket(t *testing.T) {
-// 	tk := models.Ticket{Summary: "Nope"}
-// 	byt, _ := json.Marshal(tk)
-// 	rd := bytes.NewReader(byt)
-
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST", rd)
-// 	testLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
-// 	if e != nil {
-// 		t.Logf("Failed with error %s", e.Error())
-// 		t.Logf("Received %s", string(w.Body.Bytes()))
-// 		t.Fail()
-// 	}
-
-// 	if tk.ID != 1 {
-// 		t.Errorf("Expected 1 Got %d", tk.ID)
-// 	}
-
-// 	t.Log(w.Body)
-// }
-
-// func TestGetComments(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1/comments", nil)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var cm []models.Comment
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &cm)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 		t.Log(w.Body)
-// 	}
-
-// 	if len(cm) != 1 {
-// 		t.Errorf("Expected 1 comment got %d\n", len(cm))
-// 	}
-
-// 	t.Log(w.Body)
-// }
-
-// func TestCreateComment(t *testing.T) {
-// 	cm := models.Comment{}
-// 	byt, _ := json.Marshal(cm)
-// 	rd := bytes.NewReader(byt)
-
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST-1/comments", rd)
-// 	testLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &cm)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 		t.Log(w.Body)
-// 	}
-
-// 	if cm.ID == 0 {
-// 		t.Errorf("Expected 1 Got %d\n", cm.ID)
-// 	}
-
-// 	t.Log(w.Body)
-// }
-
-// func TestTransitionTicket(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST-1/transition?name=In%20Progress", nil)
-
-// 	testLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var tk models.Ticket
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &tk)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 		return
-// 	}
-
-// 	if tk.Status.ID != 2 {
-// 		t.Errorf("Expected ID of Status to be 2 got %d\n", tk.Status.ID)
-// 	}
-
-// 	if tk.Status.Name != "In Progress" {
-// 		t.Errorf("Expected Name of Status to be In Progress got %s\n", tk.Status.Name)
-// 	}
-// }
+func TestTicketRoutes(t *testing.T) {
+	testRoutes(ticketRouteTests, t)
+}

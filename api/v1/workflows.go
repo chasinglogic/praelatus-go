@@ -33,6 +33,11 @@ func createWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := utils.ValidateModel(workflow); err != nil {
+		utils.APIErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	workflow, err = Repo.Workflows().Create(u, workflow)
 	if err != nil {
 		utils.Error(w, err)

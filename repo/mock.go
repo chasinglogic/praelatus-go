@@ -173,6 +173,8 @@ func (ur mockUserRepo) Delete(u *models.User, uid string) error {
 type mockFieldRepo struct{}
 
 func (fsr mockFieldRepo) Get(u *models.User, uid string) (models.FieldScheme, error) {
+	// Hardcode to the ID expected in tests.
+	fs.ID = "59e3f2026791c08e74da1bb2"
 	return fs, nil
 }
 
@@ -196,7 +198,10 @@ func (fsr mockFieldRepo) Delete(u *models.User, uid string) error {
 type mockWorkflowRepo struct{}
 
 func (wr mockWorkflowRepo) Get(u *models.User, uid string) (models.Workflow, error) {
-	return workflows[0], nil
+	wrk := workflows[0]
+	// Hardcode to the ID expected in tests.
+	wrk.ID = "59e3f2026791c08e74da1bb2"
+	return wrk, nil
 }
 
 func (wr mockWorkflowRepo) Search(u *models.User, query string) ([]models.Workflow, error) {

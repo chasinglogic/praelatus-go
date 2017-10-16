@@ -4,80 +4,84 @@
 
 package v1_test
 
-// import (
-// 	"bytes"
-// 	"encoding/json"
-// 	"net/http/httptest"
-// 	"testing"
+import (
+	"encoding/json"
+	"testing"
 
-// 	"github.com/praelatus/praelatus/models"
-// )
+	"github.com/praelatus/praelatus/models"
+)
 
-// func TestGetWorkflow(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/workflows/1", nil)
+func workflowFromJSON(jsn []byte) (interface{}, error) {
+	var tk models.Workflow
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	router.ServeHTTP(w, r)
+func workflowsFromJSON(jsn []byte) (interface{}, error) {
+	var tk []models.Workflow
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	var p models.Workflow
+func toWorkflows(v interface{}) []models.Workflow {
+	return v.([]models.Workflow)
+}
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 	}
+func toWorkflow(v interface{}) models.Workflow {
+	return v.(models.Workflow)
+}
 
-// 	if p.ID != 1 {
-// 		t.Errorf("Expected 1 Got %d\n", p.ID)
-// 	}
+var workflowRouteTests = []routeTest{
+	{
+		Name:      "Get Workflow",
+		Admin:     true,
+		Endpoint:  "/api/v1/workflows/59e3f2026791c08e74da1bb2",
+		Converter: workflowFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			fs := toWorkflow(v)
 
-// 	t.Log(w.Body)
-// }
+			if fs.ID != "59e3f2026791c08e74da1bb2" {
+				t.Errorf("Expected 59e3f2026791c08e74da1bb2 Got: %s", fs.ID)
+			}
+		},
+	},
 
-// func TestGetAllWorkflows(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/workflows", nil)
-// 	testLogin(w, r)
+	{
+		Name:      "Get All Workflows",
+		Admin:     true,
+		Endpoint:  "/api/v1/workflows",
+		Converter: workflowsFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			fs := toWorkflows(v)
 
-// 	router.ServeHTTP(w, r)
+			if len(fs) != 1 {
+				t.Errorf("Expected 1 Workflow got %d", len(fs))
+			}
 
-// 	var p []models.Workflow
+			if fs[0].ID == "" {
+				t.Errorf("Expected an ID Got None")
+			}
+		},
+	},
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 	}
+	{
+		Name:      "Create Workflow",
+		Admin:     true,
+		Method:    "POST",
+		Endpoint:  "/api/v1/workflows",
+		Converter: workflowFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			fs := toWorkflow(v)
 
-// 	t.Log(w.Body)
+			if fs.ID == "" {
+				t.Errorf("Expected An ID but got None")
+			}
+		},
+	},
 
-// 	if len(p) != 2 {
-// 		t.Errorf("Expected 2 Got %d\n", len(p))
-// 		return
-// 	}
-
-// 	if p[0].Name != "Simple Workflow" {
-// 		t.Errorf("Expected Simple Workflow Got %s\n", p[0].Name)
-// 	}
-// }
-
-// func TestCreateWorkflow(t *testing.T) {
-// 	p := models.Workflow{Name: "Snug"}
-// 	byt, _ := json.Marshal(p)
-// 	rd := bytes.NewReader(byt)
-
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/workflows/TEST", rd)
-// 	testAdminLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	if p.ID != 1 {
-// 		t.Errorf("Expected 1 Got %d", p.ID)
-// 	}
-
-// 	t.Log(w.Body)
-// }
+	{
+		Name:     "Remove Workflow",
+		Endpoint: "/api/v1/workflows/59e3f2026791c08e74da1bb2",
+		Method:   "DELETE",
+	},
+}

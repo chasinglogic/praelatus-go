@@ -4,166 +4,100 @@
 
 package v1_test
 
-// import (
-// 	"bytes"
-// 	"encoding/json"
-// 	"net/http/httptest"
-// 	"testing"
+import (
+	"encoding/json"
+	"testing"
 
-// 	"github.com/praelatus/praelatus/models"
-// )
+	"github.com/praelatus/praelatus/models"
+)
 
-// func TestGetUser(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/users/foouser", nil)
+func userFromJSON(jsn []byte) (interface{}, error) {
+	var tk models.User
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	router.ServeHTTP(w, r)
+func usersFromJSON(jsn []byte) (interface{}, error) {
+	var tk []models.User
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	var u models.User
+func toUsers(v interface{}) []models.User {
+	return v.([]models.User)
+}
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &u)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 	}
+func toUser(v interface{}) models.User {
+	return v.(models.User)
+}
 
-// 	if u.Username != "foouser" {
-// 		t.Errorf("Expected foouser Got %s\n", u.Username)
-// 	}
+var userRouteTests = []routeTest{
+	{
+		Name:      "Get User",
+		Converter: userFromJSON,
+		Endpoint:  "/api/v1/users/testuser",
+		Validator: func(v interface{}, t *testing.T) {
+			user := toUser(v)
 
-// 	if u.Password != "" {
-// 		t.Error("Expected no password to be returned but instead got a password.")
-// 	}
-// }
+			if user.Username != "testuser" {
+				t.Errorf("Expected testuser Got: %s", user.Username)
+			}
 
-// func TestGetAllUsers(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/users", nil)
-// 	testAdminLogin(w, r)
+			if user.Password != "" {
+				t.Error("Sent password back with user.")
+			}
+		},
+	},
 
-// 	router.ServeHTTP(w, r)
+	{
+		Name:      "Get All Users",
+		Converter: usersFromJSON,
+		Endpoint:  "/api/v1/users",
+		Validator: func(v interface{}, t *testing.T) {
+			users := toUsers(v)
 
-// 	var u []models.User
+			if len(users) <= 1 {
+				t.Errorf("Expected more than 1 user got %d", len(users))
+				return
+			}
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &u)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
+			for _, u := range users {
+				if u.Password != "" {
+					t.Error("Sent password back with user.")
+				}
+			}
+		},
+	},
 
-// 	t.Log(w.Body)
+	{
+		Name:      "Create User",
+		Admin:     true,
+		Converter: userFromJSON,
+		Method:    "POST",
+		Endpoint:  "/api/v1/users",
+		Body: models.User{
+			Username: "fakeuser",
+			Password: "fakepassword",
+			Email:    "fake@fake.com",
+			FullName: "The Real Faker",
+		},
+		Validator: func(v interface{}, t *testing.T) {
+			user := toUser(v)
 
-// 	if len(u) != 2 {
-// 		t.Errorf("Expected 2 users got %d", len(u))
-// 		return
-// 	}
+			if user.Username != "testuser" {
+				t.Errorf("Expected testuser Got: %s", user.Username)
+			}
 
-// 	if u[0].Username != "foouser" {
-// 		t.Errorf("Expected foouser Got %s", u[0].Username)
-// 	}
+			if user.Password != "" {
+				t.Error("Sent password back with user.")
+			}
+		},
+	},
 
-// 	if u[0].Password != "" {
-// 		t.Errorf("Expected no passsword but got %s\n", u[0].Password)
-// 	}
-// }
-
-// func TestCreateUser(t *testing.T) {
-// 	u := models.User{Username: "grumpycat"}
-// 	byt, _ := json.Marshal(u)
-// 	rd := bytes.NewReader(byt)
-
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/users", rd)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var l models.User
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &l)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	if l.ID != 1 {
-// 		t.Errorf("Expected 1 Got %d", u.ID)
-// 	}
-
-// 	if l.ProfilePic == "" {
-// 		t.Error("Expected a profile pic but got nothing.")
-// 	}
-// }
-
-// func TestRefreshSession(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/users/sessions", nil)
-// 	testLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	if w.Code != 200 {
-// 		t.Errorf("Expected 200 Got %d\n", w.Code)
-// 	}
-// }
-
-// func TestSearchUsers(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/users/search?query=foo", nil)
-// 	testAdminLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var u []models.User
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &u)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	t.Log(w.Body)
-
-// 	if len(u) != 2 {
-// 		t.Errorf("Expected 2 users got %d", len(u))
-// 		return
-// 	}
-
-// 	if u[0].Username != "foouser" {
-// 		t.Errorf("Expected foouser Got %s", u[0].Username)
-// 	}
-
-// 	if u[0].Password != "" {
-// 		t.Errorf("Expected no passsword but got %s\n", u[0].Password)
-// 	}
-// }
-
-// func TestCreateSession(t *testing.T) {
-// 	login := struct {
-// 		Username string `json:"username"`
-// 		Password string `json:"password"`
-// 	}{
-// 		"foouser",
-// 		"foopass",
-// 	}
-
-// 	byt, _ := json.Marshal(login)
-// 	rd := bytes.NewReader(byt)
-
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/users/sessions", rd)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var user models.User
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &user)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 	}
-
-// 	if user.Username == "" {
-// 		t.Errorf("Expected a username but none was found. %v\n", user)
-// 	}
-
-// 	if user.Password != "" {
-// 		t.Error("Expected no password instead got one")
-// 	}
-
-// 	t.Log(w.Body)
-// }
+	{
+		Name:     "Remove User",
+		Endpoint: "/api/v1/users/fakeuser",
+		Admin:    true,
+		Method:   "DELETE",
+	},
+}

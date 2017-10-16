@@ -4,180 +4,92 @@
 
 package v1_test
 
-// import (
-// 	"bytes"
-// 	"encoding/json"
-// 	"net/http/httptest"
-// 	"testing"
+import (
+	"encoding/json"
+	"testing"
 
-// 	"github.com/praelatus/praelatus/api/utils"
-// 	"github.com/praelatus/praelatus/models"
-// )
+	"github.com/praelatus/praelatus/models"
+)
 
-// func TestGetProject(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/projects/TEST", nil)
+func projectFromJSON(jsn []byte) (interface{}, error) {
+	var tk models.Project
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	router.ServeHTTP(w, r)
+func projectsFromJSON(jsn []byte) (interface{}, error) {
+	var tk []models.Project
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	var p models.Project
+func toProjects(v interface{}) []models.Project {
+	return v.([]models.Project)
+}
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 	}
+func toProject(v interface{}) models.Project {
+	return v.(models.Project)
+}
 
-// 	if p.Key != "TEST" {
-// 		t.Errorf("Expected TEST-1 Got %s\n", p.Key)
-// 	}
+var projectRouteTests = []routeTest{
+	{
+		Name:      "Get Project",
+		Endpoint:  "/api/v1/projects/TEST2",
+		Converter: projectFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			project := toProject(v)
 
-// 	t.Log(w.Body)
-// }
+			if project.Key != "TEST2" {
+				t.Errorf("Expected TEST2 Got: %s", project.Key)
+			}
+		},
+	},
+	{
+		Name:      "Get All Projects",
+		Endpoint:  "/api/v1/projects",
+		Converter: projectsFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			projects := toProjects(v)
 
-// func TestGetAllProjects(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/projects", nil)
-// 	testLogin(w, r)
+			if len(projects) <= 1 {
+				t.Errorf("Expected More than 1 Project Got: %d", len(projects))
+				return
+			}
 
-// 	router.ServeHTTP(w, r)
+			if projects[0].Key != "TEST" {
+				t.Errorf("Expected TEST Got: %s", projects[0].Key)
+			}
+		},
+	},
 
-// 	var p []models.Project
+	{
+		Name:      "Create Project",
+		Admin:     true,
+		Method:    "POST",
+		Endpoint:  "/api/v1/projects",
+		Converter: projectFromJSON,
+		Body: models.Project{
+			Key:  "FAKEPROJ",
+			Name: "Fake Project",
+			Lead: "testuser",
+		},
+		Validator: func(v interface{}, t *testing.T) {
+			project := toProject(v)
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 	}
+			if project.Key != "FAKEPROJ" {
+				t.Errorf("Expected FAKEPROJ Got: %s", project.Key)
+			}
+		},
+	},
 
-// 	t.Log(w.Body)
+	{
+		Name:     "Remove Project",
+		Endpoint: "/api/v1/projects/TEST2",
+		Method:   "DELETE",
+		Admin:    true,
+	},
+}
 
-// 	if len(p) != 2 {
-// 		t.Errorf("Expected 2 Got %d\n", len(p))
-// 		return
-// 	}
-
-// 	if p[0].Key != "TEST" {
-// 		t.Errorf("Expected TEST-1 Got %s\n", p[0].Key)
-// 	}
-// }
-
-// func TestCreateProject(t *testing.T) {
-// 	p := models.Project{Name: "Grumpy Cat", Key: "NOPE"}
-// 	byt, _ := json.Marshal(p)
-// 	rd := bytes.NewReader(byt)
-
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/projects", rd)
-// 	testAdminLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	if p.ID != 1 {
-// 		t.Errorf("Expected 1 Got %d", p.ID)
-// 	}
-
-// 	t.Log(w.Body)
-// }
-
-// func TestSetPermissionScheme(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/projects/TEST/permissionscheme/1", nil)
-// 	testAdminLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var msg utils.APIMessage
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &msg)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	if msg.Message != "successfully set permission scheme" {
-// 		t.Errorf("Expected successfully set permission scheme Got: %s\n",
-// 			msg.Message)
-// 	}
-
-// 	t.Log(w.Body)
-// }
-
-// func TestGetPermissionScheme(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/projects/TEST/permissionscheme", nil)
-// 	testAdminLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var ps models.PermissionScheme
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &ps)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	if ps.ID == 0 {
-// 		t.Errorf("Expected ID to be set Got %s\n", ps)
-// 	}
-
-// 	if ps.Name == "" {
-// 		t.Errorf("Expected Name to be set Got %s\n", ps)
-// 	}
-
-// 	t.Log(w.Body)
-// }
-
-// func TestGetRoles(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/projects/TEST/roles", nil)
-// 	testAdminLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var role []models.Role
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &role)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	if role[0].ID == 0 {
-// 		t.Errorf("Expected ID to be set Got %s\n", role)
-// 	}
-
-// 	if role[0].Name == "" {
-// 		t.Errorf("Expected Name to be set Got %s\n", role)
-// 	}
-
-// 	if role[0].Members == nil {
-// 		t.Error("Expected members to be populated instead got nil")
-// 	}
-
-// 	t.Log(w.Body)
-// }
-
-// func TestAddUserToRole(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST",
-// 		"/api/v1/projects/TEST/roles/1/addUser/1", nil)
-// 	testAdminLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	var msg utils.APIMessage
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &msg)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	if msg.Message != "successfully added user to role" {
-// 		t.Errorf("Expected successfully added user to role Got: %s\n",
-// 			msg.Message)
-// 	}
-
-// 	t.Log(w.Body)
-// }
+func TestProjectRoutes(t *testing.T) {
+	testRoutes(projectRouteTests, t)
+}

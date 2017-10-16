@@ -16,29 +16,29 @@ import (
 type Ticket struct {
 	CreatedDate time.Time `json:"createdDate"`
 	UpdatedDate time.Time `json:"updatedDate"`
-	Key         string    `bson:"_id" json:"key"`
-	Summary     string    `json:"summary"`
-	Description string    `json:"description"`
+	Key         string    `bson:"_id" json:"key" required:"true"`
+	Summary     string    `json:"summary" required:"true"`
+	Description string    `json:"description" required:"true"`
 	Status      string    `json:"status"`
 	Reporter    string    `json:"reporter"`
 	Assignee    string    `json:"assignee"`
-	Type        string    `json:"ticketType"`
+	Type        string    `json:"ticketType" required:"true"`
 	Labels      []string  `json:"labels"`
 
 	Fields   []Field   `json:"fields"`
 	Comments []Comment `json:"comments,omitempty"`
 
 	Workflow bson.ObjectId `json:"workflow"`
-	Project  string        `json:"project"`
+	Project  string        `json:"project" required:"true"`
 }
 
-func (t *Ticket) String() string {
+func (t Ticket) String() string {
 	return jsonString(t)
 }
 
 // Transition searches through the available transitions for the ticket
 // returning a boolean indicating success or failure and the transition
-func (t *Ticket) Transition(db *mgo.Database, name string) (Transition, bool) {
+func (t Ticket) Transition(db *mgo.Database, name string) (Transition, bool) {
 	var workflow Workflow
 
 	err := db.C("workflows").FindId(t.Workflow).One(&workflow)

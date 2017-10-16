@@ -30,8 +30,8 @@ type RolePermission struct {
 
 // Project is the model used to represent a project in the database.
 type Project struct {
-	Key         string           `json:"key" bson:"_id"`
-	Name        string           `json:"name"`
+	Key         string           `json:"key" bson:"_id" required:"true"`
+	Name        string           `json:"name" required:"true"`
 	CreatedDate time.Time        `json:"createdDate"`
 	Lead        string           `json:"lead"`
 	Homepage    string           `json:"homepage,omitempty"`
@@ -48,13 +48,13 @@ type Project struct {
 	Icon *mgo.GridFile `json:"-"`
 }
 
-func (p *Project) String() string {
+func (p Project) String() string {
 	return jsonString(p)
 }
 
 // GetWorkflow will return the ID of the workflow to use for tickets of the
 // given type for this project.
-func (p *Project) GetWorkflow(ticketType string) bson.ObjectId {
+func (p Project) GetWorkflow(ticketType string) bson.ObjectId {
 	var defaultWorkflow bson.ObjectId
 
 	for _, mapping := range p.WorkflowScheme {
@@ -68,7 +68,8 @@ func (p *Project) GetWorkflow(ticketType string) bson.ObjectId {
 	return defaultWorkflow
 }
 
-func (p *Project) HasTicketType(typeName string) bool {
+// HasTicketType is used to validate whether the given ticket type exists for this project
+func (p Project) HasTicketType(typeName string) bool {
 	for _, t := range p.TicketTypes {
 		if t == typeName {
 			return true
@@ -78,7 +79,9 @@ func (p *Project) HasTicketType(typeName string) bool {
 	return false
 }
 
-func (p *Project) GetPermsForRoles(roles ...Role) permission.Permissions {
+// GetPermsForRoles will take the given roles and return a slice of Permissions that those roles have
+// NOTE: It does not remove duplicates so some permissions may exist more than once
+func (p Project) GetPermsForRoles(roles ...Role) permission.Permissions {
 	perms := make(permission.Permissions, 0)
 
 	for _, role := range roles {
