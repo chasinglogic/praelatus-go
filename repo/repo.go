@@ -14,12 +14,12 @@ import (
 
 // Errors
 var (
-	ErrLoginRequired          = errors.New("you must be logged in")
-	ErrAdminRequired          = errors.New("you must be an administrator")
-	ErrUnauthorized           = errors.New("permission denied")
-	ErrNotFound               = errors.New("not found")
-	ErrInvalidTicketType      = errors.New("invalid ticket type for project")
-	ErrInvalidFieldsForTicket = errors.New("invalid fields for ticket of that type for project")
+	ErrLoginRequired          error = errors.New("you must be logged in")
+	ErrAdminRequired                = errors.New("you must be an administrator")
+	ErrUnauthorized                 = errors.New("permission denied")
+	ErrNotFound                     = errors.New("not found")
+	ErrInvalidTicketType            = errors.New("invalid ticket type for project")
+	ErrInvalidFieldsForTicket       = errors.New("invalid fields for ticket of that type for project")
 )
 
 // TicketRepo handles storing, retrieving, updating, and creating tickets.
