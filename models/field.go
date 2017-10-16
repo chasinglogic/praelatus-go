@@ -50,7 +50,7 @@ type Field struct {
 
 // IsValidDataType is used to verify that the field has a data type we can
 // support
-func (f *Field) IsValidDataType() bool {
+func (f Field) IsValidDataType() bool {
 	for _, t := range DataTypes {
 		if t == f.DataType {
 			return true
@@ -60,21 +60,21 @@ func (f *Field) IsValidDataType() bool {
 	return false
 }
 
-func (f *Field) String() string {
+func (f Field) String() string {
 	return jsonString(f)
 }
 
 // FieldScheme assigns fields to a ticke type.
 type FieldScheme struct {
 	ID   bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	Name string        `json:"name"`
+	Name string        `json:"name" required:"true"`
 
 	// Map ticket type to fields
 	Fields map[string][]Field `json:"fields"`
 }
 
 // ValidateTicket verifies that all fields on t are valid
-func (fs *FieldScheme) ValidateTicket(t Ticket) error {
+func (fs FieldScheme) ValidateTicket(t Ticket) error {
 	fields, ok := fs.Fields[t.Type]
 	if !ok {
 		fields, ok = fs.Fields[""]

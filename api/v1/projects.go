@@ -13,11 +13,12 @@ import (
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/api/utils"
 	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/repo"
 )
 
 func projectRouter(router *mux.Router) {
 	router.HandleFunc("/projects", GetAllProjects).Methods("GET")
-	// router.HandleFunc("/projects", CreateProject).Methods("POST")
+	router.HandleFunc("/projects", CreateProject).Methods("POST")
 
 	router.HandleFunc("/projects/{key}", SingleProject)
 }
@@ -74,4 +75,36 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendJSON(w, projects)
+}
+
+// CreateProject will create a project in the database. This route requires
+// admin.
+func CreateProject(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil || !u.IsAdmin {
+		utils.Error(w, repo.ErrUnauthorized)
+		return
+	}
+
+	var p models.Project
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&p)
+	if err != nil {
+		utils.APIErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := utils.ValidateModel(p); err != nil {
+		utils.APIErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	p, err = Repo.Projects().Create(u, p)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	utils.SendJSON(w, p)
 }

@@ -32,6 +32,11 @@ func createFieldScheme(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := utils.ValidateModel(fs); err != nil {
+		utils.APIErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	fs, err = Repo.Fields().Create(u, fs)
 	if err != nil {
 		utils.Error(w, err)

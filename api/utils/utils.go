@@ -9,8 +9,10 @@ package utils
 // Message is a general purpose json struct used primarily for error responses.
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/praelatus/praelatus/models"
@@ -101,4 +103,29 @@ func SendJSON(w http.ResponseWriter, v interface{}) {
 	}
 
 	w.Write(resp)
+}
+
+const requireTag = "required"
+
+// ValidateModel will iterate the struct fields checking the tags for required
+// fields. This is used during model creation to validate required data is sent
+func ValidateModel(model interface{}) error {
+	v := reflect.ValueOf(model)
+
+	for i := 0; i < v.NumField(); i++ {
+		tag := v.Type().Field(i).Tag.Get(requireTag)
+
+		// Skip if not set to true
+		if tag != "true" && tag != "True" {
+			continue
+		}
+
+		val := v.Field(i).Interface()
+		if val == nil {
+			return fmt.Errorf("%s is a required field",
+				v.Type().Field(i).Name)
+		}
+	}
+
+	return nil
 }

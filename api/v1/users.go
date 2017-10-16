@@ -84,6 +84,11 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := utils.ValidateModel(u); err != nil {
+		utils.APIErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	if !loggedInUser.IsAdmin {
 		u.IsAdmin = false
 	}

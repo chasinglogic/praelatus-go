@@ -20,8 +20,11 @@ type Sanitizer interface {
 	Sanitize() interface{}
 }
 
+// Users is an alias for a slice of Users which implements Sanitize
 type Users []User
 
+// Sanitize implements models.Sanitizer so that we don't send sensitive info
+// back to the client
 func (ur Users) Sanitize() interface{} {
 	newUsers := make([]interface{}, len(ur))
 
@@ -32,6 +35,7 @@ func (ur Users) Sanitize() interface{} {
 	return newUsers
 }
 
+// UserRole is a mapping of a user to a role
 type UserRole struct {
 	Role    Role   `json:"role"`
 	Project string `json:"project"`
@@ -39,11 +43,11 @@ type UserRole struct {
 
 // User represents a user of our application
 type User struct {
-	Username   string   `json:"username" bson:"_id"`
-	Password   string   `json:"password,omitempty"`
-	Email      string   `json:"email"`
-	FullName   string   `json:"fullName"`
-	ProfilePic string   `json:"profilePicture"`
+	Username   string   `json:"username" bson:"_id" required:"true"`
+	Password   string   `json:"password,omitempty" required:"true"`
+	Email      string   `json:"email" required:"true"`
+	FullName   string   `json:"fullName" required:"true"`
+	ProfilePic string   `json:"profilePicture" `
 	IsAdmin    bool     `json:"isAdmin,omitempty"`
 	IsActive   bool     `json:"isActive,omitempty"`
 	Settings   Settings `json:"settings,omitempty"`
@@ -63,6 +67,8 @@ func (u User) CheckPw(pw []byte) bool {
 	return false
 }
 
+// Sanitize implements models.Sanitizer so that we don't send sensitive info
+// back to the client
 func (u User) Sanitize() interface{} {
 	u.Password = ""
 	return u

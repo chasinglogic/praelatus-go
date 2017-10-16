@@ -9,15 +9,16 @@ import "gopkg.in/mgo.v2/bson"
 // Workflow is the container for issues and keeps track of available transitions
 type Workflow struct {
 	ID          bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	Name        string        `json:"name"`
-	Transitions []Transition  `json:"transitions"`
+	Name        string        `json:"name" required:"true"`
+	Transitions []Transition  `json:"transitions" required:"true"`
 }
 
-func (w *Workflow) String() string {
+func (w Workflow) String() string {
 	return jsonString(w)
 }
 
-func (w *Workflow) CreateTransition() Transition {
+// CreateTransition will return the transition to perform on a ticket during creation
+func (w Workflow) CreateTransition() Transition {
 	for _, t := range w.Transitions {
 		if t.FromStatus == "Create" {
 			return t
@@ -36,7 +37,7 @@ type Transition struct {
 	Hooks      []Hook `json:"hooks"`
 }
 
-func (t *Transition) String() string {
+func (t Transition) String() string {
 	return jsonString(t)
 }
 
@@ -48,6 +49,6 @@ type Hook struct {
 	Body     string `json:"body"`
 }
 
-func (h *Hook) String() string {
+func (h Hook) String() string {
 	return jsonString(h)
 }
