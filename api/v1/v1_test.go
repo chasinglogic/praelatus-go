@@ -43,7 +43,7 @@ func testLogin(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	r.Header.Add("Authorization", w.Header().Get("Token"))
+	r.Header.Add("Authorization", "Bearer "+w.Header().Get("X-Praelatus-Token"))
 }
 
 func testAdminLogin(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ func testAdminLogin(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	r.Header.Add("Authorization", w.Header().Get("Token"))
+	r.Header.Add("Authorization", "Bearer "+w.Header().Get("X-Praelatus-Token"))
 }
 
 type routeTest struct {
