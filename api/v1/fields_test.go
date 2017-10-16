@@ -4,76 +4,84 @@
 
 package v1_test
 
-// import (
-// 	"bytes"
-// 	"encoding/json"
-// 	"net/http/httptest"
-// 	"testing"
+import (
+	"encoding/json"
+	"testing"
 
-// 	"github.com/praelatus/praelatus/models"
-// )
+	"github.com/praelatus/praelatus/models"
+)
 
-// func TestGetField(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/fields/1", nil)
+func fieldSchemeFromJSON(jsn []byte) (interface{}, error) {
+	var tk models.FieldScheme
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	router.ServeHTTP(w, r)
+func fieldSchemesFromJSON(jsn []byte) (interface{}, error) {
+	var tk []models.FieldScheme
+	err := json.Unmarshal(jsn, &tk)
+	return tk, err
+}
 
-// 	var p models.Field
+func toFieldSchemes(v interface{}) []models.FieldScheme {
+	return v.([]models.FieldScheme)
+}
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 	}
+func toFieldScheme(v interface{}) models.FieldScheme {
+	return v.(models.FieldScheme)
+}
 
-// 	t.Log(w.Body)
+var fieldSchemeRouteTests = []routeTest{
+	{
+		Name:      "Get FieldScheme",
+		Admin:     true,
+		Endpoint:  "/api/v1/fieldschemes/59e3f2026791c08e74da1bb2",
+		Converter: fieldSchemeFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			fs := toFieldScheme(v)
 
-// 	if p.ID != 1 {
-// 		t.Errorf("Expected 1 Got %d\n", p.ID)
-// 	}
-// }
+			if fs.ID != "59e3f2026791c08e74da1bb2" {
+				t.Errorf("Expected 59e3f2026791c08e74da1bb2 Got: %s", fs.ID)
+			}
+		},
+	},
 
-// func TestGetAllFields(t *testing.T) {
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("GET", "/api/v1/fields", nil)
-// 	testLogin(w, r)
+	{
+		Name:      "Get All FieldSchemes",
+		Admin:     true,
+		Endpoint:  "/api/v1/fieldschemes",
+		Converter: fieldSchemesFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			fs := toFieldSchemes(v)
 
-// 	router.ServeHTTP(w, r)
+			if len(fs) != 1 {
+				t.Errorf("Expected 1 FieldScheme got %d", len(fs))
+			}
 
-// 	var p []models.Field
+			if fs[0].ID == "" {
+				t.Errorf("Expected an ID Got None")
+			}
+		},
+	},
 
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s\n", e.Error())
-// 	}
+	{
+		Name:      "Create FieldScheme",
+		Admin:     true,
+		Method:    "POST",
+		Endpoint:  "/api/v1/fieldschemes",
+		Converter: fieldSchemeFromJSON,
+		Validator: func(v interface{}, t *testing.T) {
+			fs := toFieldScheme(v)
 
-// 	if len(p) != 2 {
-// 		t.Errorf("Expected 2 Got %d\n", len(p))
-// 		return
-// 	}
+			if fs.ID == "" {
+				t.Errorf("Expected An ID but got None")
+			}
+		},
+	},
 
-// 	if p[0].Name != "String Field" {
-// 		t.Errorf("Expected String Field Got %s\n", p[0].Name)
-// 	}
-// }
-
-// func TestCreateField(t *testing.T) {
-// 	p := models.Field{Name: "Snug"}
-// 	byt, _ := json.Marshal(p)
-// 	rd := bytes.NewReader(byt)
-
-// 	w := httptest.NewRecorder()
-// 	r := httptest.NewRequest("POST", "/api/v1/fields", rd)
-// 	testAdminLogin(w, r)
-
-// 	router.ServeHTTP(w, r)
-
-// 	e := json.Unmarshal(w.Body.Bytes(), &p)
-// 	if e != nil {
-// 		t.Errorf("Failed with error %s", e.Error())
-// 	}
-
-// 	if p.ID != 1 {
-// 		t.Errorf("Expected 1 Got %d", p.ID)
-// 	}
-// }
+	{
+		Name:     "Remove FieldScheme",
+		Endpoint: "/api/v1/fieldschemes/59e3f2026791c08e74da1bb2",
+		Method:   "DELETE",
+	},
+}
