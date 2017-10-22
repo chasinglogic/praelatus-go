@@ -7,8 +7,9 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
-	"strings"
+	"runtime"
 
 	"github.com/gorilla/mux"
 	"github.com/praelatus/praelatus/repo"
@@ -17,6 +18,9 @@ import (
 	"github.com/praelatus/praelatus/api/utils"
 	"github.com/praelatus/praelatus/api/v1"
 )
+
+var Version string
+var Commit string
 
 func routes(router *mux.Router) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +53,12 @@ func Routes() *mux.Router {
 	v1.Routes(api)
 
 	// setup routes endpoints
+	api.HandleFunc("/version",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(fmt.Sprintf("Praelatus %s#%s %s/%s",
+				Version, Commit, runtime.GOOS, runtime.GOARCH)))
+		})
+
 	v1r.HandleFunc("/routes", routes(v1r)).Methods("GET")
 	api.HandleFunc("/routes", routes(api)).Methods("GET")
 
@@ -57,20 +67,14 @@ func Routes() *mux.Router {
 
 	router.HandleFunc("/",
 		func(w http.ResponseWriter, r *http.Request) {
-			path := strings.Split(r.URL.Path, "/")
-			root := path[1]
-
-			switch root {
-			case "api":
+			if r.URL.Path[len("api"):] == "api" {
 				api.ServeHTTP(w, r)
-				return
-			case "static":
+			} else if r.URL.Path[len("static"):] == "static" {
 				static.ServeHTTP(w, r)
-				return
+			} else {
+				w.Header().Set("Content-Type", "text/html")
+				http.ServeFile(w, r, "client/index.html")
 			}
-
-			w.Header().Set("Content-Type", "text/html")
-			http.ServeFile(w, r, "client/index.html")
 		})
 
 	return router

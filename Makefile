@@ -2,13 +2,12 @@ build: build-client build-server
 
 build-client:
 	mkdir -p build
-	cd client
-	npm run-script build
-	cp -R dist/* ../build/client
+	cd client && npm run-script build
+	cp -R client/dist/* ../build/client
 
 build-server:
 	mkdir -p build
-	go build -tags production -o build/praelatus cmd/praelatus/main.go
+	go build -tags release -o build/praelatus cmd/praelatus/main.go
 
 clean:
 	rm -rf build
@@ -33,9 +32,8 @@ test-server:
 	go test ./...
 
 test-client:
-	cd client
-	npm run-script test
-	npm run-script lint
+	cd client && npm run-script test
+	cd client && npm run-script lint
 
 test: test-server test-client
 
@@ -43,11 +41,10 @@ seeddb:
 	go run cmd/praelatus/main.go seeddb
 
 cleandb:
-	go run cmd/praelatus/main.go cleandb
+	go run cmd/praelatus/main.go cleandb --yes
 
 dev-server:
 	go run cmd/praelatus/main.go --devmode
 
 dev-client:
-	cd client
-	npm run dev
+	cd client && npm run dev
