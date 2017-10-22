@@ -8,35 +8,45 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/urfave/cli"
-
 	"github.com/praelatus/praelatus/config"
+	"github.com/spf13/cobra"
 )
 
-// ShowConfig will print the current configuration.
-func ShowConfig(c *cli.Context) error {
-	fmt.Println(config.Cfg)
-	return nil
+func init() {
+	configCmd.AddCommand(show)
 }
 
-// GenConfig will generate a config.json based on environment variables
-func GenConfig(c *cli.Context) error {
-	f, err := os.Open("config.json")
-	if err != nil && !os.IsNotExist(err) {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Commands for interacting with the config file.",
+}
 
-	defer f.Close()
+var show = &cobra.Command{
+	Use:   "show",
+	Short: "Show the current configuration.",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(config.Cfg)
+	},
+}
 
-	fmt.Println(config.Cfg)
+var gen = &cobra.Command{
+	Use:   "gen",
+	Short: "Generate a config file based on environment variables and defaults.",
+	Run: func(cmd *cobra.Command, args []string) {
+		f, err := os.Open("config.json")
+		if err != nil && !os.IsNotExist(err) {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
-	if os.IsNotExist(err) {
+		defer f.Close()
+
+		fmt.Println(config.Cfg)
+
 		f, _ = os.Create("config.json")
 		_, err = f.Write([]byte(config.Cfg.String()))
-		return err
-	}
-
-	fmt.Println("config.json already exists exiting...")
-	return nil
+		if err != nil {
+			fmt.Println("ERROR:", err)
+		}
+	},
 }
