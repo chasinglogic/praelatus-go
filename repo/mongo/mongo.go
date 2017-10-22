@@ -119,6 +119,11 @@ func (r Repo) Test() error {
 	return r.Conn.Ping()
 }
 
+// Init will setup the indexes on the database
+func (r Repo) Init() error {
+	return nil
+}
+
 // New will attempt to connect to the MongoDB instance at connURL and return
 // the repo.Repo that is connected to it.
 func New(connURL string) repo.Repo {

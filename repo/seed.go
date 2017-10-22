@@ -175,6 +175,15 @@ var p = models.Project{
 
 var p1 = p
 
+var availableLabels = []string{
+	"test",
+	"example-label",
+	"example-label2",
+	"duplicate",
+	"beginner-friendly",
+	"help-needed",
+}
+
 // Seed will fill the given repo with test data.
 func Seed(r Repo) error {
 	var err error
@@ -302,6 +311,11 @@ ipsa divite, est ille ver verba vicisse, exsiliantque aprica illius, rapta?`,
 			}
 
 			t.Fields = append(t.Fields, fieldValue)
+		}
+
+		lbls := rand.Intn(len(availableLabels))
+		for i := 0; i < lbls; i++ {
+			t.Labels = append(t.Labels, availableLabels[i])
 		}
 
 		t, err = r.Tickets().Create(u1, t)

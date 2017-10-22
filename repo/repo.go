@@ -32,6 +32,7 @@ type TicketRepo interface {
 
 	AddComment(u *models.User, uid string, comment models.Comment) (models.Ticket, error)
 	NextTicketKey(u *models.User, projectKey string) (string, error)
+	LabelSearch(u *models.User, query string) ([]string, error)
 }
 
 // FieldSchemeRepo handles storing, retrieving, updating, and creating field schemes.
@@ -80,6 +81,7 @@ type Repo interface {
 
 	Clean() error
 	Test() error
+	Init() error
 }
 
 // Cache is used for storing temporary resources. Usually backed by Mongo, Bolt

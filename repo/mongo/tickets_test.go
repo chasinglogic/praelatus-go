@@ -5,6 +5,7 @@
 package mongo_test
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -68,5 +69,25 @@ func TestTicketDelete(t *testing.T) {
 
 	if _, e = r.Tickets().Get(&admin, "TEST-3"); e == nil {
 		t.Errorf("Expected an error getting ticket but got none.")
+	}
+}
+
+func TestLabelSearch(t *testing.T) {
+	lbls, e := r.Tickets().LabelSearch(&admin, "example")
+	if e != nil {
+		t.Error(e)
+		return
+	}
+
+	if len(lbls) == 0 {
+		t.Error("Expected 2 Labels Got 0")
+		return
+	}
+
+	for i := range lbls {
+		if !strings.HasPrefix(lbls[i], "example") {
+			t.Errorf("Expected labels to start with example- Got %s\n", lbls[i])
+			return
+		}
 	}
 }

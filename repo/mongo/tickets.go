@@ -205,3 +205,40 @@ func (t ticketRepo) NextTicketKey(u *models.User, projectKey string) (string, er
 	count, err := t.coll().Find(bson.M{"project": projectKey}).Count()
 	return projectKey + "-" + strconv.Itoa(count+1), mongoErr(err)
 }
+
+func (t ticketRepo) LabelSearch(u *models.User, query string) ([]string, error) {
+	var labelDoc struct{ Labels []string }
+
+	if u == nil {
+		return []string{}, repo.ErrUnauthorized
+	}
+
+	pipe := t.coll().Pipe([]bson.M{
+		{
+			"$unwind": "$labels",
+		},
+		{
+			"$group": bson.M{
+				"_id": "$labels",
+			},
+		},
+		{
+			"$match": bson.M{
+				"_id": bson.M{
+					"$regex": query,
+				},
+			},
+		},
+		{
+			"$group": bson.M{
+				"_id": "available",
+				"labels": bson.M{
+					"$push": "$_id",
+				},
+			},
+		},
+	})
+
+	err := pipe.One(&labelDoc)
+	return labelDoc.Labels, mongoErr(err)
+}

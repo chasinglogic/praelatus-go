@@ -139,6 +139,10 @@ func (t mockTicketRepo) Delete(u *models.User, uid string) error {
 	return nil
 }
 
+func (t mockTicketRepo) LabelSearch(u *models.User, query string) ([]string, error) {
+	return []string{"label1", "label2"}, nil
+}
+
 func (t mockTicketRepo) AddComment(u *models.User, uid string, comment models.Comment) (models.Ticket, error) {
 	tickets[0].Comments = append(tickets[0].Comments, comment)
 	return tickets[0], nil
@@ -243,3 +247,4 @@ func (m mockRepo) Workflows() WorkflowRepo {
 
 func (m mockRepo) Clean() error { return nil }
 func (m mockRepo) Test() error  { return nil }
+func (m mockRepo) Init() error  { return nil }
