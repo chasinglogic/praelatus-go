@@ -6,62 +6,112 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/models"
-	"github.com/urfave/cli"
+	"github.com/spf13/cobra"
 )
 
-// TestDB will test the connection to the configured database.
-func TestDB(c *cli.Context) error {
-	fmt.Println("Testing connection to the database...")
-	fmt.Println("URL:", config.DBURL())
-	r := config.LoadRepo()
-	err := r.Test()
-	if err != nil {
-		fmt.Println("Connection failed!", err)
-		return err
-	}
+var (
+	isAdmin  bool
+	username string
+	password string
+	fullName string
+	email    string
+)
 
-	fmt.Println("Connection successful!")
-	return nil
+func init() {
+	createUser.Flags().StringVarP(&username, "username", "u", "",
+		"Username for the new user.")
+	createUser.Flags().StringVarP(&password, "password", "p", "",
+		"Password for the new user.")
+	createUser.Flags().StringVarP(&email, "email", "e", "",
+		"Email for the new user.")
+	createUser.Flags().StringVarP(&fullName, "full-name", "n", "",
+		"Email for the new user.")
+	createUser.Flags().BoolVarP(&isAdmin, "admin", "a", false,
+		"If given the created user will be an Admin.")
+
+	db.AddCommand(testdb)
+	db.AddCommand(setupdb)
+	admin.AddCommand(createUser)
 }
 
-// AdminCreateUser will allow an admin to create a user from the server.
-func AdminCreateUser(c *cli.Context) error {
-	username := c.String("username")
-	password := c.String("password")
-	fullName := c.String("fullName")
-	email := c.String("email")
-	admin := c.Bool("admin")
+var db = &cobra.Command{
+	Use:   "db",
+	Short: "Commands for interacting with the database.",
+}
 
-	if username == "" {
-		return cli.NewExitError("missing required --username flag", 1)
-	}
+var testdb = &cobra.Command{
+	Use:   "test",
+	Short: "Test the connection to the database.",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Testing connection to the database...")
+		fmt.Println("URL:", config.DBURL())
+		r := config.LoadRepo()
+		err := r.Test()
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println("Connection failed!")
+			return
+		}
 
-	if password == "" {
-		return cli.NewExitError("missing required --password flag", 1)
-	}
+		fmt.Println("Connection successful!")
+	},
+}
 
-	if fullName == "" {
-		return cli.NewExitError("missing required --fullName flag", 1)
-	}
+var admin = &cobra.Command{
+	Use:   "admin",
+	Short: "Commands for administrating this instance of Praelatus.",
+}
 
-	if email == "" {
-		return cli.NewExitError("missing required --email flag", 1)
-	}
+var createUser = &cobra.Command{
+	Use:   "create_user",
+	Short: "Create a user in the database.",
+	Run: func(cmd *cobra.Command, args []string) {
+		if username == "" {
+			fmt.Println("missing required --username flag")
+			os.Exit(1)
+		}
 
-	u, err := models.NewUser(username, password, fullName, email, admin)
-	if err != nil {
-		return cli.NewExitError(err.Error(), 1)
-	}
+		if password == "" {
+			fmt.Println("missing required --password flag")
+			os.Exit(1)
+		}
 
-	r := config.LoadRepo()
-	_, err = r.Users().Create(&models.User{IsAdmin: true}, *u)
-	if err != nil {
-		fmt.Println("Error creating user:", err)
-		return err
-	}
+		if fullName == "" {
+			fmt.Println("missing required --fullName flag")
+			os.Exit(1)
+		}
 
-	return nil
+		if email == "" {
+			fmt.Println("missing required --email flag")
+			os.Exit(1)
+		}
+
+		u, err := models.NewUser(username, password, fullName, email, isAdmin)
+		if err != nil {
+			fmt.Println("ERROR:", err)
+			os.Exit(1)
+		}
+
+		r := config.LoadRepo()
+		_, err = r.Users().Create(&models.User{IsAdmin: isAdmin}, *u)
+		if err != nil {
+			fmt.Println("Error creating user:", err)
+		}
+	},
+}
+
+var setupdb = &cobra.Command{
+	Use:   "setup",
+	Short: "Set up the database. Should only be run once on a new installation.",
+	Run: func(cmd *cobra.Command, args []string) {
+		r := config.LoadRepo()
+		err := r.Init()
+		if err != nil {
+			fmt.Println("ERROR:", err)
+		}
+	},
 }

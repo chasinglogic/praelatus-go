@@ -2,6 +2,8 @@
 // Use of this source code is governed by the AGPLv3 license that can be found in
 // the LICENSE file.
 
+// +build !release
+
 package commands
 
 import (
@@ -12,45 +14,63 @@ import (
 
 	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/repo"
-	"github.com/urfave/cli"
+	"github.com/spf13/cobra"
 )
 
-// SeedDB will seed the database with test data.
-func SeedDB(c *cli.Context) error {
-	fmt.Println("Connecting to database...")
-	r := config.LoadRepo()
+var skipPrompt bool
 
-	fmt.Println("Seeding database with test data...")
-	err := repo.Seed(r)
-	if err != nil {
-		fmt.Println(err)
-	}
+func init() {
+	cleandb.Flags().BoolVarP(&skipPrompt, "yes", "y", false,
+		"Skip the warning prompt when cleaning database.")
 
-	fmt.Println("Done!")
-	return err
+	db.AddCommand(seeddb)
+	db.AddCommand(cleandb)
 }
 
-// CleanDB will remove all data from the database. Useful for testing.
-func CleanDB(c *cli.Context) error {
-	var ans string
+var seeddb = &cobra.Command{
+	Use:   "seed",
+	Short: "Seed the database with test data.",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Connecting to database...")
+		r := config.LoadRepo()
 
-	if c.Bool("yes") {
-		ans = "y"
-	} else {
-		fmt.Println("***********************************WARNING***********************************")
-		fmt.Println(`This will delete ALL DATA in the database. This command is only useful for")
-testing.`)
-		fmt.Println("********************DO NOT RUN THIS ON A PRODUCTION SYSTEM!********************")
-		fmt.Print("Are you sure you want to DELETE ALL OF YOUR DATA? y/N ")
-		reader := bufio.NewReader(os.Stdin)
-		ans, _ = reader.ReadString('\n')
+		fmt.Println("Seeding database with test data...")
+		err := repo.Seed(r)
+		if err != nil {
+			fmt.Println(err)
+		}
 
-	}
+		fmt.Println("Done!")
+	},
+}
 
-	r := config.LoadRepo()
-	if strings.HasPrefix(strings.ToLower(ans), "y") {
-		return r.Clean()
-	}
+var cleandb = &cobra.Command{
+	Use:   "clean",
+	Short: "Remove all data from the database. DO NOT RUN IN PRODUCTION.",
+	Run: func(cmd *cobra.Command, args []string) {
+		var ans string
 
-	return nil
+		if skipPrompt {
+			ans = "y"
+		} else {
+			fmt.Println(`
+***********************************WARNING************************************
+This will delete ALL DATA in the database. This command is only useful for"
+testing.
+********************DO NOT RUN THIS ON A PRODUCTION SYSTEM********************`)
+			fmt.Print("Are you sure you want to DELETE ALL OF YOUR DATA? y/N ")
+			reader := bufio.NewReader(os.Stdin)
+			ans, _ = reader.ReadString('\n')
+
+		}
+
+		r := config.LoadRepo()
+		if strings.HasPrefix(strings.ToLower(ans), "y") {
+			err := r.Clean()
+			if err != nil {
+				fmt.Println("ERROR:", err)
+			}
+		}
+
+	},
 }
