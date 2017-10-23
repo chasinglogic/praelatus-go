@@ -4,7 +4,7 @@
 
 <template>
   <div v-if="loading">
-    <h1>Loading your ticket...</h1>
+    <loading-spinner></loading-spinner>
   </div>
   <div v-else class="container-fluid ticket-layout">
     <sidebar></sidebar>
@@ -51,10 +51,10 @@
 
  import Comments from '@/components/Comments/List'
  import Sidebar from '@/components/General/Sidebar'
+ import LoadingSpinner from '@/components/General/LoadingSpinner'
 
+ import { render } from '@/lib/markdown'
  import Axios from 'axios'
- import Showdown from 'showdown'
- const converter = new Showdown.Converter()
 
  export default {
    name: 'ticket',
@@ -62,6 +62,7 @@
      Sidebar,
      BreadCrumb,
      Comments,
+     LoadingSpinner,
      'ticket-fields': TicketFields,
      'ticket-details': TicketDetails
    },
@@ -96,9 +97,7 @@
             })
      },
 
-     markdown (text) {
-       return converter.makeHtml(text)
-     }
+     markdown: render
    },
 
    created: function () {
