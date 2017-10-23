@@ -24,6 +24,7 @@ func userRouter(router *mux.Router) {
 	router.HandleFunc("/users/me", loggedInUser)
 	router.HandleFunc("/users/{username}", singleUser)
 	router.HandleFunc("/users/{username}/avatar", avatar)
+	router.HandleFunc("/users/{username}/leadof", leadOf)
 }
 
 func loggedInUser(w http.ResponseWriter, r *http.Request) {
@@ -181,4 +182,21 @@ func avatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(user.ProfilePic))
+}
+
+func leadOf(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		u = &models.User{}
+	}
+
+	username := mux.Vars(r)["username"]
+
+	projects, err := Repo.Projects().HasLead(u, models.User{Username: username})
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	utils.SendJSON(w, projects)
 }
