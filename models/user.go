@@ -52,7 +52,7 @@ type User struct {
 	IsActive   bool     `json:"isActive,omitempty"`
 	Settings   Settings `json:"settings,omitempty"`
 
-	Roles []UserRole
+	Roles []UserRole `json:"roles"`
 }
 
 // CheckPw will verify if the given password matches for this user. Logs any
