@@ -4,7 +4,7 @@
 
 <template>
   <div id="ticket-list-root">
-    <div id="list-wrapper" v-if="tickets">
+    <div id="list-wrapper" v-if="tickets.length !== 0">
       <table class="table">
         <thead>
           <tr>
@@ -45,13 +45,20 @@
         </tbody>
       </table>
     </div>
-    <h1 v-else>No tickets!</h1>
+    <div v-else>
+      <loading-spinner></loading-spinner>
+    </div>
   </div>
 </template>
 
 <script>
+ import LoadingSpinner from '@/components/General/LoadingSpinner'
+
  export default {
    name: 'ticket-list',
+   components: {
+     LoadingSpinner
+   },
    methods: {
      resetDefaultColumns: function () {
        this.columns = this.defaultColumns()
