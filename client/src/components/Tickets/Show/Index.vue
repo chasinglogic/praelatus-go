@@ -53,7 +53,7 @@
  import Sidebar from '@/components/General/Sidebar'
  import LoadingSpinner from '@/components/General/LoadingSpinner'
 
- import { render } from '@/lib/markdown'
+ import Markdown from '@/lib/markdown'
  import Axios from 'axios'
 
  export default {
@@ -97,7 +97,7 @@
             })
      },
 
-     markdown: render
+     markdown: Markdown.render
    },
 
    created: function () {
