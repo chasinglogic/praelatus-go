@@ -105,6 +105,10 @@ func (pr mockProjectRepo) Search(u *models.User, query string) ([]models.Project
 	return []models.Project{p, p1}, nil
 }
 
+func (pr mockProjectRepo) HasLead(u *models.User, lead models.User) ([]models.Project, error) {
+	return []models.Project{p, p1}, nil
+}
+
 func (pr mockProjectRepo) Update(u *models.User, uid string, updated models.Project) error {
 	return nil
 }
