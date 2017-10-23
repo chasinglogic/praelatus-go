@@ -4,9 +4,7 @@
 
 package main
 
-import (
-	"github.com/praelatus/praelatus/commands"
-)
+import "github.com/praelatus/praelatus/commands"
 
 var version = "master"
 var commit = "HEAD"
