@@ -1,3 +1,6 @@
+// Package praelatus is a place holder package to make the godoc better
+// formatted
+//
 // Praelatus is an Open Source bug tracking and ticketing system. The
 // backend API is written in Go and the frontend is written in Vue.js.
 // You are viewing the Godoc for the Backend if you would like
@@ -19,5 +22,3 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package praelatus
-
-// This file is a place holder used to make the Godoc nicer to use.
