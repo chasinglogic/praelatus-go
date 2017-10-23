@@ -74,7 +74,11 @@
                 'user': resp.data
               })
 
-              inst.$router.push('/')
+              if (inst.$router.currentRoute.path === '/') {
+                inst.$router.push('/dashboard')
+              } else {
+                inst.$router.push('/')
+              }
             })
             .catch(function (err) {
               if (err.response) {
