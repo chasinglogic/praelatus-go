@@ -16,9 +16,11 @@
   "dependencies": {
     "axios": "^0.16.2",
     "bootstrap": "^4.0.0-alpha.6",
-    "bootstrap-vue": "^0.22.1",
+    "bootstrap-vue": "^1.0.0-beta.9",
+    "jquery": "^3.2.1",
     "moment": "^2.18.1",
     "node-sass": "^4.5.3",
+    "popper.js": "^1.12.3",
     "sass-loader": "^6.0.6",
     "showdown": "^1.7.4",
     "vue": "^2.3.3",
