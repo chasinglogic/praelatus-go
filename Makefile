@@ -44,7 +44,7 @@ cleandb:
 	go run cmd/praelatus/main.go cleandb --yes
 
 dev-server:
-	go run cmd/praelatus/main.go --devmode
+	go run cmd/praelatus/main.go serve --dev-mode
 
 dev-client:
 	cd client && npm run dev
