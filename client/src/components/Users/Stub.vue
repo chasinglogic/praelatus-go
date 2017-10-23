@@ -3,10 +3,12 @@
      can be found in the LICENSE file. -->
 
 <template>
-  <a v-bind:href="'/#/user/' + username">
-    <img class="avatar" v-bind:src="avatar" />
-    {{ username }}
-  </a>
+  <span>
+    <router-link v-bind:to="'/users/' + username">
+      <img class="avatar" v-bind:src="avatar" />
+      {{ username }}
+    </router-link>
+  </span>
 </template>
 
 
