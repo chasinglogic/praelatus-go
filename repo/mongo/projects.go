@@ -100,3 +100,19 @@ func (p projectRepo) Search(u *models.User, query string) ([]models.Project, err
 	err := p.coll().Find(q).All(&projects)
 	return projects, mongoErr(err)
 }
+
+func (p projectRepo) HasLead(u *models.User, lead models.User) ([]models.Project, error) {
+	base := permQuery(u)
+	q := bson.M{
+		"$and": []bson.M{
+			base,
+			{
+				"lead": lead.Username,
+			},
+		},
+	}
+
+	var projects []models.Project
+	err := p.coll().Find(q).All(&projects)
+	return projects, mongoErr(err)
+}
