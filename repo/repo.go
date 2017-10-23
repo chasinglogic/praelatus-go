@@ -51,6 +51,8 @@ type ProjectRepo interface {
 	Update(u *models.User, uid string, updated models.Project) error
 	Create(u *models.User, project models.Project) (models.Project, error)
 	Delete(u *models.User, uid string) error
+
+	HasLead(u *models.User, lead models.User) ([]models.Project, error)
 }
 
 // UserRepo handles storing, retrieving, updating, and creating users.
