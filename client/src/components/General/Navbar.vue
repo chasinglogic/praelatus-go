@@ -72,7 +72,7 @@
    margin-right: 1rem;
  }
 
- .navbar {
+ .navbar.bg-praelatus {
    background-color: $primary-color;
    color: #fff;
  }
