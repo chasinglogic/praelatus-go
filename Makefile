@@ -38,10 +38,10 @@ test-client:
 test: test-server test-client
 
 seeddb:
-	go run cmd/praelatus/main.go seeddb
+	go run cmd/praelatus/main.go db seed
 
 cleandb:
-	go run cmd/praelatus/main.go cleandb --yes
+	go run cmd/praelatus/main.go db clean --yes
 
 dev-server:
 	go run cmd/praelatus/main.go serve --dev-mode
