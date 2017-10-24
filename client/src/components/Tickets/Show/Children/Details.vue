@@ -44,7 +44,7 @@
           <span class="bold">Labels:</span>
         </p>
         <p>
-          <span v-for="label in labels">{{ label }}</span>
+          <span class="label" v-for="label in ticket.labels">{{ label }} </span>
         </p>
       </template>
     </div>
@@ -94,4 +94,14 @@
    height: 20px;
    display: inline-block
  }
+
+ .label {
+   background-color: #eee;
+   color: blue;
+   border-radius: 5px;
+   margin-left: 0.5rem;
+   padding: 0.2rem;
+   text-align: center;
+ }
+
 </style>
