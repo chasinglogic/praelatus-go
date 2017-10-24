@@ -28,12 +28,6 @@
           </div>
           <comments :comments="ticket.comments" />
           <comment-form />
-          <comment-form v-if="currentUser" />
-          <div class="card comment" v-else>
-            <div class="comment card-block">
-              You must be <a href="/#/login">logged in</a> to comment.
-            </div>
-          </div>
         </div>
         <div class="col-md-3" >
           <ticket-details :ticket="ticket" />
@@ -50,6 +44,7 @@
  import TicketFields from './Children/Fields'
 
  import Comments from '@/components/Comments/List'
+ import CommentForm from '@/components/Comments/Form'
  import Sidebar from '@/components/General/Sidebar'
  import LoadingSpinner from '@/components/General/LoadingSpinner'
 
@@ -63,6 +58,7 @@
      BreadCrumb,
      Comments,
      LoadingSpinner,
+     'comment-form': CommentForm,
      'ticket-fields': TicketFields,
      'ticket-details': TicketDetails
    },
@@ -114,5 +110,9 @@
 
  .ticket-header {
    margin-bottom: 1rem;
+ }
+
+ .card-block {
+   padding: 1rem;
  }
 </style>
