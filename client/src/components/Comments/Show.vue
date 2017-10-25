@@ -53,10 +53,9 @@
    margin-top: 1rem;
  }
 
- .comment-header p {
-   display: inline-block;
+ .comment-header {
+   height: 3em;
  }
-
  .comment-author-avatar {
    height: 20px;
    width: 20px;
