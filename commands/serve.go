@@ -80,9 +80,9 @@ var server = &cobra.Command{
 func disableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Access-Control-Allow-Origin", "*")
-			w.Header().Add("Access-Control-Allow-Headers", "Content-Type,Authorization,Token")
-			w.Header().Add("Access-Control-Expose-Headers", "X-Praelatus-Token")
+			w.Header().Add("Access-Control-Allow-Origin", "http://localhost:4000")
+			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type")
+			w.Header().Add("Access-Control-Expose-Headers", "X-Praelatus-Token, Content-Type, Authorization")
 			w.Header().Add("Access-Control-Allow-Credentials", "true")
 
 			if r.Method == "OPTIONS" {
