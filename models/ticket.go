@@ -60,8 +60,8 @@ func (t Ticket) Transition(db *mgo.Database, name string) (Transition, bool) {
 type Comment struct {
 	UpdatedDate time.Time `json:"updatedDate"`
 	CreatedDate time.Time `json:"createdDate"`
-	Body        string    `json:"body"`
-	Author      string    `json:"author"`
+	Body        string    `json:"body" required:"true"`
+	Author      string    `json:"author" required:"true"`
 }
 
 func (c *Comment) String() string {
