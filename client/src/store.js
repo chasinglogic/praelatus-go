@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedState'
+import Axios from 'axios'
 
 Vue.use(Vuex)
 
@@ -44,11 +45,13 @@ export default new Vuex.Store({
     login: function (state, { token, user }) {
       state.currentUser = user
       state.token = token
+      Axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
     },
 
     logout: function (state) {
       state.currentUser = null
       state.token = null
+      Axios.defaults.headers.common['Authorization'] = null
     },
 
     sidebarShown: function (state, show) {
