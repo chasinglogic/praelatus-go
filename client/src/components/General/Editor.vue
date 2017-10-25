@@ -301,7 +301,7 @@
            if (ev.ctrlKey) {
              ev.preventDefault()
              if (this.submit) {
-               this.submit()
+               this.submit(this.text)
              }
 
              return
