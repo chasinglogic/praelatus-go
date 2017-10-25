@@ -1,8 +1,10 @@
 <template>
   <div>
     <div class="card comment" v-if="currentUser">
-      <h1>Add a Comment</h1>
-      <editor v-model="comment.body"></editor>
+      <editor text="body" :submit="newComment"></editor>
+      <b-button @click="newComment" variant="primary">
+        Add Comment
+      </b-button>
     </div>
     <div class="card comment" v-else>
       <div class="comment card-block">
@@ -14,6 +16,7 @@
 
 <script>
  import Editor from '@/components/General/Editor'
+ import Axios from 'axios'
 
  export default {
    name: 'comment-form',
@@ -28,21 +31,44 @@
      }
    },
 
+   methods: {
+     newComment: function (text) {
+       let url = '/api/tickets/' + this.$route.params.key + '/addComment'
+       Axios.post(url,
+         {
+           body: text,
+           author: this.comment.author
+         },
+         {
+           headers: {
+             Authorization: 'Bearer ' + this.$store.getters.token
+           },
+           withCredentials: true
+         }).then((res) => {
+           console.log(res.data)
+           if (this.reloadFunc) {
+             this.reloadFunc()
+           }
+         }).catch((err) => {
+           console.log(err)
+         })
+     }
+   },
+
    data: function () {
      return {
        comment: {
-         author: this.currentUser ? this.currentUser.username : '',
-         body: ''
+         author: this.currentUser ? this.currentUser.username : ''
        }
      }
    },
 
-   props: ['body'],
-
-   mounted: function () {
-     if (this.body && this.body !== '') {
-       this.comment.body = this.body
-     }
-   }
+   props: ['body', 'reloadFunc']
  }
 </script>
+
+<style lang="scss">
+ .md-editor {
+   width: 100%;
+ }
+</style>
