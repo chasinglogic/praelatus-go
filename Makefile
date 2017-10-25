@@ -1,9 +1,9 @@
 build: build-client build-server
 
 build-client:
-	mkdir -p build
+	mkdir -p build/client
 	cd client && npm install && npm run-script build
-	cp -R client/dist/* ../build/client
+	cp -R client/dist/* build/client/
 
 build-server:
 	mkdir -p build
