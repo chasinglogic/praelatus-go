@@ -104,7 +104,7 @@
          this.insertAt(x, heading)
          return
        }
-     }
+     },
 
      wrapText: function (start, end, char) {
        // Grab everything before the selection
@@ -144,7 +144,7 @@
                this.text.slice(end, end + char.length) === char)
      },
 
-     insertAt: function(x, text) {
+     insertAt: function (x, text) {
        // Grab the front of our string
        let beg = this.text.slice(0, x) + text
        // Grab everything after where we inserted.
