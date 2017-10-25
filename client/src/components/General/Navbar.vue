@@ -15,6 +15,10 @@
     <b-collapse is-nav id="nav_collapse">
 
       <b-nav is-nav-bar>
+        <b-nav-form>
+          <b-form-input size="sm" class="mr-sm-2" type="text" placeholder="Search Tickets"/>
+        </b-nav-form>
+
         <b-nav-item to="/projects">Projects</b-nav-item>
         <b-nav-item-dropdown text="Tickets">
           <b-dropdown-item to="/queries/mine">Manage Queries</b-dropdown-item>
@@ -111,5 +115,35 @@
 
  #userMenu {
    padding: 5px;
+ }
+
+ $placeholder-color: #fff;
+
+ .bg-praelatus .nav .form-inline input {
+   border: none;
+   border-radius: 0px;
+   background-color: lighten($highlight-color, 20%);
+   color: white;
+
+   /* TODO: Make this responsive */
+   width: 300px;
+ }
+
+ .bg-praelatus .nav .form-inline input::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+   color:    $placeholder-color;
+ }
+ .bg-praelatus .nav .form-inline input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color:    $placeholder-color;
+   opacity:  1;
+ }
+ .bg-praelatus .nav .form-inline input::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color:    $placeholder-color;
+   opacity:  1;
+ }
+ .bg-praelatus .nav .form-inline input:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color:    $placeholder-color;
+ }
+ .bg-praelatus .nav .form-inline input::-ms-input-placeholder { /* Microsoft Edge */
+   color:    $placeholder-color;
  }
 </style>
