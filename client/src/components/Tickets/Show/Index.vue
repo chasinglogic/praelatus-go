@@ -27,7 +27,7 @@
             </div>
           </div>
           <comments :comments="ticket.comments" />
-          <comment-form :reloadFunc="loadTicket" />
+          <comment-form @newComment="loadTicket" />
         </div>
         <div class="col-md-3" >
           <ticket-details :ticket="ticket" />
