@@ -15,10 +15,14 @@ import (
 // Cache is the global SessionCache
 var Cache repo.Cache
 
-func headers(h http.Handler) http.Handler {
+// ContentHeaders will set the content-type header for the API to application/json
+func ContentHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		h.ServeHTTP(w, r)
+		if r.URL.Path[len("/api"):] == "/api" {
+			w.Header().Set("Content-Type", "application/json")
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -35,6 +39,6 @@ func LoadMw(handler http.Handler) http.Handler {
 
 // DefaultMiddleware is the default middleware stack for Praelatus
 var DefaultMiddleware = []func(http.Handler) http.Handler{
-	headers,
+	ContentHeaders,
 	Logger,
 }
