@@ -3,7 +3,7 @@
     <div class="card-block">
       <div class="toolbar-wrapper">
         <div class="toolbar toolbar-left">
-          <b-button @click="toggleHeading(1)">
+          <b-button @click="toggleHeading(1)" caption="Heading 1">
             <strong>
               H1
             </strong>
@@ -70,9 +70,23 @@
      }
    },
 
+   watch: {
+     value: function (newVal, oldVal) {
+       if (newVal !== oldVal) {
+         this.text = newVal
+       }
+     },
+
+     text: function (newVal, oldVal) {
+       if (newVal !== oldVal) {
+         this.$emit('input', newVal)
+       }
+     }
+   },
+
    methods: {
      handleKeyPress: function (ev) {
-       let boundKey = this.boundKeys[ev.key]
+       const boundKey = this.boundKeys[ev.key]
        if (boundKey) {
          let txta = document.getElementById(this.id)
          let curpos = txta.selectionStart
@@ -86,6 +100,8 @@
        } else {
          this.preview = true
        }
+
+       document.getElementById(this.id).focus()
      },
 
      findPreviousNewline: function (i) {
@@ -118,15 +134,15 @@
          let end = this.text.slice(x + headingSize + 1, this.text.length)
          // Join our now cut string
          this.text = beg + end
-         return
          // Else if we find a newline before a heading then insert a new
          // heading of the given size
        } else {
          // Add a space for proper markdown formatting
          let heading = '#'.repeat(headingSize) + ' '
          this.insertAt(x, heading)
-         return
        }
+
+       txta.focus()
      },
 
      toggleList: function (ordered) {
@@ -142,6 +158,8 @@
        } else {
          this.insertAt(x, ' - ')
        }
+
+       txta.focus()
      },
 
      wrapText: function (start, end, char) {
@@ -201,6 +219,8 @@
        } else {
          this.wrapText(start, end, '*')
        }
+
+       txta.focus()
      },
 
      toggleBold: function () {
@@ -213,15 +233,14 @@
        } else {
          this.wrapText(start, end, '**')
        }
+
+       txta.focus()
      },
 
      toggleCode: function () {
        let txta = document.getElementById(this.id)
        let start = txta.selectionStart
        let end = txta.selectionEnd
-
-       console.log(this.text[start], this.text[start - 1])
-       console.log(this.text[end], this.text[end + 1])
 
        if (this.isSurroundedBy(start, end, '```')) {
          this.unwrapText(start, end, '```')
@@ -233,27 +252,22 @@
        } else {
          this.wrapText(start, end, '`')
        }
+
+       txta.focus()
      }
    },
 
-   props: {
-     sumbmit: null,
-     startingText: ''
-   },
-
-   mounted: function () {
-     if (this.startingText && this.startingText !== '') {
-       this.text = this.startingText
-     }
-   },
+   props: [
+     'value'
+   ],
 
    data: function () {
      return {
        // Generate a unique ID for the text area in the event that the editor
        // component is on the same page multiple times.
        id: Math.random().toString(36).substring(2, 5),
-       text: '',
        preview: false,
+       text: this.value,
        // Use arrow functions in these definitions so that "this"
        // is properly set.
        boundKeys: {
@@ -300,10 +314,7 @@
          Enter: (ev, curpos) => {
            if (ev.ctrlKey) {
              ev.preventDefault()
-             if (this.submit) {
-               this.submit(this.text)
-             }
-
+             this.$emit('submit')
              return
            }
 
@@ -323,6 +334,14 @@
              let m = numListRgx.exec(slice)
              let curNum = parseInt(m[2])
              this.insertAt(curpos, '\n' + m[1] + (curNum + 1).toString() + '. ')
+           }
+         },
+
+         p: (ev, curpos) => {
+           if (ev.ctrlKey) {
+             ev.preventDefault()
+             this.preview = this.preview === false
+             ev.target.focus()
            }
          }
        }
@@ -347,7 +366,7 @@
  }
 
  .md-editor {
-   max-width: 60rem;
+   width: 100%;
    margin-left: auto;
    margin-right: auto;
  }
