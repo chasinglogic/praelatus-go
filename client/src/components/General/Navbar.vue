@@ -16,7 +16,8 @@
 
       <b-nav is-nav-bar>
         <b-nav-form>
-          <b-form-input size="sm" class="mr-sm-2" type="text" placeholder="Search Tickets"/>
+          <b-form-input size="sm" class="mr-sm-2 navbar-ticket-search"
+            type="text" placeholder="Search Tickets"/>
         </b-nav-form>
 
         <b-nav-item to="/projects">Projects</b-nav-item>
@@ -52,6 +53,7 @@
 <script>
  export default {
    name: 'navbar',
+
    methods: {
      logout: function (e) {
        e.preventDefault()
@@ -59,6 +61,7 @@
        this.$router.push('/')
      }
    },
+
    computed: {
      currentUser: function () {
        return this.$store.getters.currentUser
@@ -94,7 +97,7 @@
    color: #000 !important;
  }
 
- .bg-praelatus .dropdown-item:hover {
+ .bg-praelatus .dropdown-item:hover, .bg-praelatus .nav-link.active {
    background-color: $primary-color !important;
    color: #fff !important;
  }
@@ -124,9 +127,6 @@
    border-radius: 0px;
    background-color: lighten($highlight-color, 20%);
    color: white;
-
-   /* TODO: Make this responsive */
-   width: 300px;
  }
 
  .bg-praelatus .nav .form-inline input::-webkit-input-placeholder { /* WebKit, Blink, Edge */
@@ -145,5 +145,18 @@
  }
  .bg-praelatus .nav .form-inline input::-ms-input-placeholder { /* Microsoft Edge */
    color:    $placeholder-color;
+ }
+
+ .navbar-ticket-search {
+   /* TODO: Make this responsive */
+   width: 100px;
+    -webkit-transition: width 1s ease-in-out;
+    -moz-transition:width 1s ease-in-out;
+    -o-transition: width 1s ease-in-out;
+    transition: width 1s ease-in-out;
+ }
+
+ .navbar-ticket-search:focus {
+   width: 300px;
  }
 </style>
