@@ -59,5 +59,20 @@ export default new Vuex.Store({
     }
   },
 
-  plugins: [createPersistedState()]
+  plugins: [createPersistedState({
+    key: 'praelatusSession',
+    getState: (key, storage) => {
+      let value = storage.getItem(key)
+
+      try {
+        let s = value && value !== 'undefined' ? JSON.parse(value) : undefined
+        if (s && s['token']) {
+          Axios.defaults.headers.common['Authorization'] = 'Bearer ' + s['token']
+        }
+        return s
+      } catch (err) {
+        return undefined
+      }
+    }
+  })]
 })
