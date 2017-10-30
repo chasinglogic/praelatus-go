@@ -70,7 +70,6 @@ func userFromClaims(claims jwt.MapClaims) models.User {
 
 func getToken(r *http.Request) *jwt.Token {
 	auth := r.Header.Get("Authorization")
-	fmt.Println(r.Header)
 	if len(auth) == 0 {
 		return nil
 	}
