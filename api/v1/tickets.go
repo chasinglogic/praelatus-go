@@ -123,6 +123,12 @@ func addComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = utils.ValidateModel(c)
+	if err != nil {
+		utils.APIErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	key := mux.Vars(r)["key"]
 
 	ticket, err := Repo.Tickets().AddComment(u, key, c)
