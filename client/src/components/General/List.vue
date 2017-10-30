@@ -46,6 +46,7 @@
    components: {
      LoadingSpinner
    },
+
    methods: {
      humanizeColumnName: function (columnName) {
        return columnName

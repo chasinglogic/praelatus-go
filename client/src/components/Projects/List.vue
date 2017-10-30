@@ -1,3 +1,7 @@
+<!-- Copyright 2017 Mathew Robinson <(mathew.robinson@mongodb.com)>. All rights
+     reserved. Use of this source code is governed by the AGPLv3 license that can be
+     found in the LICENSE file. -->
+
 <template>
   <div class="container">
     <h1>Projects</h1>
