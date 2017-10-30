@@ -14,7 +14,6 @@
 
    computed: {
      statusType: function () {
-       console.log(this.status)
        if (this.status.toLowerCase() === 'backlog' || this.status.toLowerCase() === 'todo') {
          return 'TODO'
        } else if (this.status.toLowerCase() === 'in progress') {
