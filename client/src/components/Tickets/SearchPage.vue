@@ -22,10 +22,17 @@
      TicketList
    },
 
+   watch: {
+     query: function () {
+       this.$router.currentRoute.query.q = this.query
+     }
+   },
+
    data: function () {
      return {
        'query': '',
-       'tickets': []
+       'error': '',
+       'tickets': null
      }
    },
 
@@ -40,7 +47,6 @@
 
        Axios.get(url)
             .then((res) => {
-              console.log(res.data)
               inst.tickets = res.data
             })
             .catch((err) => {
@@ -56,6 +62,7 @@
    },
 
    created: function () {
+     this.query = this.$router.currentRoute.query.q
      this.loadTickets()
    }
  }
