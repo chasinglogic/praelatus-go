@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="card comment" v-if="currentUser">
-      <editor text="body" :submit="newComment"></editor>
+      <editor v-model="body" @submit="newComment"></editor>
       <b-button @click="newComment" variant="primary">
         Add Comment
       </b-button>
@@ -31,39 +31,25 @@
      }
    },
 
+   data: function () {
+     return { body: '' }
+   },
+
    methods: {
-     newComment: function (text) {
+     newComment: function () {
        let url = '/api/tickets/' + this.$route.params.key + '/addComment'
        Axios.post(url,
          {
-           body: text,
-           author: this.comment.author
-         },
-         {
-           headers: {
-             Authorization: 'Bearer ' + this.$store.getters.token
-           },
-           withCredentials: true
+           body: this.body,
+           author: this.currentUser.username
          }).then((res) => {
-           console.log(res.data)
-           if (this.reloadFunc) {
-             this.reloadFunc()
-           }
+           this.$emit('newComment')
+           this.body = ''
          }).catch((err) => {
-           console.log(err)
+           console.log('ERROR:', err)
          })
      }
-   },
-
-   data: function () {
-     return {
-       comment: {
-         author: this.currentUser ? this.currentUser.username : ''
-       }
-     }
-   },
-
-   props: ['body', 'reloadFunc']
+   }
  }
 </script>
 
