@@ -8,7 +8,7 @@
     </div>
     <div class="card comment" v-else>
       <div class="comment card-block">
-        You must be <a href="/#/login">logged in</a> to comment.
+        You must be <router-link v-bind:to="currentUrl">logged in</router-link> to comment.
       </div>
     </div>
   </div>
@@ -28,6 +28,10 @@
    computed: {
      currentUser: function () {
        return this.$store.getters.currentUser
+     },
+
+     currentUrl: function () {
+       return '/login?to=' + this.$route.path
      }
    },
 
