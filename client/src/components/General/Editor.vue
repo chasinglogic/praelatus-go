@@ -3,42 +3,49 @@
     <div class="card-block">
       <div class="toolbar-wrapper">
         <div class="toolbar toolbar-left">
-          <b-button @click="toggleHeading(1)" caption="Heading 1">
+          <b-button v-b-tooltip.hover.auto title="Toggle Heading 1 Current Line"
+            @click="toggleHeading(1)">
             <strong>
               H1
             </strong>
           </b-button>
-          <b-button @click="toggleHeading(2)">
+          <b-button v-b-tooltip.hover.auto title="Toggle Heading 2 Current Line"
+            @click="toggleHeading(2)">
             <strong>
               H2
             </strong>
           </b-button>
-          <b-button @click="toggleHeading(3)">
+          <b-button v-b-tooltip.hover.auto title="Toggle Heading 3 Current Line"
+            @click="toggleHeading(3)">
             <strong>
               H3
             </strong>
           </b-button>
-          <b-button @click="toggleBold">
+          <b-button v-b-tooltip.hover.auto title="Toggle Bold on Selection" @click="toggleBold">
             <strong>
               B
             </strong>
           </b-button>
-          <b-button @click="toggleItalic">
+          <b-button v-b-tooltip.hover.auto title="Toggle Italic on Selection"
+            @click="toggleItalic">
             <i class="fa fa-italic"></i>
           </b-button>
-          <b-button @click="toggleCode">
+          <b-button v-b-tooltip.hover.auto title="Toggle Code on Selection" @click="toggleCode">
             <i class="fa fa-code"></i>
           </b-button>
-          <b-button @click="toggleList(false)">
+          <b-button v-b-tooltip.hover.auto title="Start List" @click="toggleList(false)">
             <i class="fa fa-list-ul"></i>
           </b-button>
-          <b-button @click="toggleList(true)">
+          <b-button v-b-tooltip.hover.auto title="Start Numbered List" @click="toggleList(true)">
             <i class="fa fa-list-ol"></i>
           </b-button>
         </div>
         <div class="toolbar toolbar-right">
-          <b-button @click="togglePreview">
+          <b-button v-b-tooltip.hover.auto title="Preview Markdown" @click="togglePreview">
             <i class="fa fa-eye"></i>
+          </b-button>
+          <b-button v-b-tooltip.hover.auto title="Help" @click="toggleHelp">
+            <i class="fa fa-question-circle"></i>
           </b-button>
         </div>
       </div>
@@ -51,6 +58,26 @@
         </textarea>
         <div v-show="preview" class="preview card">
           <div class="card-block" v-html="renderedPreview" >
+          </div>
+        </div>
+        <div v-show="showHelp" class="preview card">
+          <div class="card-block">
+            <h5 class="text-center">Editor Help</h5>
+            <p>
+              This editor accepts Markdown using the CommonMark standard.
+              for more information on writing Markdown read this
+              <a href="http://commonmark.org/help/">document</a>
+            </p>
+            <h6>Editor Keybindings</h6>
+            <ul>
+              <li>CTRL+h: Toggle this help.</li>
+              <li>CTRL+p: Toggle rendered preview.</li>
+              <li>CTRL+Enter: Submit for the current form.</li>
+              <li>CTRL+{1, 2, 3, 4, 5}: Toggle a heading {1, 2, 3, 4, 5} on the current line.</li>
+              <li>CTRL+i Toggle italics on the selected text.</li>
+              <li>CTRL+b Toggle bold on the selected text.</li>
+              <li>CTRL+y Start a multi line code block.</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -87,6 +114,8 @@
    methods: {
      handleKeyPress: function (ev) {
        const boundKey = this.boundKeys[ev.key]
+       // Prevent the event from being passed up the chain
+       ev.stopPropagation()
        if (boundKey) {
          let txta = document.getElementById(this.id)
          let curpos = txta.selectionStart
@@ -95,12 +124,12 @@
      },
 
      togglePreview: function () {
-       if (this.preview) {
-         this.preview = false
-       } else {
-         this.preview = true
-       }
+       this.preview = this.preview === false
+       document.getElementById(this.id).focus()
+     },
 
+     toggleHelp: function () {
+       this.showHelp = this.showHelp === false
        document.getElementById(this.id).focus()
      },
 
@@ -267,6 +296,7 @@
        // component is on the same page multiple times.
        id: Math.random().toString(36).substring(2, 5),
        preview: false,
+       showHelp: false,
        text: this.value,
        // Use arrow functions in these definitions so that "this"
        // is properly set.
@@ -337,11 +367,38 @@
            }
          },
 
+         i: (ev, curpos) => {
+           if (ev.ctrlKey) {
+             ev.preventDefault()
+             this.toggleItalic()
+           }
+         },
+
+         y: (ev, curpos) => {
+           if (ev.ctrlKey) {
+             ev.preventDefault()
+             this.insertAt(ev.target.selectionStart, '\n```\n')
+           }
+         },
+
+         b: (ev, curpos) => {
+           if (ev.ctrlKey) {
+             ev.preventDefault()
+             this.toggleBold()
+           }
+         },
+
          p: (ev, curpos) => {
            if (ev.ctrlKey) {
              ev.preventDefault()
-             this.preview = this.preview === false
-             ev.target.focus()
+             this.togglePreview()
+           }
+         },
+
+         h: (ev, curpos) => {
+           if (ev.ctrlKey) {
+             ev.preventDefault()
+             this.toggleHelp()
            }
          }
        }
