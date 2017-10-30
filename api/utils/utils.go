@@ -51,6 +51,8 @@ func Error(w http.ResponseWriter, err error) {
 	switch err {
 	case repo.ErrUnauthorized:
 		APIErr(w, code, http.StatusText(code))
+	case repo.ErrNotFound:
+		APIErr(w, code, http.StatusText(code))
 	default:
 		APIErr(w, code, err.Error())
 	}
@@ -73,6 +75,8 @@ func GetErrorCode(e error) int {
 	switch e {
 	case repo.ErrUnauthorized:
 		return http.StatusUnauthorized
+	case repo.ErrNotFound:
+		return http.StatusNotFound
 	default:
 		return http.StatusInternalServerError
 	}
