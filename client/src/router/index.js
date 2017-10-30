@@ -66,9 +66,13 @@ export default new Router({
       component: Index
     },
     {
-      path: '*',
+      path: '/404',
       name: 'FourOhFour',
       component: NotFound
+    },
+    {
+      path: '*',
+      redirect: '/404'
     }
   ]
 })
