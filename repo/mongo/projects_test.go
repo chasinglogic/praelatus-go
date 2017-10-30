@@ -6,6 +6,8 @@ package mongo_test
 
 import (
 	"testing"
+
+	"github.com/praelatus/praelatus/models"
 )
 
 func TestProjectGet(t *testing.T) {
@@ -68,4 +70,21 @@ func TestProjectDelete(t *testing.T) {
 	if _, e = r.Projects().Get(&admin, "TEST2"); e == nil {
 		t.Errorf("Expected an error getting project but got none.")
 	}
+}
+
+func TestProjectHasLead(t *testing.T) {
+	p, e := r.Projects().HasLead(&admin, models.User{Username: "testadmin"})
+	if e != nil {
+		t.Error(e)
+		return
+	}
+
+	if p == nil || len(p) == 0 {
+		t.Error("Expected to get projects instead got none.")
+	}
+
+	if p[0].Lead != "testadmin" {
+		t.Error("Expected to get a project with testadmin as a lead")
+	}
+
 }
