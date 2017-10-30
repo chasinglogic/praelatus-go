@@ -8,7 +8,6 @@ package commands
 import (
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	// Allows us to run profiling when flag is given
@@ -17,7 +16,6 @@ import (
 	"github.com/praelatus/praelatus/api"
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/config"
-	"github.com/praelatus/praelatus/models"
 	"github.com/spf13/cobra"
 	"github.com/tylerb/graceful"
 )
@@ -51,16 +49,11 @@ var server = &cobra.Command{
 		api.Version = Version
 		api.Commit = Commit
 
-		r := api.New(repo, cache)
-		if devMode || os.Getenv("PRAELATUS_DEV_MODE") != "" {
-			log.Println("Running in dev mode, disabling cors and authentication...")
-			r = disableCors(r)
-			r = alwaysAuth(r)
+		if disableCORS || devMode {
+			middleware.DefaultMiddleware = append(middleware.DefaultMiddleware, middleware.CORS)
 		}
 
-		if disableCORS {
-			r = disableCors(r)
-		}
+		r := api.New(repo, cache)
 
 		if profile {
 			go func() {
@@ -74,35 +67,4 @@ var server = &cobra.Command{
 			log.Println("Exited with error:", err)
 		}
 	},
-}
-
-// this is only used when running in dev mode to make testing the api easier
-func disableCors(next http.Handler) http.Handler {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Access-Control-Allow-Origin", "http://localhost:4000")
-			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type")
-			w.Header().Add("Access-Control-Expose-Headers", "X-Praelatus-Token, Content-Type, Authorization")
-			w.Header().Add("Access-Control-Allow-Credentials", "true")
-
-			if r.Method == "OPTIONS" {
-				w.Write([]byte{})
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
-}
-
-func alwaysAuth(next http.Handler) http.Handler {
-	u, _ := models.NewUser("testadmin", "test",
-		"Test Testerson", "test@example.com", true)
-	u.Roles = []models.UserRole{{Project: "TEST", Role: "Administrator"}}
-
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			_ = middleware.SetUserSession(*u, w)
-			r.Header.Set("Authorization", w.Header().Get("Token"))
-			next.ServeHTTP(w, r)
-		})
 }
