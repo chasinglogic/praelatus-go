@@ -44,3 +44,45 @@ func TestSendJSON(t *testing.T) {
 		t.Fail()
 	}
 }
+
+type TestValidType struct {
+	ID   int `required:"true"`
+	Name string
+}
+
+type TestValidStringType struct {
+	ID   int
+	Name string `required:"true"`
+}
+
+func TestValidateModel(t *testing.T) {
+	tvt := TestValidType{Name: "Fake"}
+	err := ValidateModel(tvt)
+	if err == nil {
+		t.Error("Expected an error but got none.")
+		return
+	}
+
+	tvt = TestValidType{ID: 100}
+	err = ValidateModel(tvt)
+	if err != nil {
+		t.Errorf("Expected no error but got %s\n", err.Error())
+		return
+	}
+}
+
+func TestValidateStringModel(t *testing.T) {
+	tvt := TestValidStringType{Name: "Fake"}
+	err := ValidateModel(tvt)
+	if err != nil {
+		t.Errorf("Expected no error but got %s\n", err.Error())
+		return
+	}
+
+	tvt = TestValidStringType{ID: 100}
+	err = ValidateModel(tvt)
+	if err == nil {
+		t.Error("Expected an error but got none.")
+		return
+	}
+}

@@ -113,17 +113,45 @@ func ValidateModel(model interface{}) error {
 	v := reflect.ValueOf(model)
 
 	for i := 0; i < v.NumField(); i++ {
-		tag := v.Type().Field(i).Tag.Get(requireTag)
+		tag := strings.ToLower(v.Type().Field(i).Tag.Get(requireTag))
 
 		// Skip if not set to true
-		if tag != "true" && tag != "True" {
+		if !strings.Contains(tag, "true") {
 			continue
 		}
 
-		val := v.Field(i).Interface()
-		if val == nil {
-			return fmt.Errorf("%s is a required field",
-				v.Type().Field(i).Name)
+		fe := fmt.Errorf("%s is a required field", v.Type().Field(i).Name)
+		val := v.Field(i)
+		if !val.IsValid() {
+			return fe
+		}
+
+		k := val.Kind()
+		switch {
+		case k >= reflect.Int && k <= reflect.Int64:
+			intVal := val.Int()
+			if intVal == 0 {
+				return fe
+			}
+		case k >= reflect.Uint64 && k <= reflect.Uint64:
+			uintVal := val.Uint()
+			if uintVal == 0 {
+				return fe
+			}
+		case k == reflect.Float32 || k == reflect.Float64:
+			floatVal := val.Float()
+			if floatVal == 0.0 {
+				return fe
+			}
+		case k == reflect.Struct:
+			e := ValidateModel(val.Interface())
+			if e != nil {
+				return e
+			}
+		case k == reflect.String || k == reflect.Slice || k == reflect.Array || k == reflect.Map:
+			if val.Len() == 0 {
+				return fe
+			}
 		}
 	}
 
