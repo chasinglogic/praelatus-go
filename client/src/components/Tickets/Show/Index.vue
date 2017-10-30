@@ -3,22 +3,21 @@
      can be found in the LICENSE file. -->
 
 <template>
-  <div v-if="loading">
-    <loading-spinner></loading-spinner>
-  </div>
-  <div v-else class="container-fluid ticket-layout">
-    <sidebar></sidebar>
-    <div class="container-fluid">
+  <div>
+    <div v-if="loading" class="container">
+      <loading-spinner></loading-spinner>
+    </div>
+    <div v-else class="container ticket-layout">
       <div class="ticket-header card">
         <h3 class="card-header">
-            <bread-crumb :ticket="ticket" />
+          <bread-crumb :ticket="ticket" />
         </h3>
         <h1 class="card-block">
           {{ ticket.summary }}
         </h1>
       </div>
       <div class="row" >
-        <div class="col-md-9">
+        <div class="col-md-8">
           <div class="card">
             <h2 class="card-header">
               Description
@@ -26,14 +25,14 @@
             <div v-html="markdown(ticket.description)" class="card-block">
             </div>
           </div>
-          <comments :comments="ticket.comments" />
-          <comment-form @newComment="loadTicket" />
         </div>
-        <div class="col-md-3" >
+        <div class="col-4-md" >
           <ticket-details :ticket="ticket" />
           <ticket-fields :fields="ticket.fields" />
         </div>
       </div>
+      <comments :comments="ticket.comments" />
+      <comment-form @newComment="loadTicket" />
     </div>
   </div>
 </template>
