@@ -4,7 +4,7 @@
 
 <template>
   <div id="ticket-list-root">
-    <div id="list-wrapper" v-if="tickets.length !== 0">
+    <div id="list-wrapper" v-if="tickets !== null">
       <table class="table">
         <thead>
           <tr>
@@ -61,7 +61,7 @@
    },
    methods: {
      resetDefaultColumns: function () {
-       this.columns = this.defaultColumns()
+       this.columns = this.defaults()
      },
 
      getFieldValue: function (ticket, fieldName) {
@@ -81,12 +81,12 @@
    },
 
    watch: {
-     tickets: function () {
-       if (this.tickets[0]) {
+     tickets: function (newVal) {
+       console.log(newVal)
+       if (newVal && newVal.length !== 0) {
          return this.columns
                     .concat(
-                      this
-                        .tickets[0]
+                      newVal[0]
                         .fields
                         .map(f => { return { name: f.name, active: true } })
                     )
@@ -146,14 +146,18 @@
        ]
      }
      return {
-       defaultColumns: defaults,
+       defaults: defaults,
+       defaultColumns: defaults(),
        columns: defaults()
      }
    },
 
    props: {
      'showColumnPicker': false,
-     'tickets': []
+     'tickets': {
+       type: Array,
+       default: null
+     }
    }
  }
 </script>
