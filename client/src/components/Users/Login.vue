@@ -74,6 +74,8 @@
 
               if (inst.$router.currentRoute.path === '/') {
                 inst.$router.push('/dashboard')
+              } else if (inst.$router.currentRoute.query && inst.$router.currentRoute.query.to) {
+                inst.$router.push(inst.$router.currentRoute.query.to)
               } else {
                 inst.$router.push('/')
               }
