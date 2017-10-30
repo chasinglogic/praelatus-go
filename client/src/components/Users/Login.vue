@@ -63,8 +63,6 @@
          url = '/api/users'
        }
 
-       console.log('url', url)
-
        let inst = this
        Axios.post(url, inst.form)
             .then(function (resp) {
