@@ -25,6 +25,10 @@
 
    components: {
      Navbar
+   },
+
+   mounted: function () {
+     this.$store.commit('sidebarShown', false)
    }
  }
 </script>
