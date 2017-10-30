@@ -17,7 +17,7 @@
           <tr v-for="item in items">
             <template v-for="column in columns">
               <td v-if="column === uid">
-                <router-link v-bind:to="prefix + uid">
+                <router-link v-bind:to="prefix + item[column]">
                   {{ item[column] }}
                 </router-link>
               </td>
@@ -69,11 +69,26 @@
    },
 
    props: {
-     'columns': [],
-     'items': [],
-     'uid': '',
-     'ignoredColumns': function (col) { return true },
-     'prefix': ''
+     'columns': {
+       type: Array,
+       default: []
+     },
+     'items': {
+       type: Array,
+       default: []
+     },
+     'uid': {
+       type: String,
+       default: ''
+     },
+     'ignoredColumns': {
+       type: Function,
+       default: function (col) { return true }
+     },
+     'prefix': {
+       type: String,
+       default: ''
+     }
    }
  }
 </script>
