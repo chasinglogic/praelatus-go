@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="comment-form-wrapper">
     <div class="card comment" v-if="currentUser">
       <editor v-model="body" @submit="newComment"></editor>
       <b-button @click="newComment" variant="primary">
@@ -58,7 +58,7 @@
 </script>
 
 <style lang="scss">
- .md-editor {
-   width: 100%;
+ .comment-form-wrapper {
+   margin-top: 0.5rem;
  }
 </style>
