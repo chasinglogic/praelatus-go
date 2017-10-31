@@ -95,7 +95,7 @@ func (t ticketRepo) Create(u *models.User, ticket models.Ticket) (models.Ticket,
 			return models.Ticket{}, repo.ErrInvalidFieldsForTicket
 		}
 
-		return models.Ticket{}, mongoErr(err)
+		return models.Ticket{}, repo.ErrInvalidFieldsForTicket
 	}
 
 	ticket.Workflow = p.GetWorkflow(ticket.Type)
