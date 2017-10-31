@@ -8,7 +8,9 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/praelatus/praelatus/api/utils"
 	"github.com/praelatus/praelatus/repo"
 )
 
@@ -18,7 +20,12 @@ var Cache repo.Cache
 // ContentHeaders will set the content-type header for the API to application/json
 func ContentHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path[len("/api"):] == "/api" {
+		if r.URL.Path[:len("/api")] == "/api" {
+			if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
+				utils.APIErr(w, http.StatusBadRequest,
+					"incorrect content-type")
+				return
+			}
 			w.Header().Set("Content-Type", "application/json")
 		}
 
