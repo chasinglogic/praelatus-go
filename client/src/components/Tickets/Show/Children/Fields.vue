@@ -29,7 +29,7 @@
          case 'DATE':
            return dateUtils.dateFormat(field.value)
          default:
-           return field.value
+           return field.value ? field.value : 'None'
        }
      }
    },
