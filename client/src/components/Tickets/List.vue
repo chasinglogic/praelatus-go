@@ -144,7 +144,7 @@
            active: false
          },
          {
-           name: 'ticketType',
+           name: 'type',
            active: true
          }
        ]
