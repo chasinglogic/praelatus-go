@@ -16,13 +16,13 @@ import (
 type Ticket struct {
 	CreatedDate time.Time `json:"createdDate"`
 	UpdatedDate time.Time `json:"updatedDate"`
-	Key         string    `bson:"_id" json:"key" required:"true"`
+	Key         string    `bson:"_id" json:"key"`
 	Summary     string    `json:"summary" required:"true"`
 	Description string    `json:"description" required:"true"`
 	Status      string    `json:"status"`
-	Reporter    string    `json:"reporter"`
+	Reporter    string    `json:"reporter" required:"true"`
 	Assignee    string    `json:"assignee"`
-	Type        string    `json:"ticketType" required:"true"`
+	Type        string    `json:"type" required:"true"`
 	Labels      []string  `json:"labels"`
 
 	Fields   []Field   `json:"fields"`
