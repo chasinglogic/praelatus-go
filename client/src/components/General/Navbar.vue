@@ -85,12 +85,12 @@
  }
 
  .bg-praelatus .nav .nav-item a {
-   color: #fff
+   color: #fff;
  }
 
  .bg-praelatus .nav .nav-item a:hover {
    background-color: $highlight-color;
-   color: #fff
+   color: #fff;
  }
 
  .bg-praelatus .dropdown-item {
@@ -98,12 +98,8 @@
  }
 
  .bg-praelatus .dropdown-item:hover, .bg-praelatus .nav-link.active {
-   background-color: $primary-color !important;
+   background-color: $primary-color;
    color: #fff !important;
- }
-
- .bg-praelatus .dropdown-item.active {
-   background-color: #fff;
  }
 
  .b-nav-dropdown .dropdown-item:focus:not(.active), .b-nav-dropdown .dropdown-item:hover:not(.active) {
