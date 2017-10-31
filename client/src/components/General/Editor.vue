@@ -125,11 +125,13 @@
 
      togglePreview: function () {
        this.preview = this.preview === false
+       this.showHelp = false
        document.getElementById(this.id).focus()
      },
 
      toggleHelp: function () {
        this.showHelp = this.showHelp === false
+       this.preview = false
        document.getElementById(this.id).focus()
      },
 
