@@ -12,16 +12,20 @@
               <th v-show="column.active">{{ column.displayName ? column.displayName : humanizeColumnName(column.name) }}</th>
             </template>
             <th v-if="showColumnPicker">
-              <b-dropdown text="Columns">
+              <b-dropdown text="Columns" variant="outline-primary"
+                class="column-dropdown">
                 <div v-for="column in columns">
-                  <span>{{ column.displayName ? column.displayName : humanizeColumnName(column.name) }}</span>
-                  <input type="checkbox" v-model="column.active" />
+                  <div class="column-dropdown-name">
+                    {{ humanizeColumnName(column.name) }}
+                  </div>
+                  <input type="checkbox" class="column-dropdown-input"
+                    v-model="column.active" />
                 </div>
-                <div>
-                  <b-button @click="resetDefaultColumns">
-                    Reset Defaults
-                  </b-button>
-                </div>
+                <b-button class="column-dropdown-reset-button"
+                  variant="warning"
+                  @click="resetDefaultColumns">
+                  Reset Defaults
+                </b-button>
               </b-dropdown>
             </th>
           </tr>
@@ -166,5 +170,24 @@
 <style>
  th {
    text-align: center;
+ }
+
+ .column-dropdown-name {
+   display: inline-block;
+   margin-left: 0.5rem;
+ }
+
+ .column-dropdown-input {
+   float: right;
+   margin-right: 0.5rem;
+ }
+
+ .column-dropdown-reset-button {
+   width: 100%;
+   margin-top: 0.5rem;
+ }
+
+ .column-dropdown .dropdown-menu {
+   padding-bottom: 0;
  }
 </style>

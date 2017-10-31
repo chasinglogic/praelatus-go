@@ -17,7 +17,7 @@
         </h1>
       </div>
       <div class="row" >
-        <div class="col-md-8">
+        <div class="col-lg-8 col-12">
           <div class="card">
             <h2 class="card-header">
               Description
@@ -26,9 +26,15 @@
             </div>
           </div>
         </div>
-        <div class="col-4-md" >
-          <ticket-details :ticket="ticket" />
-          <ticket-fields :fields="ticket.fields" />
+        <div class="col-lg-4 col-12" >
+          <div class="row">
+            <div class="col-6-lg col-12">
+              <ticket-details :ticket="ticket" />
+            </div>
+            <div class="col-6-lg col-12">
+              <ticket-fields :fields="ticket.fields" />
+            </div>
+          </div>
         </div>
       </div>
       <comments :comments="ticket.comments" />

@@ -53,3 +53,11 @@
    }
  }
 </script>
+
+<style>
+ .avatar {
+   width: 20px;
+   height: 20px;
+   display: inline-block
+ }
+</style>

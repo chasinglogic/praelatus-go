@@ -3,7 +3,8 @@
      can be found in the LICENSE file. -->
 
 <template>
-  <div v-bind:style="{ backgroundColor: bg, color: fg, border: brd, padding: pad, fontWeight: 'bold', borderRadius: '5px', width: '100%', textAlign: 'center' }">
+  <div class="status-pill"
+    v-bind:style="{ backgroundColor: bg, color: fg }">
     {{ status }}
   </div>
 </template>
@@ -14,11 +15,13 @@
 
    computed: {
      statusType: function () {
-       if (this.status.toLowerCase() === 'backlog' || this.status.toLowerCase() === 'todo') {
+       if (this.status.toLowerCase() === 'backlog' ||
+           this.status.toLowerCase() === 'todo') {
          return 'TODO'
        } else if (this.status.toLowerCase() === 'in progress') {
          return 'IN_PROGRESS'
-       } else if (this.status.toLowerCase() === 'closed' || this.status.toLowerCase() === 'done') {
+       } else if (this.status.toLowerCase() === 'closed' ||
+                  this.status.toLowerCase() === 'done') {
          return 'DONE'
        } else {
          return null
@@ -65,3 +68,18 @@
    }
  }
 </script>
+
+
+<style>
+ .status-pill {
+   border-radius: 5px;
+   max-width: 600px;
+   margin-right: auto;
+   margin-left: auto;
+   width: 100%;
+   text-align: center;
+   padding: 0.5rem;
+   border: solid 1px black;
+   font-weight: bold;
+ }
+</style>

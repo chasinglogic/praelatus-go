@@ -10,8 +10,8 @@
 
     <div class="card-block" >
       <div v-for="field in fields">
-        <p class="bold">{{ field.name }}</p>
-        <p>{{ getValue(field) }}</p>
+        <div class="field-name">{{ field.name }}:</div>
+        <div class="field-value">{{ getValue(field) }}</div>
       </div>
     </div>
   </div>
@@ -44,7 +44,14 @@
 </script>
 
 <style>
- .fields {
-   margin-top: 1rem;
+ .field-value {
+   margin-top: 0.5rem;
+   margin-bottom: 0.5rem;
+ }
+
+ @media(min-width: 992px) {
+   .fields {
+     margin-top: 1rem;
+   }
  }
 </style>

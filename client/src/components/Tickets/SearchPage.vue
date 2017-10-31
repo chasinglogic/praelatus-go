@@ -5,10 +5,21 @@
 <template>
   <div class="container">
     <h1>Tickets</h1>
-    <b-form-fieldset class="mr-auto ml-auto">
-      <b-form-input v-model="query" @keyup="loadTickets"
-        placeholder="Type to Search" />
-    </b-form-fieldset>
+    <b-form @submit="search" class="search-form">
+      <b-container>
+        <b-row>
+          <div class="col-11">
+            <b-form-input v-model="query" @keyup.enter="search"
+              placeholder="Type to Search" />
+          </div>
+          <div class="col-1">
+            <b-btn @click="search" type="submit" variant="outline-success">
+              Search
+            </b-btn>
+          </div>
+        </b-row>
+      </b-container>
+    </b-form>
     <ticket-list :tickets="tickets" showColumnPicker="true"></ticket-list>
   </div>
 </template>
@@ -22,12 +33,6 @@
      TicketList
    },
 
-   watch: {
-     query: function () {
-       this.$router.currentRoute.query.q = this.query
-     }
-   },
-
    data: function () {
      return {
        'query': '',
@@ -37,6 +42,11 @@
    },
 
    methods: {
+     search: function () {
+       this.$router.push({ name: 'Tickets/SearchPage', query: { q: this.query } })
+       this.loadTickets()
+     },
+
      loadTickets: function () {
        let url = '/api/tickets'
        let inst = this
@@ -67,3 +77,9 @@
    }
  }
 </script>
+
+<style>
+ .search-form {
+   margin-bottom: 1rem;
+ }
+</style>

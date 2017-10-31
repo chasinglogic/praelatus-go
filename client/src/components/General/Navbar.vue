@@ -159,4 +159,9 @@
  .navbar-ticket-search:focus {
    width: 300px;
  }
+
+ .navbar-nav .dropdown-menu .dropdown-item {
+   border: none !important;
+   box-shadow: none !important;
+ }
 </style>
