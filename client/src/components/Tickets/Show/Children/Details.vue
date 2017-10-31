@@ -37,7 +37,7 @@
 
         <p>
           <span class="field-name">Type:</span>
-          {{ ticket.ticketType }}
+          {{ ticket.type }}
         </p>
 
         <template v-if="ticket.labels.length !== 0">
