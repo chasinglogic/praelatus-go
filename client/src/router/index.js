@@ -6,6 +6,7 @@ Vue.use(Router)
 import Index from '@/components/Index'
 import SearchPage from '@/components/Tickets/SearchPage'
 import Ticket from '@/components/Tickets/Show'
+import TicketCreate from '@/components/Tickets/Create'
 import Project from '@/components/Projects/Show'
 import User from '@/components/Users/Show'
 import Login from '@/components/Users/Login'
@@ -28,6 +29,11 @@ export default new Router({
       path: '/projects',
       name: 'Projects/List',
       component: ProjectList
+    },
+    {
+      path: '/tickets/create',
+      name: 'Tickets/Create',
+      component: TicketCreate
     },
     {
       path: '/tickets/:key',
