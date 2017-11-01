@@ -12,6 +12,8 @@ import (
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/api/utils"
 	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/ql/lexer"
+	"github.com/praelatus/praelatus/ql/parser"
 )
 
 func ticketRouter(router *mux.Router) {
@@ -98,7 +100,8 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q := r.FormValue("q")
-	tickets, err := Repo.Tickets().Search(u, q)
+	a := parser.New(lexer.New(q)).Parse()
+	tickets, err := Repo.Tickets().Search(u, a)
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
 		return

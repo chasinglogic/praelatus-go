@@ -5,8 +5,6 @@
 // Package token contains the tokens for PQL
 package token
 
-import "fmt"
-
 type TokenType string
 
 // TokenTypes
@@ -52,7 +50,6 @@ type Token struct {
 
 // LookupIdent will determine if the given word is a keyword or a identifier
 func LookupIdent(ident string) TokenType {
-	fmt.Println("looking up ident", ident, keywords[ident])
 	if tok, ok := keywords[ident]; ok {
 		return tok
 	}

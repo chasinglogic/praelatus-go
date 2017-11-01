@@ -16,9 +16,9 @@ func TestParse(t *testing.T) {
 	p := New(l)
 	tree := p.Parse()
 
-	inf, ok := tree.Root.(ast.InfixExpression)
+	inf, ok := tree.Root.Expression.(ast.InfixExpression)
 	if !ok {
-		t.Errorf("Expected an ast.InfixExpression Got %T", tree.Root)
+		t.Errorf("Expected an ast.InfixExpression Got %T", tree.Root.Expression)
 		return
 	}
 
@@ -39,19 +39,38 @@ func TestParseOR(t *testing.T) {
 	l := lexer.New("summary = \"test this parser\" OR project = \"TEST\"")
 	p := New(l)
 	tree := p.Parse()
-	t.Log(tree)
+
+	if tree.String() != "((summary = \"test this parser\") OR (project = \"TEST\"))" {
+		t.Errorf("Unexpected Parsing Error Got: %s \nErrors: %v", tree.String(), p.Errors())
+	}
 }
 
 func TestParseAND(t *testing.T) {
-	l := lexer.New("summary = \"test this parser\" AND project = \"TEST\"")
+	l := lexer.New("((summary = \"test this parser\") AND (project = \"TEST\"))")
 	p := New(l)
 	tree := p.Parse()
-	t.Log(tree)
+
+	if tree.String() != "((summary = \"test this parser\") AND (project = \"TEST\"))" {
+		t.Errorf("Unexpected Parsing Error Got: %s \nErrors: %v", tree.String(), p.Errors())
+	}
 }
 
 func TestParseComplex(t *testing.T) {
 	l := lexer.New("summary = \"test this parser\" OR (project = \"TEST\" AND (key = \"TEST-1\"))")
 	p := New(l)
 	tree := p.Parse()
-	t.Log(tree)
+
+	if tree.String() != "((summary = \"test this parser\") OR ((project = \"TEST\") AND (key = \"TEST-1\")))" {
+		t.Errorf("Unexpected Parsing Error Got: %s \nErrors: %v", tree.String(), p.Errors())
+	}
+}
+
+func TestMultipleCompounds(t *testing.T) {
+	l := lexer.New("summary = \"test this parser\" OR project = \"TEST\" AND key = \"TEST-1\"")
+	p := New(l)
+	tree := p.Parse()
+
+	if tree.String() != "(((summary = \"test this parser\") OR (project = \"TEST\")) AND (key = \"TEST-1\"))" {
+		t.Errorf("Unexpected Parsing Error Got: %s \nErrors: %v", tree.String(), p.Errors())
+	}
 }

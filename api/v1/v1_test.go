@@ -119,6 +119,7 @@ func testRoutes(routes []routeTest, t *testing.T) {
 		if expectedCode != w.Code {
 			t.Errorf("[%s] Expected Status Code: %d Got: %d",
 				route.Name, expectedCode, w.Code)
+			t.Errorf("%s", w.Body.String())
 		}
 
 		if route.Validator != nil {

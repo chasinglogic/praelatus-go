@@ -76,6 +76,8 @@ var ticketRouteTests = []routeTest{
 			Summary:     "A fake test ticket.",
 			Description: "Not a useful description.",
 			Reporter:    "testuser",
+			Project:     "TEST",
+			Type:        "Bug",
 		},
 		Converter: ticketFromJSON,
 		Validator: func(v interface{}, t *testing.T) {
