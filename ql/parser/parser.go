@@ -14,11 +14,31 @@ import (
 	"github.com/praelatus/praelatus/ql/token"
 )
 
+const (
+	_      int = iota
+	LOWEST     // Lowest priority
+	ANDOR
+	COMPARISON // ==
+)
+
+var precedences = map[token.TokenType]int{
+	token.EQ:   COMPARISON,
+	token.NE:   COMPARISON,
+	token.LT:   COMPARISON,
+	token.GT:   COMPARISON,
+	token.GTE:  COMPARISON,
+	token.LTE:  COMPARISON,
+	token.LIKE: COMPARISON,
+	token.AND:  ANDOR,
+	token.OR:   ANDOR,
+}
+
 type (
 	prefixParseFn func() ast.Expression
 	infixParseFn  func(ast.Expression) ast.Expression
 )
 
+// Parser parses a PQL query and returns an AST for that query
 type Parser struct {
 	l      *lexer.Lexer
 	errors []string
@@ -30,26 +50,30 @@ type Parser struct {
 	infixParseFns  map[token.TokenType]infixParseFn
 }
 
+// New returns a parser for the given lexer
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
 		l:      l,
 		errors: []string{},
 	}
 
-	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
-	p.registerPrefix(token.IDENT, p.parseFieldName)
-	p.registerPrefix(token.STRING, p.parseString)
-	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
+	p.prefixParseFns = map[token.TokenType]prefixParseFn{
+		token.IDENT:  p.parseFieldName,
+		token.STRING: p.parseString,
+		token.INT:    p.parseIntegerLiteral,
+		token.LPAREN: p.parseGroupedExpression,
+	}
 
-	p.infixParseFns = make(map[token.TokenType]infixParseFn)
-	p.registerInfix(token.EQ, p.parseInfixExpression)
-	p.registerInfix(token.NE, p.parseInfixExpression)
-	p.registerInfix(token.LT, p.parseInfixExpression)
-	p.registerInfix(token.GT, p.parseInfixExpression)
-	p.registerInfix(token.GTE, p.parseInfixExpression)
-	p.registerInfix(token.LTE, p.parseInfixExpression)
-	p.registerInfix(token.OR, p.parseInfixExpression)
-	p.registerInfix(token.AND, p.parseInfixExpression)
+	p.infixParseFns = map[token.TokenType]infixParseFn{
+		token.EQ:  p.parseInfixExpression,
+		token.NE:  p.parseInfixExpression,
+		token.LT:  p.parseInfixExpression,
+		token.GT:  p.parseInfixExpression,
+		token.GTE: p.parseInfixExpression,
+		token.LTE: p.parseInfixExpression,
+		token.OR:  p.parseInfixExpression,
+		token.AND: p.parseInfixExpression,
+	}
 
 	// Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
@@ -81,6 +105,22 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 	}
 }
 
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+
+	return LOWEST
+}
+
+func (p *Parser) curPrecedence() int {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p
+	}
+
+	return LOWEST
+}
+
 func (p *Parser) Errors() []string {
 	return p.errors
 }
@@ -99,30 +139,23 @@ func (p *Parser) noPrefixParseFnError(t token.TokenType) {
 // Parse will turn the given query into an ast.AST
 // TODO: Write this
 func (p *Parser) Parse() ast.AST {
-	exp := p.parseQuery()
+	exp := p.parseExpressionStatement()
 	return ast.AST{Root: exp}
 }
 
-func (p *Parser) parseQuery() ast.Expression {
-	var rootExp ast.InfixExpression
-	var leftExp ast.InfixExpression
+func (p *Parser) parseExpressionStatement() ast.ExpressionStatement {
+	stmt := ast.ExpressionStatement{Token: p.curToken}
 
-	for !p.peekTokenIs(token.EOF) {
-		leftExp = p.parseExpression().(ast.InfixExpression)
-		fmt.Println("l", leftExp)
-		nextExp := p.parseExpression()
-		fmt.Println("n", nextExp)
-		if nextExp != nil {
-			rootExp.Right = nextExp
-		} else {
-			rootExp = leftExp
-		}
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.EOF) {
+		p.nextToken()
 	}
 
-	return rootExp
+	return stmt
 }
 
-func (p *Parser) parseExpression() ast.Expression {
+func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
 		p.noPrefixParseFnError(p.curToken.Type)
@@ -130,7 +163,7 @@ func (p *Parser) parseExpression() ast.Expression {
 	}
 	leftExp := prefix()
 
-	for !p.peekTokenIs(token.EOF) {
+	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
 			return leftExp
@@ -142,10 +175,6 @@ func (p *Parser) parseExpression() ast.Expression {
 	}
 
 	return leftExp
-}
-
-func (p *Parser) parseIdentifier() ast.Expression {
-	return ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 func (p *Parser) parseString() ast.Expression {
@@ -178,8 +207,9 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 		Left:     left,
 	}
 
+	precedence := p.curPrecedence()
 	p.nextToken()
-	expression.Right = p.parseExpression()
+	expression.Right = p.parseExpression(precedence)
 
 	return expression
 }
@@ -187,7 +217,7 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 func (p *Parser) parseGroupedExpression() ast.Expression {
 	p.nextToken()
 
-	exp := p.parseExpression()
+	exp := p.parseExpression(LOWEST)
 
 	if !p.expectPeek(token.RPAREN) {
 		return nil

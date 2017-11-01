@@ -102,25 +102,26 @@ func (l *Lexer) NextToken() token.Token {
 	case 0:
 		tok = token.Token{token.EOF, ""}
 	default:
-		if isLetter(l.ch) {
-			tok.Literal = l.read(isLetter)
-			tok.Type = token.LookupIdent(tok.Literal)
-
-			// Trim trailing spaces
-			if tok.Literal[len(tok.Literal)-1] == ' ' {
-				tok.Literal = tok.Literal[:len(tok.Literal)-1]
-			}
-
-			return tok
-		} else if isDigit(l.ch) {
+		if isDigit(l.ch) {
 			tok.Type = token.INT
 			tok.Literal = l.read(isDigit)
+			return tok
+		} else if isLetter(l.ch) {
+			tok.Literal = l.read(isLetter)
+			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
 		} else if l.ch == '"' {
 			// Skip opening quote
 			l.readChar()
 			tok.Type = token.STRING
-			tok.Literal = l.read(isLetter)
+
+			// When inside double quotes numbers and spaces are allows so treat them as such
+			tok.Literal = l.read(func(ch byte) bool {
+				return isLetter(ch) || ch == ' ' || isDigit(ch)
+			})
+
+			// Skip closing quote
+			l.readChar()
 			return tok
 		}
 
@@ -136,8 +137,7 @@ func isWhitespace(ch byte) bool {
 }
 
 func isLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'z' || ch == '_' ||
-		ch == ' '
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'z' || ch == '_' || ch == '-'
 }
 
 func isDigit(ch byte) bool {
