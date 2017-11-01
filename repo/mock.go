@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/ql/ast"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -127,7 +128,7 @@ func (t mockTicketRepo) Get(u *models.User, uid string) (models.Ticket, error) {
 	return tickets[0], nil
 }
 
-func (t mockTicketRepo) Search(u *models.User, query string) ([]models.Ticket, error) {
+func (t mockTicketRepo) Search(u *models.User, query ast.AST) ([]models.Ticket, error) {
 	return tickets, nil
 }
 

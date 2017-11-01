@@ -10,6 +10,7 @@ import (
 	"errors"
 
 	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/ql/ast"
 )
 
 // Errors
@@ -25,7 +26,7 @@ var (
 // TicketRepo handles storing, retrieving, updating, and creating tickets.
 type TicketRepo interface {
 	Get(u *models.User, uid string) (models.Ticket, error)
-	Search(u *models.User, query string) ([]models.Ticket, error)
+	Search(u *models.User, query ast.AST) ([]models.Ticket, error)
 	Update(u *models.User, uid string, updated models.Ticket) error
 	Create(u *models.User, ticket models.Ticket) (models.Ticket, error)
 	Delete(u *models.User, uid string) error
