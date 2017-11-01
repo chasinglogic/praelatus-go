@@ -3,9 +3,10 @@
      can be found in the LICENSE file. -->
 
 <template>
-  <div id="app">
+  <div id="app" @keydown="handleGlobalKeybind">
     <navbar></navbar>
-    <div class="content" v-bind:style="{ marginLeft: showSidebar ? sidebarWidth : '0px' }">
+    <div class="content"
+      v-bind:style="{ marginLeft: showSidebar ? sidebarWidth : '0px' }">
       <router-view></router-view>
     </div>
   </div>
@@ -18,10 +19,30 @@
 
  export default {
    name: 'app',
+
    computed: mapState({
      sidebarWidth: (state) => { return state.sidebarWidth },
      showSidebar: (state) => { return state.showSidebar }
    }),
+
+   methods: {
+     handleGlobalKeybind: function (ev) {
+       console.log('global keybind', ev, boundKey)
+       if (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA') {
+         console.log('inside input field ignore keybind')
+         return
+       }
+
+       const boundKey = this.boundKeys[ev.key]
+     }
+   },
+
+   data: function () {
+     return {
+       boundKeys: {
+       }
+     }
+   },
 
    components: {
      Navbar
