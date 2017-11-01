@@ -11,6 +11,7 @@ import (
 
 	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/models/permission"
+	"github.com/praelatus/praelatus/ql/ast"
 	"github.com/praelatus/praelatus/repo"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -153,7 +154,7 @@ func (t ticketRepo) Delete(u *models.User, uid string) error {
 	return mongoErr(t.coll().RemoveId(uid))
 }
 
-func (t ticketRepo) Search(u *models.User, query string) ([]models.Ticket, error) {
+func (t ticketRepo) Search(u *models.User, query ast.AST) ([]models.Ticket, error) {
 	permQ := permQuery(u)
 	var p []models.Project
 
@@ -171,30 +172,14 @@ func (t ticketRepo) Search(u *models.User, query string) ([]models.Ticket, error
 	var tickets []models.Ticket
 
 	tQuery := bson.M{
-		"project": bson.M{
-			"$in": keys,
-		},
-	}
-
-	if query != "" {
-		tQuery = bson.M{
-			"$and": []bson.M{
-				tQuery,
-				{
-					"$or": []bson.M{
-						{
-							"key": bson.M{"$regex": query},
-						},
-						{
-							"description": bson.M{"$regex": query},
-						},
-						{
-							"summary": bson.M{"$regex": query},
-						},
-					},
+		"$and": []bson.M{
+			{
+				"project": bson.M{
+					"$in": keys,
 				},
 			},
-		}
+			evalAST(query),
+		},
 	}
 
 	err = t.coll().Find(tQuery).All(&tickets)

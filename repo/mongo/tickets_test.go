@@ -7,6 +7,8 @@ package mongo_test
 import (
 	"strings"
 	"testing"
+
+	"github.com/praelatus/praelatus/ql/ast"
 )
 
 func TestTicketGet(t *testing.T) {
@@ -21,7 +23,7 @@ func TestTicketGet(t *testing.T) {
 }
 
 func TestTicketSearch(t *testing.T) {
-	tks, e := r.Tickets().Search(&admin, "")
+	tks, e := r.Tickets().Search(&admin, ast.AST{})
 	if e != nil {
 		t.Error(e)
 		return
