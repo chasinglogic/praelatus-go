@@ -182,7 +182,19 @@ func (t ticketRepo) Search(u *models.User, query ast.AST) ([]models.Ticket, erro
 		},
 	}
 
-	err = t.coll().Find(tQuery).All(&tickets)
+	qry := t.coll().Find(tQuery)
+
+	for _, mod := range query.Modifiers {
+		switch mod.Modifier {
+		case "ORDER_BY":
+			qry = qry.Sort(mod.Value.String())
+		case "LIMIT":
+			il := mod.Value.(ast.IntegerLiteral)
+			qry = qry.Limit(int(il.Value))
+		}
+	}
+
+	err = qry.All(&tickets)
 	return tickets, err
 }
 
