@@ -62,7 +62,7 @@ func eval(exp ast.InfixExpression) bson.M {
 }
 
 func evalAST(a ast.AST) bson.M {
-	infix, ok := a.Root.Expression.(ast.InfixExpression)
+	infix, ok := a.Query.Expression.(ast.InfixExpression)
 	if !ok {
 		return nil
 	}
