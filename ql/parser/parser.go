@@ -139,8 +139,23 @@ func (p *Parser) noPrefixParseFnError(t token.TokenType) {
 // Parse will turn the given query into an ast.AST
 // TODO: Write this
 func (p *Parser) Parse() ast.AST {
-	exp := p.parseExpressionStatement()
-	return ast.AST{Root: exp}
+	var a ast.AST
+	a.Modifiers = make([]ast.ModifierStatement, 0)
+
+	for !p.curTokenIs(token.EOF) {
+		switch p.curToken.Type {
+		case token.LIMIT:
+			a.Modifiers = append(a.Modifiers, p.parseModifierStatement())
+		case token.ORDER:
+			a.Modifiers = append(a.Modifiers, p.parseModifierStatement())
+		default:
+			a.Query = p.parseExpressionStatement()
+		}
+
+		p.nextToken()
+	}
+
+	return a
 }
 
 func (p *Parser) parseExpressionStatement() ast.ExpressionStatement {
@@ -155,6 +170,35 @@ func (p *Parser) parseExpressionStatement() ast.ExpressionStatement {
 	return stmt
 }
 
+func (p *Parser) parseModifierStatement() ast.ModifierStatement {
+	stmt := ast.ModifierStatement{
+		Token:    p.curToken,
+		Modifier: p.curToken.Literal,
+	}
+
+	if stmt.Token.Type == token.ORDER && !p.peekTokenIs(token.IDENT) {
+		p.errors = append(p.errors, "ORDER_BY must be followed by a fieldname")
+		return ast.ModifierStatement{}
+	}
+
+	if stmt.Token.Type == token.LIMIT && !p.peekTokenIs(token.INT) {
+		p.errors = append(p.errors, "LIMIT must be followed by a number")
+		return ast.ModifierStatement{}
+	}
+
+	p.nextToken()
+
+	if stmt.Token.Type == token.ORDER {
+		stmt.Value = p.parseFieldName()
+	} else if stmt.Token.Type == token.LIMIT {
+		stmt.Value = p.parseIntegerLiteral()
+	} else {
+		return ast.ModifierStatement{}
+	}
+
+	return stmt
+}
+
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
@@ -163,7 +207,11 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 	leftExp := prefix()
 
-	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
+	for !p.peekTokenIs(token.EOF) &&
+		!p.peekTokenIs(token.ORDER) &&
+		!p.peekTokenIs(token.LIMIT) &&
+		precedence < p.peekPrecedence() {
+
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
 			return leftExp
