@@ -129,8 +129,7 @@
 
        Axios.post(url, this.ticket)
             .then((res) => {
-              console.log(res.data)
-              // inst.$router.push('/tickets/' + res.data.key)
+              inst.$router.push('/tickets/' + res.data.key)
             })
             .catch((err) => {
               inst.errorMsg = err.response.data.message
