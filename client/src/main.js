@@ -15,6 +15,7 @@ import Axios from 'axios'
 
 // TODO: Set these during build time.
 Axios.defaults.baseURL = 'http://localhost:8080'
+Axios.defaults.headers['Content-Type'] = 'application/json; charset=UTF-8'
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
