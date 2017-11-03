@@ -21,11 +21,12 @@ var Cache repo.Cache
 func ContentHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path[:len("/api")] == "/api" {
-			if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
+			if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") && r.Method != "GET" {
 				utils.APIErr(w, http.StatusBadRequest,
 					"incorrect content-type")
 				return
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 		}
 
