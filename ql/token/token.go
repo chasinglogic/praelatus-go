@@ -33,13 +33,20 @@ const (
 
 	AND = "AND"
 	OR  = "OR"
+
+	ORDER = "ORDER_BY"
+	LIMIT = "LIMIT"
 )
 
 var keywords = map[string]TokenType{
-	"AND": AND,
-	"and": AND,
-	"OR":  OR,
-	"or":  OR,
+	"AND":      AND,
+	"and":      AND,
+	"OR":       OR,
+	"or":       OR,
+	"ORDER_BY": ORDER,
+	"order_by": ORDER,
+	"LIMIT":    LIMIT,
+	"limit":    LIMIT,
 }
 
 // Token contains the string literal and the type for a given token
