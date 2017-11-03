@@ -14,6 +14,7 @@ import (
 // code for logging
 type LoggedResponseWriter struct {
 	status int
+	error  []byte
 	http.ResponseWriter
 }
 
@@ -32,6 +33,8 @@ func (w *LoggedResponseWriter) WriteHeader(code int) {
 func (w *LoggedResponseWriter) Write(b []byte) (int, error) {
 	if w.status == 0 {
 		w.WriteHeader(200)
+	} else if w.status >= 400 {
+		w.error = b
 	}
 
 	return w.ResponseWriter.Write(b)
@@ -42,10 +45,15 @@ func (w *LoggedResponseWriter) Write(b []byte) (int, error) {
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		lrw := &LoggedResponseWriter{0, w}
+		lrw := &LoggedResponseWriter{status: 0, ResponseWriter: w}
 		next.ServeHTTP(lrw, r)
 
-		log.Printf("|%s| [%d] %s %s",
-			r.Method, lrw.Status(), r.URL.Path, time.Since(start).String())
+		if lrw.error != nil {
+			log.Printf("|%s| [%d] %s %s %s",
+				r.Method, lrw.Status(), r.URL.Path, time.Since(start).String(), string(lrw.error))
+		} else {
+			log.Printf("|%s| [%d] %s %s",
+				r.Method, lrw.Status(), r.URL.Path, time.Since(start).String())
+		}
 	})
 }
