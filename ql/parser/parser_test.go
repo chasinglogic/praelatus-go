@@ -16,9 +16,9 @@ func TestParse(t *testing.T) {
 	p := New(l)
 	tree := p.Parse()
 
-	inf, ok := tree.Root.Expression.(ast.InfixExpression)
+	inf, ok := tree.Query.Expression.(ast.InfixExpression)
 	if !ok {
-		t.Errorf("Expected an ast.InfixExpression Got %T", tree.Root.Expression)
+		t.Errorf("Expected an ast.InfixExpression Got %T", tree.Query.Expression)
 		return
 	}
 
@@ -71,6 +71,60 @@ func TestMultipleCompounds(t *testing.T) {
 	tree := p.Parse()
 
 	if tree.String() != "(((summary = \"test this parser\") OR (project = \"TEST\")) AND (key = \"TEST-1\"))" {
+		t.Errorf("Unexpected Parsing Error Got: %s \nErrors: %v", tree.String(), p.Errors())
+	}
+}
+
+func TestParseLimit(t *testing.T) {
+	l := lexer.New("summary = \"test this parser\" LIMIT 10")
+	p := New(l)
+	tree := p.Parse()
+
+	if len(p.Errors()) != 0 {
+		for _, e := range p.Errors() {
+			t.Error(e)
+		}
+
+		return
+	}
+
+	if tree.String() != "(summary = \"test this parser\") LIMIT 10" {
+		t.Errorf("Unexpected Parsing Error Got: %s \nErrors: %v", tree.String(), p.Errors())
+	}
+}
+
+func TestParseOrderBy(t *testing.T) {
+	l := lexer.New("summary = \"test this parser\" ORDER_BY summary")
+	p := New(l)
+	tree := p.Parse()
+
+	if len(p.Errors()) != 0 {
+		for _, e := range p.Errors() {
+			t.Error(e)
+		}
+
+		return
+	}
+
+	if tree.String() != "(summary = \"test this parser\") ORDER_BY summary" {
+		t.Errorf("Unexpected Parsing Error Got: %s \nErrors: %v", tree.String(), p.Errors())
+	}
+}
+
+func TestParseLimitOrderBy(t *testing.T) {
+	l := lexer.New("summary = \"test this parser\" ORDER_BY project LIMIT 10")
+	p := New(l)
+	tree := p.Parse()
+
+	if len(p.Errors()) != 0 {
+		for _, e := range p.Errors() {
+			t.Error(e)
+		}
+
+		return
+	}
+
+	if tree.String() != "(summary = \"test this parser\") ORDER_BY project LIMIT 10" {
 		t.Errorf("Unexpected Parsing Error Got: %s \nErrors: %v", tree.String(), p.Errors())
 	}
 }
