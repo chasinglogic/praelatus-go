@@ -30,6 +30,56 @@ func TestLexer(t *testing.T) {
 				},
 			},
 		},
+		{
+			Inp: "summary = \"test\" LIMIT 10",
+			Tokens: []token.Token{
+				{
+					Type:    token.IDENT,
+					Literal: "summary",
+				},
+				{
+					Type:    token.EQ,
+					Literal: "=",
+				},
+				{
+					Type:    token.STRING,
+					Literal: "test",
+				},
+				{
+					Type:    token.LIMIT,
+					Literal: "LIMIT",
+				},
+				{
+					Type:    token.INT,
+					Literal: "10",
+				},
+			},
+		},
+		{
+			Inp: "summary = \"test\" ORDER_BY project",
+			Tokens: []token.Token{
+				{
+					Type:    token.IDENT,
+					Literal: "summary",
+				},
+				{
+					Type:    token.EQ,
+					Literal: "=",
+				},
+				{
+					Type:    token.STRING,
+					Literal: "test",
+				},
+				{
+					Type:    token.ORDER,
+					Literal: "ORDER_BY",
+				},
+				{
+					Type:    token.IDENT,
+					Literal: "project",
+				},
+			},
+		},
 	}
 
 	for _, test := range lexerTests {
