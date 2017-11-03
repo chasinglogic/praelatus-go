@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/praelatus/praelatus/ql/ast"
+	"github.com/praelatus/praelatus/ql/lexer"
+	"github.com/praelatus/praelatus/ql/parser"
 )
 
 func TestTicketGet(t *testing.T) {
@@ -31,6 +33,31 @@ func TestTicketSearch(t *testing.T) {
 
 	if tks == nil || len(tks) == 0 {
 		t.Error("Expected to get tickets instead got none.")
+	}
+}
+
+func TestTicketSearchLimit(t *testing.T) {
+	l := lexer.New("LIMIT 5")
+	p := parser.New(l)
+	a := p.Parse()
+
+	if len(p.Errors()) != 0 {
+		t.Errorf("Parsing error: %v", p.Errors())
+		return
+	}
+
+	tks, e := r.Tickets().Search(&admin, a)
+	if e != nil {
+		t.Error(e)
+		return
+	}
+
+	if tks == nil || len(tks) == 0 {
+		t.Error("Expected to get tickets instead got none.")
+	}
+
+	if len(tks) != 5 {
+		t.Errorf("Expected 5 tickets Got %d", len(tks))
 	}
 }
 
