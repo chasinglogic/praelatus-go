@@ -14,11 +14,18 @@ import (
 
 // AST is the parsed abstract syntax tree of a query
 type AST struct {
-	Root ExpressionStatement
+	Query     ExpressionStatement
+	Modifiers []ModifierStatement
 }
 
 func (a AST) String() string {
-	return a.Root.String()
+	q := a.Query.String()
+
+	for _, mod := range a.Modifiers {
+		q = q + " " + mod.String()
+	}
+
+	return q
 }
 
 // TODO: Implement methods to make traversing the tree simpler.
@@ -158,6 +165,25 @@ func (es *ExpressionStatement) TokenLiteral() string { return es.Token.Literal }
 func (es *ExpressionStatement) String() string {
 	if es.Expression != nil {
 		return es.Expression.String()
+	}
+
+	return ""
+}
+
+// ModifierStatement is a statement which modifies the behavior of a query, i.e. LIMIT or ORDER BY
+type ModifierStatement struct {
+	Token    token.Token
+	Modifier string
+	Value    Expression
+}
+
+func (es *ModifierStatement) statementNode() {}
+
+// TokenLiteral implements AST node
+func (es *ModifierStatement) TokenLiteral() string { return es.Token.Literal }
+func (es *ModifierStatement) String() string {
+	if es.Modifier != "" {
+		return es.Modifier + " " + es.Value.String()
 	}
 
 	return ""
