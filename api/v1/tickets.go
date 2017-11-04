@@ -100,7 +100,14 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q := r.FormValue("q")
-	a := parser.New(lexer.New(q)).Parse()
+	p := parser.New(lexer.New(q))
+	a := p.Parse()
+
+	if len(p.Errors()) != 0 {
+		utils.APIErr(w, http.StatusBadRequest, p.Errors()[0])
+		return
+	}
+
 	tickets, err := Repo.Tickets().Search(u, a)
 	if err != nil {
 		utils.APIErr(w, http.StatusInternalServerError, err.Error())
