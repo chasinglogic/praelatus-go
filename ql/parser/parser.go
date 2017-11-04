@@ -71,8 +71,8 @@ func New(l *lexer.Lexer) *Parser {
 		token.GT:  p.parseInfixExpression,
 		token.GTE: p.parseInfixExpression,
 		token.LTE: p.parseInfixExpression,
-		token.OR:  p.parseInfixExpression,
-		token.AND: p.parseInfixExpression,
+		token.OR:  p.parseLogicExpression,
+		token.AND: p.parseLogicExpression,
 	}
 
 	// Read two tokens, so curToken and peekToken are both set
@@ -132,7 +132,7 @@ func (p *Parser) peekError(t token.TokenType) {
 }
 
 func (p *Parser) noPrefixParseFnError(t token.TokenType) {
-	msg := fmt.Sprintf("no prefix parse function for %s found", t)
+	msg := fmt.Sprintf("%s not allowed in comparison expression", t)
 	p.errors = append(p.errors, msg)
 }
 
@@ -201,6 +201,11 @@ func (p *Parser) parseModifierStatement() ast.ModifierStatement {
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
+	if p.curToken.Type == token.EOF {
+		p.errors = append(p.errors, "unexpected end of input")
+		return nil
+	}
+
 	if prefix == nil {
 		p.noPrefixParseFnError(p.curToken.Type)
 		return nil
@@ -248,6 +253,30 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	return lit
 }
 
+func (p *Parser) parseLogicExpression(left ast.Expression) ast.Expression {
+	expression := ast.InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+
+	if _, ok := expression.Left.(ast.InfixExpression); !ok {
+		p.errors = append(p.errors, "logic operators must (AND / OR) must be preceded by a comparison expression")
+		return nil
+	}
+
+	precedence := p.curPrecedence()
+	p.nextToken()
+	expression.Right = p.parseExpression(precedence)
+
+	if _, ok := expression.Right.(ast.InfixExpression); !ok {
+		p.errors = append(p.errors, "logic operators must (AND / OR) must be followed by a comparison expression")
+		return nil
+	}
+
+	return expression
+}
+
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression := ast.InfixExpression{
 		Token:    p.curToken,
@@ -258,6 +287,11 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	precedence := p.curPrecedence()
 	p.nextToken()
 	expression.Right = p.parseExpression(precedence)
+
+	if _, ok := expression.Right.(ast.FieldLiteral); ok {
+		p.errors = append(p.errors, "missing quotes around string: "+expression.Right.String())
+		return nil
+	}
 
 	return expression
 }
@@ -272,12 +306,4 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	}
 
 	return exp
-}
-
-func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
-	p.infixParseFns[tokenType] = fn
-}
-
-func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
-	p.prefixParseFns[tokenType] = fn
 }
