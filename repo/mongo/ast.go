@@ -36,25 +36,46 @@ func eval(exp ast.InfixExpression) bson.M {
 			}
 		}
 	case "=":
-		val := exp.Right.(ast.Literal)
+		val, ok := exp.Right.(ast.Literal)
+		if !ok {
+			break
+		}
 		makeFieldSearchDoc(exp, b, val.GetValue())
 	case "~":
-		val := exp.Right.(ast.Literal)
+		val, ok := exp.Right.(ast.Literal)
+		if !ok {
+			break
+		}
 		makeFieldSearchDoc(exp, b, bson.M{"$regex": val.GetValue()})
 	case "!=":
-		val := exp.Right.(ast.Literal)
+		val, ok := exp.Right.(ast.Literal)
+		if !ok {
+			break
+		}
 		makeFieldSearchDoc(exp, b, bson.M{"$ne": val.GetValue()})
 	case ">":
-		val := exp.Right.(ast.Literal)
+		val, ok := exp.Right.(ast.Literal)
+		if !ok {
+			break
+		}
 		makeFieldSearchDoc(exp, b, bson.M{"$gt": val.GetValue()})
 	case "<":
-		val := exp.Right.(ast.Literal)
+		val, ok := exp.Right.(ast.Literal)
+		if !ok {
+			break
+		}
 		makeFieldSearchDoc(exp, b, bson.M{"$lt": val.GetValue()})
 	case ">=":
-		val := exp.Right.(ast.Literal)
+		val, ok := exp.Right.(ast.Literal)
+		if !ok {
+			break
+		}
 		makeFieldSearchDoc(exp, b, bson.M{"$gte": val.GetValue()})
 	case "<=":
-		val := exp.Right.(ast.Literal)
+		val, ok := exp.Right.(ast.Literal)
+		if !ok {
+			break
+		}
 		makeFieldSearchDoc(exp, b, bson.M{"$lte": val.GetValue()})
 	}
 
