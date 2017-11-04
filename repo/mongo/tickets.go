@@ -12,6 +12,7 @@ import (
 	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/models/permission"
 	"github.com/praelatus/praelatus/ql/ast"
+	"github.com/praelatus/praelatus/ql/token"
 	"github.com/praelatus/praelatus/repo"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -185,10 +186,10 @@ func (t ticketRepo) Search(u *models.User, query ast.AST) ([]models.Ticket, erro
 	qry := t.coll().Find(tQuery)
 
 	for _, mod := range query.Modifiers {
-		switch mod.Modifier {
-		case "ORDER_BY":
+		switch mod.Token.Type {
+		case token.ORDER:
 			qry = qry.Sort(mod.Value.String())
-		case "LIMIT":
+		case token.LIMIT:
 			il := mod.Value.(ast.IntegerLiteral)
 			qry = qry.Limit(int(il.Value))
 		}
