@@ -125,6 +125,9 @@ func (fl FieldLiteral) expressionNode() {}
 func (fl FieldLiteral) TokenLiteral() string { return fl.Token.Literal }
 func (fl FieldLiteral) String() string       { return fl.Token.Literal }
 
+// GetValue implements literal
+func (fl FieldLiteral) GetValue() string { return fl.Value }
+
 // IsCustomField will return whether or not the given field is a custom field
 func (fl FieldLiteral) IsCustomField() bool {
 	defaultFields := []string{
