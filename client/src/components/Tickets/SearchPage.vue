@@ -18,6 +18,13 @@
             </b-btn>
           </div>
         </b-row>
+        <b-row v-if="errors.length !== 0" class="query-error">
+          <div class="col-12" v-for="e in errors">
+            <div class="alert alert-danger">
+              {{ e }}
+            </div>
+          </div>
+        </b-row>
       </b-container>
     </b-form>
     <ticket-list :tickets="tickets" showColumnPicker="true"></ticket-list>
@@ -36,7 +43,7 @@
    data: function () {
      return {
        'query': '',
-       'error': '',
+       'errors': [],
        'tickets': null
      }
    },
@@ -55,18 +62,15 @@
          url += '?q=' + this.query
        }
 
+       this.errors = []
        Axios.get(url)
             .then((res) => {
               inst.tickets = res.data
             })
             .catch((err) => {
-              if (err.response.status === 404) {
-                inst.tickets = []
-                return
-              }
-
-              // TODO: Visually que the user that there's been an error
-              console.log('ERROR', err)
+              inst.tickets = []
+              inst.errors = [err.response.data.message]
+              console.log(inst.errors)
             })
      }
    },
@@ -80,6 +84,11 @@
 
 <style>
  .search-form {
+   margin-bottom: 1rem;
+ }
+
+ .query-error {
+   margin-top: 1rem;
    margin-bottom: 1rem;
  }
 </style>
