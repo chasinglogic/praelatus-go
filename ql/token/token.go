@@ -45,6 +45,8 @@ var keywords = map[string]TokenType{
 	"or":       OR,
 	"ORDER_BY": ORDER,
 	"order_by": ORDER,
+	"ORDER":    ORDER,
+	"order":    ORDER,
 	"LIMIT":    LIMIT,
 	"limit":    LIMIT,
 }
