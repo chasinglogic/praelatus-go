@@ -74,6 +74,16 @@ type WorkflowRepo interface {
 	Delete(u *models.User, uid string) error
 }
 
+// NotificationRepo handles storing, retrieving, updating, and creating workflows.
+type NotificationRepo interface {
+	Create(u *models.User, notification models.Notification) (models.Notification, error)
+
+	MarkRead(u *models.User, uid string)
+
+	ForProject(u *models.User, project models.Project, onlyUnread bool, last int)
+	ForUser(u *models.User, user models.User, onlyUnread bool, last int)
+}
+
 // Repo is a container interface for combining all the other repos.
 type Repo interface {
 	Tickets() TicketRepo
@@ -81,6 +91,7 @@ type Repo interface {
 	Users() UserRepo
 	Fields() FieldSchemeRepo
 	Workflows() WorkflowRepo
+	Notifications() NotificationRepo
 
 	Clean() error
 	Test() error
@@ -97,3 +108,34 @@ type Cache interface {
 	SetSession(key string, user models.Session) error
 	RemoveSession(key string) error
 }
+
+// GlobalRepo is used to store a global repo instance that can be accessed from
+// anywhere in the application
+var GlobalRepo Repo
+
+// Tickets is an alias to the method of the same name on the global Repo
+func Tickets() TicketRepo { return GlobalRepo.Tickets() }
+
+// Projects is an alias to the method of the same name on the global Repo
+func Projects() ProjectRepo { return GlobalRepo.Projects() }
+
+// Users is an alias to the method of the same name on the global Repo
+func Users() UserRepo { return GlobalRepo.Users() }
+
+// Fields is an alias to the method of the same name on the global Repo
+func Fields() FieldSchemeRepo { return GlobalRepo.Fields() }
+
+// Workflows is an alias to the method of the same name on the global Repo
+func Workflows() WorkflowRepo { return GlobalRepo.Workflows() }
+
+// Notifications is an alias to the method of the same name on the global Repo
+func Notifications() NotificationRepo { return GlobalRepo.Notifications() }
+
+// Clean is an alias to the method of the same name on the global Repo
+func Clean() error { return GlobalRepo.Clean() }
+
+// Test is an alias to the method of the same name on the global Repo
+func Test() error { return GlobalRepo.Test() }
+
+// Init is an alias to the method of the same name on the global Repo
+func Init() error { return GlobalRepo.Init() }
