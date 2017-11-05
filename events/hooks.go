@@ -6,17 +6,18 @@ package events
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"text/template"
 
 	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/events/event"
 	"github.com/praelatus/praelatus/models"
 )
 
 var (
-	hookEventChan = make(chan models.Event)
+	hookEventChan = make(chan event.Event)
 	webWorkers    = config.WebWorkers()
 )
 
@@ -30,82 +31,83 @@ func handleHookEvent(result chan Result) {
 	outEvents := make(chan hookEvent)
 
 	for i := 0; i < webWorkers; i++ {
-		go sendRequest(outEvents, result)
+		go webWorker(outEvents, result)
 	}
 
 	for {
-		event := <-hookEventChan
+		e := <-hookEventChan
 
-		transition, ok := event.Data.(models.Transition)
+		if e.Type() != event.TransitionEvent {
+			continue
+		}
+
+		transition, ok := e.Data().(models.Transition)
 		if !ok {
 			continue
 		}
 
 		for _, hook := range transition.Hooks {
 			outEvents <- hookEvent{
-				ticket:     event.Ticket,
-				transition: transition,
+				ticket:     e.Ticket(),
 				hook:       hook,
+				transition: transition,
 			}
 		}
 	}
 }
 
-func sendRequest(events chan hookEvent, result chan Result) {
+func webWorker(inEvent chan hookEvent, resultChan chan Result) {
 	for {
-		event := <-events
-
-		res := Result{Reporter: "Hook Handler", Success: true}
-
-		tmpl, err := template.New("hook-body").Parse(event.hook.Body)
-		if err != nil {
-			e := fmt.Sprintf("Error parsing body %s: %s %s\n",
-				event.ticket.Key, event.transition.Name, err.Error())
-			res.Success = false
-			res.Error = errors.New(e)
-			result <- res
-			continue
-		}
-
-		body := bytes.NewBuffer([]byte{})
-
-		err = tmpl.Execute(body, event.ticket)
-		if err != nil {
-			e := fmt.Sprintf("Error rendering body %s: %s %s\n",
-				event.ticket.Key, event.transition.Name, err.Error())
-			res.Success = false
-			res.Error = errors.New(e)
-			result <- res
-			continue
-		}
-
-		r, err := http.NewRequest(event.hook.Method, event.hook.Endpoint, body)
-		if err != nil {
-			e := fmt.Sprintf("Error creating request %s: %s %s\n",
-				event.ticket.Key, event.transition.Name, err.Error())
-			res.Success = false
-			res.Error = errors.New(e)
-			result <- res
-			continue
-		}
-
-		client := http.Client{}
-
-		resp, err := client.Do(r)
-
-		if resp != nil {
-			_ = resp.Body.Close()
-		}
-
-		if err != nil {
-			e := fmt.Sprintf("REQUEST FAILED Ticket=%s: Status=%s Error=%s\n",
-				event.ticket.Key, event.transition.Name, err.Error())
-			res.Success = false
-			res.Error = errors.New(e)
-			result <- res
-			continue
-		}
-
-		result <- res
+		e := <-inEvent
+		resultChan <- runHook(e.ticket, e.transition, e.hook)
 	}
+}
+
+func renderBody(ticket models.Ticket, transition models.Transition, hook models.Hook) (io.Reader, error) {
+	tmpl, err := template.New("hook-body").Parse(hook.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing body %s: %s %s",
+			ticket.Key, transition.Name, err.Error())
+	}
+
+	body := bytes.NewBuffer([]byte{})
+
+	err = tmpl.Execute(body, ticket)
+	if err != nil {
+		return nil, fmt.Errorf("error rendering body %s: %s %s",
+			ticket.Key, transition.Name, err.Error())
+	}
+
+	return body, nil
+}
+
+func runHook(ticket models.Ticket, transition models.Transition, hook models.Hook) Result {
+	res := Result{Reporter: "Hook Handler: " + transition.Name}
+
+	body, err := renderBody(ticket, transition, hook)
+	if err != nil {
+		res.Error = err
+		return res
+	}
+
+	r, err := http.NewRequest(hook.Method, hook.Endpoint, body)
+	if err != nil {
+		res.Error = fmt.Errorf("error creating request %s: %s %s",
+			ticket.Key, transition.Name, err.Error())
+		return res
+	}
+
+	client := http.Client{}
+	resp, err := client.Do(r)
+	if resp != nil {
+		_ = resp.Body.Close()
+	}
+
+	if err != nil {
+		res.Error = fmt.Errorf("request failed Ticket=%s: Status=%s Error=%s",
+			ticket.Key, transition.Name, err.Error())
+		return res
+	}
+
+	return res
 }
