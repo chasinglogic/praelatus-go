@@ -93,7 +93,11 @@ func evalAST(a ast.AST) bson.M {
 
 func makeFieldSearchDoc(exp ast.InfixExpression, b bson.M, valDoc interface{}) {
 	fn := exp.Left.(ast.FieldLiteral)
-	if fn.IsCustomField() {
+	if fn.Value == "status" {
+		b["status.name"] = valDoc
+	} else if fn.Value == "statusCategory" {
+		b["status.type"] = valDoc
+	} else if fn.IsCustomField() {
 		customFieldDoc := bson.M{
 			"name":  fn.Value,
 			"value": valDoc,
