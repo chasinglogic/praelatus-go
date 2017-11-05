@@ -115,20 +115,20 @@ var workflows = []models.Workflow{
 		Transitions: []models.Transition{
 			{
 				Name:       "In Progress",
-				FromStatus: "",
-				ToStatus:   "In Progress",
+				FromStatus: models.Status{Name: "", Type: models.StatusNull},
+				ToStatus:   models.Status{Name: "In Progress", Type: models.StatusInProgress},
 				Hooks:      []models.Hook{},
 			},
 			{
 				Name:       "Done",
-				FromStatus: "",
-				ToStatus:   "Done",
+				FromStatus: models.Status{Name: "", Type: models.StatusNull},
+				ToStatus:   models.Status{Name: "Done", Type: models.StatusDone},
 				Hooks:      []models.Hook{},
 			},
 			{
 				Name:       "Backlog",
-				FromStatus: "Create",
-				ToStatus:   "Backlog",
+				FromStatus: models.Status{Name: "Create", Type: models.StatusNull},
+				ToStatus:   models.Status{Name: "Backlog", Type: models.StatusTodo},
 				Hooks:      []models.Hook{},
 			},
 		},
@@ -138,20 +138,20 @@ var workflows = []models.Workflow{
 		Transitions: []models.Transition{
 			{
 				Name:       "In Progress",
-				FromStatus: "Backlog",
-				ToStatus:   "In Progress",
+				FromStatus: models.Status{Name: "Backlog", Type: models.StatusTodo},
+				ToStatus:   models.Status{Name: "In Progress", Type: models.StatusInProgress},
 				Hooks:      []models.Hook{},
 			},
 			{
 				Name:       "Done",
-				FromStatus: "In Progress",
-				ToStatus:   "Done",
+				FromStatus: models.Status{Name: "In Progress", Type: models.StatusInProgress},
+				ToStatus:   models.Status{Name: "Done", Type: models.StatusDone},
 				Hooks:      []models.Hook{},
 			},
 			{
 				Name:       "Backlog",
-				FromStatus: "Create",
-				ToStatus:   "Backlog",
+				FromStatus: models.Status{Name: "Create", Type: models.StatusNull},
+				ToStatus:   models.Status{Name: "Backlog", Type: models.StatusTodo},
 				Hooks:      []models.Hook{},
 			},
 		},

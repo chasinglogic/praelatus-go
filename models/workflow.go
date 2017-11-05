@@ -20,20 +20,20 @@ func (w Workflow) String() string {
 // CreateTransition will return the transition to perform on a ticket during creation
 func (w Workflow) CreateTransition() Transition {
 	for _, t := range w.Transitions {
-		if t.FromStatus == "Create" {
+		if t.FromStatus.Name == "Create" {
 			return t
 		}
 	}
 
-	return Transition{ToStatus: "null"}
+	return Transition{ToStatus: Status{Name: "null"}}
 }
 
 // Transition contains information about what hooks to perform when performing
 // a transition
 type Transition struct {
 	Name       string `json:"name"`
-	FromStatus string `json:"fromStatus"`
-	ToStatus   string `json:"toStatus"`
+	FromStatus Status `json:"fromStatus"`
+	ToStatus   Status `json:"toStatus"`
 	Hooks      []Hook `json:"hooks"`
 }
 

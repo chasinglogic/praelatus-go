@@ -12,6 +12,27 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// StatusType represents the statuses type based on the basic three types:
+// TODO, In Progress, or Done
+type StatusType string
+
+// Available status types
+const (
+	StatusTodo       StatusType = "TODO"
+	StatusInProgress            = "IN_PROGRESS"
+	StatusDone                  = "Done"
+
+	// StatusNull is a special type used for transitions that allow from any or
+	// for create transitions
+	StatusNull = "NULL"
+)
+
+// Status is a ticket and workflow status
+type Status struct {
+	Name string     `bson:"name" json:"name"`
+	Type StatusType `bson:"type" json:"type"`
+}
+
 // Ticket represents a ticket
 type Ticket struct {
 	CreatedDate time.Time `json:"createdDate"`
@@ -19,7 +40,7 @@ type Ticket struct {
 	Key         string    `bson:"_id" json:"key"`
 	Summary     string    `json:"summary" required:"true"`
 	Description string    `json:"description" required:"true"`
-	Status      string    `json:"status"`
+	Status      Status    `json:"status"`
 	Reporter    string    `json:"reporter" required:"true"`
 	Assignee    string    `json:"assignee"`
 	Type        string    `json:"type" required:"true"`

@@ -38,6 +38,9 @@
                   {{ ticket.key }}
                 </router-link>
               </td>
+              <td v-show="column.active" v-else-if="column.name === 'status'">
+                <status-pill :status="ticket.status" />
+              </td>
               <td v-show="column.active" v-else-if="ticket[column.name]">
                 {{ ticket[column.name] }}
               </td>
@@ -57,11 +60,13 @@
 
 <script>
  import LoadingSpinner from '@/components/General/LoadingSpinner'
+ import StatusPill from '@/components/Status/Pill'
 
  export default {
    name: 'ticket-list',
    components: {
-     LoadingSpinner
+     LoadingSpinner,
+     StatusPill
    },
    methods: {
      resetDefaultColumns: function () {

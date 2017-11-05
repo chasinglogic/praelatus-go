@@ -6,6 +6,7 @@ package mongo
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -183,6 +184,8 @@ func (t ticketRepo) Search(u *models.User, query ast.AST) ([]models.Ticket, erro
 			evalAST(query),
 		},
 	}
+
+	fmt.Println(tQuery)
 
 	qry := t.coll().Find(tQuery)
 

@@ -118,4 +118,8 @@
    font-weight: bold;
    margin-right: 0.3rem;
  }
+
+ .field-value .status-pill {
+   padding: 0.5rem;
+ }
 </style>
