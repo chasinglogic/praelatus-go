@@ -9,43 +9,59 @@
     </h2>
     <div class="card-block" >
       <div class="container">
-        <p>
-          <span class="field-name">Status:</span>
-        </p>
-        <status-pill :status="ticket.status" />
-        <br />
+        <div class="field-name">
+          Status:
+        </div>
+        <div class="field-value">
+          <status-pill :status="ticket.status" />
+        </div>
 
-        <p>
-          <span class="field-name">Reporter:</span>
+        <div class="field-name">
+          Reporter:
+        </div>
+        <div class="field-value">
           <user-stub :username="ticket.reporter" />
-        </p>
+        </div>
 
-        <p>
-          <span class="field-name">Assignee:</span>
+        <div class="field-name">
+          Assignee:
+        </div>
+        <div class="field-value">
           <user-stub :username="ticket.assignee" />
-        </p>
+        </div>
 
-        <p>
-          <span class="field-name">Created:</span>
+        <div class="field-name">
+          Created:
+        </div>
+        <div class="field-value">
           {{ dateFormat(ticket.createdDate) }}
-        </p>
+        </div>
 
-        <p>
-          <span class="field-name">Updated:</span>
+        <div class="field-name">
+          Updated:
+        </div>
+        <div class="field-value">
           {{ dateFormat(ticket.updatedDate) }}
-        </p>
+        </div>
 
-        <p>
-          <span class="field-name">Type:</span>
+        <div class="field-name">
+          Type:
+        </div>
+        <div class="field-value">
           {{ ticket.type }}
-        </p>
+        </div>
 
         <template v-if="ticket.labels.length !== 0">
-          <p>
-            <span class="field-name">Labels:</span>
-          </p>
-          <div class="label" v-for="label in ticket.labels">
-            {{ label }}
+          <div class="field-name">
+            Labels:
+          </div>
+          <div class="field-value">
+            <div class="label" v-for="label in ticket.labels">
+              <router-link :to="{ path: '/queries',
+                                query: { q: labelQuery(label)} }">
+                {{ label }}
+              </router-link>
+            </div>
           </div>
         </template>
       </div>
@@ -67,7 +83,11 @@
    },
 
    methods: {
-     dateFormat: dateUtils.dateFormat
+     dateFormat: dateUtils.dateFormat,
+
+     labelQuery: function (label) {
+       return 'labels = "' + label + '"'
+     }
    },
 
    props: {
