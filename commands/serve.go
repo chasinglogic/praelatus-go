@@ -16,6 +16,7 @@ import (
 	"github.com/praelatus/praelatus/api"
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/repo"
 	"github.com/spf13/cobra"
 	"github.com/tylerb/graceful"
 )
@@ -43,7 +44,7 @@ var server = &cobra.Command{
 
 		log.Println("Starting Praelatus...")
 		log.Println("Connecting to database...")
-		repo := config.LoadRepo()
+		repo.GlobalRepo = config.LoadRepo()
 		cache := config.LoadCache()
 
 		api.Version = Version
@@ -53,7 +54,7 @@ var server = &cobra.Command{
 			middleware.DefaultMiddleware = append(middleware.DefaultMiddleware, middleware.CORS)
 		}
 
-		r := api.New(repo, cache)
+		r := api.New(repo.GlobalRepo, cache)
 
 		if profile {
 			go func() {
