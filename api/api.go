@@ -81,8 +81,8 @@ func Routes() *mux.Router {
 }
 
 // New will start running the api on the given port
-func New(repo repo.Repo, cache repo.Cache) http.Handler {
-	v1.Repo = repo
+func New(r repo.Repo, cache repo.Cache) http.Handler {
+	v1.Repo = r
 	middleware.Cache = cache
 
 	router := Routes()
