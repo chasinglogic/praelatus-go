@@ -45,6 +45,7 @@ type Ticket struct {
 	Assignee    string    `json:"assignee"`
 	Type        string    `json:"type" required:"true"`
 	Labels      []string  `json:"labels"`
+	Watchers    []string  `json:"watchers"`
 
 	Fields   []Field   `json:"fields"`
 	Comments []Comment `json:"comments,omitempty"`
