@@ -79,9 +79,16 @@
      }
    },
 
+   props: {
+     ticketKey: {
+       type: String,
+       required: true
+     }
+   },
+
    methods: {
      loadTicket: function () {
-       let url = '/api/tickets/' + this.$route.params.key
+       let url = '/api/tickets/' + this.ticketKey
        let inst = this
 
        Axios.get(url)
@@ -90,11 +97,7 @@
               inst.loading = false
             })
             .catch((err) => {
-              if (err.response.status === 404) {
-                this.$router.push('/404')
-              }
-
-              console.log('ERROR', err.response.data)
+              this.$emit('ticketRetrievalError', err)
             })
      },
 

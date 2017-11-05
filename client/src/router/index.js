@@ -5,7 +5,7 @@ Vue.use(Router)
 
 import Index from '@/components/Index'
 import SearchPage from '@/components/Tickets/SearchPage'
-import Ticket from '@/components/Tickets/Show'
+import Ticket from '@/components/Tickets/Show/Page.vue'
 import TicketCreate from '@/components/Tickets/Create'
 import Project from '@/components/Projects/Show'
 import User from '@/components/Users/Show'
