@@ -76,7 +76,10 @@ type EventManager struct {
 // event manager
 func (e *EventManager) FireEvent(ev event.Event) {
 	for _, listener := range e.Listeners {
-		listener <- ev
+		go func() {
+			listener <- ev
+			return
+		}()
 	}
 	// Return to guarantee that this is killed if called in a goroutine
 	return
