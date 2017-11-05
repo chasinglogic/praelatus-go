@@ -7,6 +7,7 @@ package mongo
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/praelatus/praelatus/models"
@@ -188,7 +189,7 @@ func (t ticketRepo) Search(u *models.User, query ast.AST) ([]models.Ticket, erro
 	for _, mod := range query.Modifiers {
 		switch mod.Token.Type {
 		case token.ORDER:
-			qry = qry.Sort(mod.Value.String())
+			qry = qry.Sort(strings.Split(",", mod.Value.String())...)
 		case token.LIMIT:
 			il := mod.Value.(ast.IntegerLiteral)
 			qry = qry.Limit(int(il.Value))
