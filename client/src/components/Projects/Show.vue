@@ -10,7 +10,7 @@
           <b-navbar toggleable toggle-breakpoint="md">
             <div class="container">
               <b-nav is-nav-bar>
-                <b-nav-item v-bind:to="'/queries?q=project = ' + project.key">
+                <b-nav-item v-bind:to="ticketLink">
                   Tickets
                 </b-nav-item>
                 <b-nav-item v-bind:to="'/projects/' + project.key + '/settings'">
@@ -25,12 +25,23 @@
             <div class="col-md-6">
               <h4>Ticket Types</h4>
               <div v-for="type in project.ticketTypes">
-                {{ type }}
+                <router-link :to="typeQuery(type)">
+                  {{ type }}
+                </router-link>
               </div>
             </div>
             <div class="col-md-6">
               <h4>Recent Activity</h4>
               <h1>TODO</h1>
+            </div>
+          </div>
+        </div>
+        <div class="card-block">
+          <div class="row">
+            <div class="col-3">
+            </div>
+            <div class="col-9" >
+              <ticket-show :ticket
             </div>
           </div>
         </div>
@@ -51,6 +62,18 @@
 
    components: {
      LoadingSpinner
+   },
+
+   computed: {
+     ticketLink: function () {
+       return '/queries?q=project = "' + this.project.key + '"'
+     }
+   },
+
+   methods: {
+     typeQuery: function (type) {
+       return '/queries?q=project = "' + this.project.key + '" AND type = "' + type + '"'
+     }
    },
 
    data: function () {
