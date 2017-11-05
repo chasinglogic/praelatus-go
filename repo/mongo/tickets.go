@@ -121,6 +121,7 @@ func (t ticketRepo) Create(u *models.User, ticket models.Ticket) (models.Ticket,
 	ticket.UpdatedDate = time.Now()
 	ticket.Comments = []models.Comment{}
 	ticket.Status = wkf.CreateTransition().ToStatus
+	ticket.Watchers = []string{u.Username}
 
 	err = t.coll().Insert(ticket)
 	if err != nil {
