@@ -54,7 +54,9 @@
  }
 
  .comment-header {
-   height: 3em;
+   border-top: 1px solid rgba(0, 0, 0, 0.125);
+   border-bottom: none;
+   height: 4rem;
  }
  .comment-author-avatar {
    height: 20px;
