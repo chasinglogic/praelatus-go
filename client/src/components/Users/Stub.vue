@@ -3,7 +3,7 @@
      can be found in the LICENSE file. -->
 
 <template>
-  <span>
+  <span class="user-stub">
     <router-link v-bind:to="'/users/' + username">
       <img class="avatar" v-bind:src="avatar" />
       {{ username }}
@@ -56,8 +56,12 @@
 
 <style>
  .avatar {
-   width: 20px;
-   height: 20px;
+   width: 44px;
+   height: 44px;
    display: inline-block
+ }
+
+ .user-stub a {
+   font-size: 1rem;
  }
 </style>
