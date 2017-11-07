@@ -78,10 +78,10 @@ type WorkflowRepo interface {
 type NotificationRepo interface {
 	Create(u *models.User, notification models.Notification) (models.Notification, error)
 
-	MarkRead(u *models.User, uid string)
+	MarkRead(u *models.User, uid string) error
 
-	ForProject(u *models.User, project models.Project, onlyUnread bool, last int)
-	ForUser(u *models.User, user models.User, onlyUnread bool, last int)
+	ForProject(u *models.User, project models.Project, onlyUnread bool, last int) ([]models.Notification, error)
+	ForUser(u *models.User, user models.User, onlyUnread bool, last int) ([]models.Notification, error)
 }
 
 // Repo is a container interface for combining all the other repos.
