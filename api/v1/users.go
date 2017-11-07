@@ -23,7 +23,7 @@ func userRouter(router *mux.Router) {
 	router.HandleFunc("/tokens", login).Methods("POST")
 
 	router.HandleFunc("/users/notifications", getCurrentUserNotifications)
-	router.HandleFunc("/users/{username}/notifications", getUserNotifications)
+	router.HandleFunc("/users/{username}/activity", getUserActivity)
 
 	router.HandleFunc("/users/me", loggedInUser)
 	router.HandleFunc("/users/{username}", singleUser)
@@ -230,7 +230,7 @@ func getCurrentUserNotifications(w http.ResponseWriter, r *http.Request) {
 	utils.SendJSON(w, notifications)
 }
 
-func getUserNotifications(w http.ResponseWriter, r *http.Request) {
+func getUserActivity(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
 	if u == nil {
 		utils.APIErr(w, http.StatusForbidden, "you must be logged in")
@@ -247,7 +247,7 @@ func getUserNotifications(w http.ResponseWriter, r *http.Request) {
 		last = 10
 	}
 
-	notifications, err := Repo.Notifications().ForUser(u, models.User{Username: username}, unread, last)
+	notifications, err := Repo.Notifications().ActivityForUser(u, models.User{Username: username}, unread, last)
 	if err != nil {
 		utils.Error(w, err)
 		return
