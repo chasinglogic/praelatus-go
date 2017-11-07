@@ -8,6 +8,7 @@ package mongo
 import (
 	"log"
 
+	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/models/permission"
 	"github.com/praelatus/praelatus/repo"
@@ -15,16 +16,21 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// MongoDB Collection names
+var dbLog = log.New(config.LogWriter(), "[MONGO] ", log.LstdFlags)
+var cacheLog = log.New(config.LogWriter(), "[MONGO_CACHE] ", log.LstdFlags)
+
+// MongoDB Collection and Database names
 const (
-	dbName       = "praelatus"
-	projects     = "projects"
-	fieldSchemes = "field_schemes"
-	tickets      = "tickets"
-	users        = "users"
-	sessions     = "sessions"
-	cache        = "cache"
-	workflows    = "workflows"
+	dbName = "praelatus"
+
+	projects      = "projects"
+	fieldSchemes  = "field_schemes"
+	tickets       = "tickets"
+	users         = "users"
+	sessions      = "sessions"
+	cache         = "cache"
+	workflows     = "workflows"
+	notifications = "notifications"
 )
 
 func mongoErr(e error) error {
@@ -32,7 +38,7 @@ func mongoErr(e error) error {
 		return e
 	}
 
-	log.Println("[MONGO] ERROR:", e)
+	dbLog.Println("[MONGO] ERROR:", e)
 
 	// TODO: Catch other repo errors
 	switch e.Error() {
@@ -76,12 +82,13 @@ func permQuery(u *models.User) bson.M {
 
 // Repo contains all model specific repos.
 type Repo struct {
-	Conn         *mgo.Session
-	tickets      ticketRepo
-	users        userRepo
-	projects     projectRepo
-	fieldSchemes fieldSchemeRepo
-	workflows    workflowRepo
+	Conn          *mgo.Session
+	tickets       ticketRepo
+	users         userRepo
+	projects      projectRepo
+	fieldSchemes  fieldSchemeRepo
+	workflows     workflowRepo
+	notifications notificationRepo
 }
 
 // Fields returns the fieldSchemesRepo implementation for mongodb
@@ -102,6 +109,11 @@ func (r Repo) Projects() repo.ProjectRepo {
 // Workflows returns the workflowRepo implementation for mongodb
 func (r Repo) Workflows() repo.WorkflowRepo {
 	return r.workflows
+}
+
+// Notifications returns the notificationRepo implementation for mongodb
+func (r Repo) Notifications() repo.NotificationRepo {
+	return r.notifications
 }
 
 // Users returns the userRepo implementation for mongodb
@@ -133,11 +145,12 @@ func New(connURL string) repo.Repo {
 	}
 
 	return Repo{
-		Conn:         conn,
-		tickets:      ticketRepo{conn},
-		projects:     projectRepo{conn},
-		workflows:    workflowRepo{conn},
-		fieldSchemes: fieldSchemeRepo{conn},
-		users:        userRepo{conn},
+		Conn:          conn,
+		tickets:       ticketRepo{conn},
+		projects:      projectRepo{conn},
+		workflows:     workflowRepo{conn},
+		fieldSchemes:  fieldSchemeRepo{conn},
+		users:         userRepo{conn},
+		notifications: notificationRepo{conn},
 	}
 }
