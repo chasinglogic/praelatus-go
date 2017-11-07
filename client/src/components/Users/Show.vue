@@ -10,8 +10,19 @@
           <div><p>{{ user.bio }}</p></div>
         </div>
         <div class="col-md-9">
+          <h1>Recent Activity</h1>
+          <div>
+            <template v-if="notifications.length > 0">
+              <template v-for="notification in notifications">
+                <notification :notification="notification" />
+              </template>
+            </template>
+            <template v-else>
+              <h4>This user doesn't have any activity yet!</h4>
+            </template>
+          </div>
           <h1>Roles</h1>
-          <div v-for="project in projects" class="card">
+          <div v-for="project in projects" class="card role-card">
             <h5 class="card-block">
               {{ project.role }} of
               <router-link v-bind:to="'/projects/' + project.project">
@@ -19,8 +30,14 @@
               </router-link>
             </h5>
           </div>
-          <h1>Recent Activity</h1>
-          <h3>TODO</h3>
+          <div v-for="role in user.roles" class="card role-card">
+            <h5 class="card-block">
+              {{ role.role }} of
+              <router-link v-bind:to="'/projects/' + role.project">
+                {{ role.project }}
+              </router-link>
+            </h5>
+          </div>
         </div>
       </div>
     </div>
@@ -32,11 +49,13 @@
 
 <script>
  import LoadingSpinner from '@/components/General/LoadingSpinner'
+ import Notification from '@/components/General/Notification'
  import Axios from 'axios'
 
  export default {
    name: 'user',
    components: {
+     Notification,
      LoadingSpinner
    },
 
@@ -52,7 +71,8 @@
      return {
        projects: [],
        leadOf: [],
-       user: {}
+       notifications: [],
+       user: { roles: [] }
      }
    },
 
@@ -66,7 +86,7 @@
                         })
                         .catch((err) => {
                           if (err.response.status === 404) {
-                            this.$router.push('*')
+                            this.$router.push('/404')
                           }
 
                           console.log('ERROR', err.response.data)
@@ -77,12 +97,22 @@
                           inst.leadOf = res.data
                         })
                         .catch((err) => {
-                          if (err.response.status === 404) {
-                            this.$router.push('*')
-                          }
+                          console.log('ERROR', err.response.data)
+                        })
 
+     Axios.get('/api/users/' + username + '/activity')
+                        .then((res) => {
+                          inst.notifications = res.data
+                        })
+                        .catch((err) => {
                           console.log('ERROR', err.response.data)
                         })
    }
  }
 </script>
+
+<style>
+ .role-card .card-block {
+   padding-top: 0.5rem;
+ }
+</style>
