@@ -27,11 +27,11 @@ type hookEvent struct {
 	hook       models.Hook
 }
 
-func handleHookEvent(result chan Result) {
+func handleHookEvent() {
 	outEvents := make(chan hookEvent)
 
 	for i := 0; i < webWorkers; i++ {
-		go webWorker(outEvents, result)
+		go webWorker(outEvents)
 	}
 
 	for {
@@ -56,10 +56,13 @@ func handleHookEvent(result chan Result) {
 	}
 }
 
-func webWorker(inEvent chan hookEvent, resultChan chan Result) {
+func webWorker(inEvent chan hookEvent) {
 	for {
 		e := <-inEvent
-		resultChan <- runHook(e.ticket, e.transition, e.hook)
+		err := runHook(e.ticket, e.transition, e.hook)
+		if err != nil {
+			eventLog.Println("|Web Worker|", err)
+		}
 	}
 }
 
@@ -81,20 +84,16 @@ func renderBody(ticket models.Ticket, transition models.Transition, hook models.
 	return body, nil
 }
 
-func runHook(ticket models.Ticket, transition models.Transition, hook models.Hook) Result {
-	res := Result{Reporter: "Hook Handler: " + transition.Name}
-
+func runHook(ticket models.Ticket, transition models.Transition, hook models.Hook) error {
 	body, err := renderBody(ticket, transition, hook)
 	if err != nil {
-		res.Error = err
-		return res
+		return err
 	}
 
 	r, err := http.NewRequest(hook.Method, hook.Endpoint, body)
 	if err != nil {
-		res.Error = fmt.Errorf("error creating request %s: %s %s",
+		return fmt.Errorf("error creating request %s: %s %s",
 			ticket.Key, transition.Name, err.Error())
-		return res
 	}
 
 	client := http.Client{}
@@ -104,10 +103,9 @@ func runHook(ticket models.Ticket, transition models.Transition, hook models.Hoo
 	}
 
 	if err != nil {
-		res.Error = fmt.Errorf("request failed Ticket=%s: Status=%s Error=%s",
+		return fmt.Errorf("request failed Ticket=%s: Status=%s Error=%s",
 			ticket.Key, transition.Name, err.Error())
-		return res
 	}
 
-	return res
+	return nil
 }

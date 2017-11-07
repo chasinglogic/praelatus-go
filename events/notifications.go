@@ -1,40 +1,54 @@
 package events
 
 import (
+	"time"
+
 	"github.com/praelatus/praelatus/events/event"
 	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/repo"
 )
 
-var recordNotificationsEventChan = make(chan event.Event)
-var sendNotificationsEventChan = make(chan event.Event)
+var (
+	notificationsEventChan = make(chan event.Event)
 
-func recordNofiticationEvent(result chan Result) {
+	// sendNotificationsChan = make(chan models.Notification)
+	// notificationWorkers   = 10
+)
+
+func recordNofiticationEvent() {
+	// for i := 0; i < notificationWorkers; i++ {
+	// 	go sendNotificationWorker(result)
+	// }
+
 	for {
-		e := <-recordNotificationsEventChan
+		e := <-notificationsEventChan
 
 		n := models.Notification{
 			Type:           string(e.Type()),
 			ActionedTicket: e.Ticket().Key,
 			ActioningUser:  e.ActioningUser().Username,
 			Project:        e.Project().Key,
+			CreatedDate:    time.Now(),
 			Body:           e.String(),
 			Read:           false,
 		}
 
+		eventLog.Println(n)
+
 		for _, w := range e.Ticket().Watchers {
-			n.Watcher = w.Username
+			if w == e.ActioningUser().Username {
+				n.Watcher = w
+			}
+
 			_, err := repo.Notifications().Create(nil, n)
 			if err != nil {
-				result <- Result{
-					Name:  "Notification Recorder",
-					Error: err,
-				}
+				eventLog.Println("|Notification Recorder|", err)
 			}
 		}
 	}
 }
 
-func sendNotificationsEvent(result chan Result) {
+// TODO: Support email notifications via this function
+// func sendNotificationWorker(result chan Result) {
 
-}
+// }
