@@ -32,7 +32,9 @@
             </div>
             <div class="col-md-6">
               <h4>Recent Activity</h4>
-              <h1>TODO</h1>
+              <template v-for="notification in notifications">
+                <notification :notification="notification" />
+              </template>
             </div>
           </div>
         </div>
@@ -56,12 +58,14 @@
 <script>
  import Axios from 'axios'
  import LoadingSpinner from '@/components/General/LoadingSpinner'
+ import Notification from '@/components/General/Notification'
 
  export default {
    name: 'project',
 
    components: {
-     LoadingSpinner
+     LoadingSpinner,
+     Notification
    },
 
    computed: {
@@ -73,12 +77,26 @@
    methods: {
      typeQuery: function (type) {
        return '/queries?q=project = "' + this.project.key + '" AND type = "' + type + '"'
+     },
+
+     loadNotifications: function () {
+       let url = '/api/projects/' + this.$route.params.key + '/notifications'
+       let inst = this
+
+       Axios.get(url)
+            .then((res) => {
+              inst.notifications = res.data
+            })
+            .catch((err) => {
+              console.log('ERROR', err.response.data)
+            })
      }
    },
 
    data: function () {
      return {
-       project: {}
+       project: {},
+       notifications: []
      }
    },
 
@@ -89,6 +107,7 @@
      Axios.get(url)
           .then((res) => {
             inst.project = res.data
+            this.loadNotifications()
           })
           .catch((err) => {
             if (err.response.status === 404) {
