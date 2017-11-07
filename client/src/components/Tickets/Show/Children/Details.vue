@@ -27,7 +27,12 @@
           Assignee:
         </div>
         <div class="field-value">
-          <user-stub :username="ticket.assignee" />
+          <template v-if="ticket.assignee">
+            <user-stub :username="ticket.assignee" />
+          </template>
+          <template v-else>
+            Unassigned
+          </template>
         </div>
 
         <div class="field-name">
