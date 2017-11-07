@@ -5,8 +5,6 @@
 package mongo
 
 import (
-	"log"
-
 	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/repo"
 	mgo "gopkg.in/mgo.v2"
@@ -52,7 +50,7 @@ func (m Cache) GetSession(id string) (models.Session, error) {
 	err := m.sessions().FindId(id).One(&s)
 	if err != nil {
 		if err.Error() != "not found" {
-			log.Println("[MONGO_CACHE] ERROR:", err)
+			cacheLog.Println("ERROR:", err)
 		}
 
 		return models.Session{}, err
