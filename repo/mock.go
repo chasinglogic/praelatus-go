@@ -230,6 +230,25 @@ func (wr mockWorkflowRepo) Delete(u *models.User, uid string) error {
 	return nil
 }
 
+type mockNotificationRepo struct{}
+
+func (nr mockNotificationRepo) Create(u *models.User, notification models.Notification) (models.Notification, error) {
+	notification.ID = bson.NewObjectId()
+	return notification, nil
+}
+
+func (nr mockNotificationRepo) MarkRead(u *models.User, uid string) error {
+	return nil
+}
+
+func (nr mockNotificationRepo) ForProject(u *models.User, project models.Project, onlyUnread bool, last int) ([]models.Notification, error) {
+	return nil, nil
+}
+
+func (nr mockNotificationRepo) ForUser(u *models.User, user models.User, onlyUnread bool, last int) ([]models.Notification, error) {
+	return nil, nil
+}
+
 func (m mockRepo) Projects() ProjectRepo {
 	return mockProjectRepo{}
 }
@@ -248,6 +267,10 @@ func (m mockRepo) Fields() FieldSchemeRepo {
 
 func (m mockRepo) Workflows() WorkflowRepo {
 	return mockWorkflowRepo{}
+}
+
+func (m mockRepo) Notifications() NotificationRepo {
+	return mockNotificationRepo{}
 }
 
 func (m mockRepo) Clean() error { return nil }
