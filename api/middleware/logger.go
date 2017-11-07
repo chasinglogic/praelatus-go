@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/praelatus/praelatus/config"
 )
 
 // LoggedResponseWriter wraps http.ResponseWriter so we can capture the status
@@ -43,16 +45,18 @@ func (w *LoggedResponseWriter) Write(b []byte) (int, error) {
 // Logger will log a request and any information about the request, it should
 // be the first middleware in any chain.
 func Logger(next http.Handler) http.Handler {
+	var requestLog = log.New(config.LogWriter(), "[REQUEST] ", log.LstdFlags)
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		lrw := &LoggedResponseWriter{status: 0, ResponseWriter: w}
 		next.ServeHTTP(lrw, r)
 
 		if lrw.error != nil {
-			log.Printf("|%s| [%d] %s %s %s",
+			requestLog.Printf("|%s| [%d] %s %s %s",
 				r.Method, lrw.Status(), r.URL.Path, time.Since(start).String(), string(lrw.error))
 		} else {
-			log.Printf("|%s| [%d] %s %s",
+			requestLog.Printf("|%s| [%d] %s %s",
 				r.Method, lrw.Status(), r.URL.Path, time.Since(start).String())
 		}
 	})
