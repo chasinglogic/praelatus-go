@@ -71,7 +71,7 @@ func (nr notificationRepo) ForProject(u *models.User, project models.Project, on
 }
 
 func (nr notificationRepo) ForUser(u *models.User, user models.User, onlyUnread bool, last int) ([]models.Notification, error) {
-	if u.Username != user.Username && !u.IsAdmin {
+	if !u.IsAdmin && u.Username != user.Username {
 		return nil, repo.ErrUnauthorized
 	}
 
@@ -85,7 +85,7 @@ func (nr notificationRepo) ForUser(u *models.User, user models.User, onlyUnread 
 			"project": bson.M{"$in": keys},
 		},
 		{
-			"user": user.Username,
+			"watcher": user.Username,
 		},
 	}
 
@@ -105,6 +105,39 @@ func (nr notificationRepo) ForUser(u *models.User, user models.User, onlyUnread 
 
 	var notifications []models.Notification
 	err = query.All(&notifications)
+	return notifications, mongoErr(err)
+}
 
+func (nr notificationRepo) ActivityForUser(u *models.User, user models.User, onlyUnread bool, last int) ([]models.Notification, error) {
+	keys, err := getKeysUserHasPermissionTo(u, nr.conn)
+	if err != nil {
+		return nil, err
+	}
+
+	conditions := []bson.M{
+		{
+			"project": bson.M{"$in": keys},
+		},
+		{
+			"actioninguser": user.Username,
+		},
+	}
+
+	if onlyUnread {
+		conditions = append(conditions, bson.M{"unread": true})
+	}
+
+	q := bson.M{
+		"$and": conditions,
+	}
+
+	query := nr.coll().Find(q).Sort("-createddate")
+
+	if last > 0 {
+		query.Limit(last)
+	}
+
+	var notifications []models.Notification
+	err = query.All(&notifications)
 	return notifications, mongoErr(err)
 }

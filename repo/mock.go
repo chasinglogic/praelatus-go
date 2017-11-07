@@ -249,6 +249,10 @@ func (nr mockNotificationRepo) ForUser(u *models.User, user models.User, onlyUnr
 	return nil, nil
 }
 
+func (nr mockNotificationRepo) ActivityForUser(u *models.User, user models.User, onlyUnread bool, last int) ([]models.Notification, error) {
+	return nil, nil
+}
+
 func (m mockRepo) Projects() ProjectRepo {
 	return mockProjectRepo{}
 }

@@ -82,6 +82,7 @@ type NotificationRepo interface {
 
 	ForProject(u *models.User, project models.Project, onlyUnread bool, last int) ([]models.Notification, error)
 	ForUser(u *models.User, user models.User, onlyUnread bool, last int) ([]models.Notification, error)
+	ActivityForUser(u *models.User, user models.User, onlyUnread bool, last int) ([]models.Notification, error)
 }
 
 // Repo is a container interface for combining all the other repos.
