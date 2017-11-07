@@ -32,5 +32,5 @@ func (ce Comment) Type() Type { return CommentEvent }
 
 // String will return an appropriate user-readable string describing the event
 func (ce Comment) String() string {
-	return "User " + ce.User.Username + " commented on " + ce.ActionedTicket.Key
+	return ce.User.Username + " commented on " + ce.ActionedTicket.Key
 }

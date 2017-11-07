@@ -32,7 +32,7 @@ func (te Transition) Type() Type { return TransitionEvent }
 
 // String will return an appropriate user-readable string describing the event
 func (te Transition) String() string {
-	s := "User " + te.User.Username + " transitioned " + te.ActionedTicket.Key +
+	s := te.User.Username + " transitioned " + te.ActionedTicket.Key +
 		" to " + te.Transition.ToStatus.Name
 
 	if te.Transition.FromStatus.Type != models.StatusNull {
