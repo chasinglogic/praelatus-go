@@ -65,6 +65,7 @@ func init() {
 
 var u1, _ = models.NewUser("testadmin", "test", "Test Testerson", "test@example.com", true)
 var u2, _ = models.NewUser("testuser", "test", "Test Testerson II", "test@example.com", false)
+
 var users = []models.User{
 	*u1,
 	*u2,
@@ -187,6 +188,13 @@ var availableLabels = []string{
 // Seed will fill the given repo with test data.
 func Seed(r Repo) error {
 	var err error
+
+	users[1].Roles = []models.UserRole{
+		{
+			Role:    "User",
+			Project: "TEST",
+		},
+	}
 
 	for _, u := range users {
 		_, err = r.Users().Create(&models.User{IsAdmin: true}, u)
