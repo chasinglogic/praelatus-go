@@ -7,6 +7,7 @@ package v1
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/praelatus/praelatus/api/middleware"
@@ -20,6 +21,9 @@ func userRouter(router *mux.Router) {
 	router.HandleFunc("/users", getAllUsers).Methods("GET")
 	router.HandleFunc("/users", createUser).Methods("POST")
 	router.HandleFunc("/tokens", login).Methods("POST")
+
+	router.HandleFunc("/users/notifications", getCurrentUserNotifications)
+	router.HandleFunc("/users/{username}/notifications", getUserNotifications)
 
 	router.HandleFunc("/users/me", loggedInUser)
 	router.HandleFunc("/users/{username}", singleUser)
@@ -199,4 +203,55 @@ func leadOf(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendJSON(w, projects)
+}
+
+func getCurrentUserNotifications(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		utils.APIErr(w, http.StatusForbidden, "you must be logged in")
+		return
+	}
+
+	unread := r.FormValue("unread") == "true" || r.FormValue("unread") == "TRUE"
+
+	last, _ := strconv.Atoi(r.FormValue("last"))
+	// Last cannot be passed to us as 0 if it is 0 that means either nothing
+	// or a non-number was passed to set to the default value of 10
+	if last == 0 {
+		last = 10
+	}
+
+	notifications, err := Repo.Notifications().ForUser(u, *u, unread, last)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	utils.SendJSON(w, notifications)
+}
+
+func getUserNotifications(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		utils.APIErr(w, http.StatusForbidden, "you must be logged in")
+		return
+	}
+
+	username := mux.Vars(r)["username"]
+	unread := r.FormValue("unread") == "true" || r.FormValue("unread") == "TRUE"
+
+	last, _ := strconv.Atoi(r.FormValue("last"))
+	// Last cannot be passed to us as 0 if it is 0 that means either nothing
+	// or a non-number was passed to set to the default value of 10
+	if last == 0 {
+		last = 10
+	}
+
+	notifications, err := Repo.Notifications().ForUser(u, models.User{Username: username}, unread, last)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	utils.SendJSON(w, notifications)
 }
