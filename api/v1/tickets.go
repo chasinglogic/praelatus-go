@@ -6,14 +6,18 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/api/utils"
+	"github.com/praelatus/praelatus/events"
+	"github.com/praelatus/praelatus/events/event"
 	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/ql/lexer"
 	"github.com/praelatus/praelatus/ql/parser"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func ticketRouter(router *mux.Router) {
@@ -22,6 +26,8 @@ func ticketRouter(router *mux.Router) {
 	router.HandleFunc("/tickets/{key}", singleTicket)
 
 	router.HandleFunc("/tickets/{key}/addComment", addComment).Methods("POST")
+	// TODO: add transition route
+	// TODO: add a "get available actions" route
 }
 
 func createTicket(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +55,13 @@ func createTicket(w http.ResponseWriter, r *http.Request) {
 		utils.Error(w, err)
 		return
 	}
+
+	go events.FireEvent(event.Generic{
+		User:           *u,
+		InProject:      models.Project{Key: t.Project},
+		EventType:      "CREATED",
+		ActionedTicket: t,
+	})
 
 	utils.SendJSON(w, t)
 }
@@ -147,5 +160,13 @@ func addComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendJSON(w, ticket)
+	fmt.Println(u.Username)
+	go events.FireEvent(event.Comment{
+		User:           *u,
+		InProject:      models.Project{Key: ticket.Project},
+		ActionedTicket: ticket,
+		Comment:        c,
+	})
+
+	utils.SendJSON(w, bson.M{})
 }
