@@ -21,80 +21,42 @@ import (
 
 // evm is the global event manager which is interfaced with using the functions
 // whose names match the methods of an EventManager
-var evm = &EventManager{
-	Result: make(chan Result, 10),
-	Listeners: []chan event.Event{
-		hookEventChan,
-	},
+var listeners = []chan event.Event{
+	hookEventChan,
+	notificationsEventChan,
 }
 
-var eventLog = log.New(config.LogWriter(), "EVENT", log.LstdFlags)
+var eventLog = log.New(config.LogWriter(), "[EVENT] ", log.LstdFlags)
 
-// Stop is a global channel used to stop all running event managers
+// Stop is a global channel used to stop the running event managers
 var Stop = make(chan int)
-
-// ResultChan returns the result channel used on the global EventManager
-func ResultChan() chan Result {
-	return evm.Result
-}
 
 // Run starts the global event manager, should be called in a go routine normally
 func Run() {
-	go handleHookEvent(evm.Result)
+	go handleHookEvent()
+	go recordNofiticationEvent()
 
 	for {
-		select {
-		case res := <-evm.Result:
-			if res.Error != nil {
-				eventLog.Printf("handler %s failed with error %s\n",
-					res.Reporter, res.Error.Error())
-			}
-		case <-Stop:
-			return
-		}
+		_ = <-Stop
+		eventLog.Println("Event Manager Shutting Down")
+		return
 	}
 }
 
 // FireEvent calls the method of the same name on the global EventManager
 func FireEvent(e event.Event) {
-	evm.FireEvent(e)
-}
-
-// Result contains metadata sent back by an event handler
-type Result struct {
-	Reporter string
-	Error    error
-}
-
-// EventManager is the fan-in point for all available event listeners
-type EventManager struct {
-	Result    chan Result
-	Listeners []chan event.Event
-}
-
-// FireEvent sends the given event to all registered listeners of the given
-// event manager
-func (e *EventManager) FireEvent(ev event.Event) {
-	for _, listener := range e.Listeners {
-		go func() {
-			listener <- ev
-			return
-		}()
+	eventLog.Println("fired", e.Type(), "for", e.Ticket().Key)
+	// FireEvent sends the given event to all registered listeners
+	for _, listener := range listeners {
+		listener <- e
+		eventLog.Println("sent")
 	}
+
 	// Return to guarantee that this is killed if called in a goroutine
 	return
 }
 
 // RegisterListener adds a listener to the EventManager
-func (e *EventManager) RegisterListener(ev chan event.Event) {
-	e.Listeners = append(e.Listeners, ev)
-}
-
-// New will return a blank event manager handling allocations for you as
-// appropriate
-func New() *EventManager {
-	return &EventManager{
-		Result:    make(chan Result),
-		Listeners: []chan event.Event{},
-	}
+func RegisterListener(ev chan event.Event) {
+	listeners = append(listeners, ev)
 }
