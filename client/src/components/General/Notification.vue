@@ -1,5 +1,12 @@
 <template>
-  <div class="notification" v-html="renderedNotification">
+  <div class="notification card" >
+    <div class="card-block">
+      <user-stub :username="notification.actioningUser" />
+      {{ actionText }}
+      <router-link :to="'/tickets/' + notification.actionedTicket">
+        {{ notification.actionedTicket }}
+      </router-link>
+    </div>
   </div>
 </template>
 
@@ -14,12 +21,10 @@
    },
 
    computed: {
-     renderedNotification: function () {
-       let s = this.notification.body.split(' ')
-       let username = '<router-link :to=\'/users/' + s[0] + '\'>' +
-                      s[0] + '</router-link>'
-       let rest = s.slice(1)
-       return username + ' ' + rest.join(' ')
+     actionText: function () {
+       return this.notification.body
+                  .replace(this.notification.actioningUser, '')
+                  .replace(this.notification.actionedTicket, '')
      }
    },
 
@@ -31,3 +36,18 @@
    }
  }
 </script>
+
+<style>
+ .notification .avatar {
+   height: 20px;
+   width: 20px;
+ }
+
+ .notification {
+   margin-bottom: 0.5rem;
+ }
+
+ .notification .card-block {
+   padding: 0.5rem;
+ }
+</style>
