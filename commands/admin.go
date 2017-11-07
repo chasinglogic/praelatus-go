@@ -49,7 +49,7 @@ var testdb = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Testing connection to the database...")
 		fmt.Println("URL:", config.DBURL())
-		r := config.LoadRepo()
+		r := loadRepo()
 		err := r.Test()
 		if err != nil {
 			fmt.Println(err)
@@ -96,7 +96,7 @@ var createUser = &cobra.Command{
 			os.Exit(1)
 		}
 
-		r := config.LoadRepo()
+		r := loadRepo()
 		_, err = r.Users().Create(&models.User{IsAdmin: isAdmin}, *u)
 		if err != nil {
 			fmt.Println("Error creating user:", err)
@@ -108,7 +108,7 @@ var setupdb = &cobra.Command{
 	Use:   "setup",
 	Short: "Set up the database. Should only be run once on a new installation.",
 	Run: func(cmd *cobra.Command, args []string) {
-		r := config.LoadRepo()
+		r := loadRepo()
 		err := r.Init()
 		if err != nil {
 			fmt.Println("ERROR:", err)

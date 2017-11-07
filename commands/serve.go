@@ -16,6 +16,7 @@ import (
 	"github.com/praelatus/praelatus/api"
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/events"
 	"github.com/praelatus/praelatus/repo"
 	"github.com/spf13/cobra"
 	"github.com/tylerb/graceful"
@@ -44,8 +45,8 @@ var server = &cobra.Command{
 
 		log.Println("Starting Praelatus...")
 		log.Println("Connecting to database...")
-		repo.GlobalRepo = config.LoadRepo()
-		cache := config.LoadCache()
+		repo.GlobalRepo = loadRepo()
+		cache := loadCache()
 
 		api.Version = Version
 		api.Commit = Commit
@@ -61,6 +62,9 @@ var server = &cobra.Command{
 				log.Println(http.ListenAndServe("localhost:6060", nil))
 			}()
 		}
+
+		log.Println("Staring event manager...")
+		go events.Run()
 
 		log.Println("Listening on", config.Port())
 		err := graceful.RunWithErr(config.Port(), time.Minute, r)

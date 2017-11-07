@@ -12,7 +12,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/repo"
 	"github.com/spf13/cobra"
 )
@@ -32,7 +31,7 @@ var seeddb = &cobra.Command{
 	Short: "Seed the database with test data.",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Connecting to database...")
-		r := config.LoadRepo()
+		r := loadRepo()
 
 		fmt.Println("Seeding database with test data...")
 		err := repo.Seed(r)
@@ -64,7 +63,7 @@ testing.
 
 		}
 
-		r := config.LoadRepo()
+		r := loadRepo()
 		if strings.HasPrefix(strings.ToLower(ans), "y") {
 			err := r.Clean()
 			if err != nil {

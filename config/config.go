@@ -15,9 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/praelatus/praelatus/repo"
-	"github.com/praelatus/praelatus/repo/mongo"
 )
 
 type AWSConfig struct {
@@ -142,14 +139,6 @@ func SessionURL() string {
 // requests from hooks
 func WebWorkers() int {
 	return 10
-}
-
-func LoadRepo() repo.Repo {
-	return mongo.New(DBURL())
-}
-
-func LoadCache() repo.Cache {
-	return mongo.NewCache(DBURL())
 }
 
 var Logger *log.Logger
