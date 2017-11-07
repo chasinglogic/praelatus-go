@@ -4,7 +4,11 @@
 
 package models
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"time"
+
+	"gopkg.in/mgo.v2/bson"
+)
 
 // Notification is any kind of activity on a project for which a user might want
 // an auditble history of
@@ -17,4 +21,5 @@ type Notification struct {
 	Body           string        `json:"body"`
 	Read           bool          `json:"read"`
 	Watcher        string        `json:"watcher"`
+	CreatedDate    time.Time     `json:"createdDate"`
 }
