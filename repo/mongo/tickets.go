@@ -66,19 +66,30 @@ func (t ticketRepo) AddComment(u *models.User, uid string, comment models.Commen
 		},
 	})
 
+	if err != nil {
+		return ticket, mongoErr(err)
+	}
+
+	err = t.coll().FindId(uid).One(&ticket)
 	return ticket, mongoErr(err)
 }
 
 func (t ticketRepo) Create(u *models.User, ticket models.Ticket) (models.Ticket, error) {
 
 	var p models.Project
+	var dbUser models.User
 
 	err := t.conn.DB(dbName).C(projects).FindId(ticket.Project).One(&p)
 	if err != nil {
 		return models.Ticket{}, mongoErr(err)
 	}
 
-	if len(models.HasPermission(permission.CreateTicket, *u, p)) == 0 {
+	err = t.conn.DB(dbName).C(users).FindId(u.Username).One(&dbUser)
+	if err != nil {
+		return models.Ticket{}, mongoErr(err)
+	}
+
+	if len(models.HasPermission(permission.CreateTicket, dbUser, p)) == 0 {
 		return models.Ticket{}, repo.ErrUnauthorized
 	}
 
