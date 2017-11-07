@@ -6,7 +6,6 @@ package v1
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -160,7 +159,6 @@ func addComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(u.Username)
 	go events.FireEvent(event.Comment{
 		User:           *u,
 		InProject:      models.Project{Key: ticket.Project},

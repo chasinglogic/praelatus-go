@@ -5,8 +5,6 @@
 package mongo
 
 import (
-	"fmt"
-
 	"github.com/praelatus/praelatus/models"
 	"github.com/praelatus/praelatus/repo"
 	mgo "gopkg.in/mgo.v2"
@@ -69,8 +67,6 @@ func (nr notificationRepo) ForProject(u *models.User, project models.Project, on
 
 	var notifications []models.Notification
 	err = query.All(&notifications)
-
-	fmt.Println(notifications, err)
 	return notifications, mongoErr(err)
 }
 
