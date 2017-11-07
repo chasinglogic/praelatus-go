@@ -170,18 +170,9 @@ func (t ticketRepo) Delete(u *models.User, uid string) error {
 }
 
 func (t ticketRepo) Search(u *models.User, query ast.AST) ([]models.Ticket, error) {
-	permQ := permQuery(u)
-	var p []models.Project
-
-	err := t.conn.DB(dbName).C(projects).Find(permQ).
-		Select(bson.M{"_id": 1}).All(&p)
+	keys, err := getKeysUserHasPermissionTo(u, t.conn)
 	if err != nil {
 		return nil, mongoErr(err)
-	}
-
-	keys := make([]string, len(p))
-	for i, prj := range p {
-		keys[i] = prj.Key
 	}
 
 	var tickets []models.Ticket
@@ -255,4 +246,22 @@ func (t ticketRepo) LabelSearch(u *models.User, query string) ([]string, error) 
 
 	err := pipe.One(&labelDoc)
 	return labelDoc.Labels, mongoErr(err)
+}
+
+func getKeysUserHasPermissionTo(u *models.User, conn *mgo.Session) ([]string, error) {
+	permQ := permQuery(u)
+	var p []models.Project
+
+	err := conn.DB(dbName).C(projects).Find(permQ).
+		Select(bson.M{"_id": 1}).All(&p)
+	if err != nil {
+		return nil, err
+	}
+
+	keys := make([]string, len(p))
+	for i, prj := range p {
+		keys[i] = prj.Key
+	}
+
+	return keys, nil
 }
