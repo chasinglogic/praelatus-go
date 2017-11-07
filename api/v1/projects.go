@@ -7,6 +7,7 @@ package v1
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -17,14 +18,15 @@ import (
 )
 
 func projectRouter(router *mux.Router) {
-	router.HandleFunc("/projects", GetAllProjects).Methods("GET")
-	router.HandleFunc("/projects", CreateProject).Methods("POST")
+	router.HandleFunc("/projects", getAllProjects).Methods("GET")
+	router.HandleFunc("/projects", createProject).Methods("POST")
 
-	router.HandleFunc("/projects/{key}", SingleProject)
+	router.HandleFunc("/projects/{key}", singleProject)
+	router.HandleFunc("/projects/{key}/notifications", getProjectNotifications)
 }
 
-// SingleProject will get a project by it's project key
-func SingleProject(w http.ResponseWriter, r *http.Request) {
+// singleProject will get a project by it's project key
+func singleProject(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
 
 	var p models.Project
@@ -55,9 +57,9 @@ func SingleProject(w http.ResponseWriter, r *http.Request) {
 	utils.SendJSON(w, p)
 }
 
-// GetAllProjects will get all the projects on this instance that the user has
+// getAllProjects will get all the projects on this instance that the user has
 // permissions to
-func GetAllProjects(w http.ResponseWriter, r *http.Request) {
+func getAllProjects(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
 	if u == nil {
 		u = &models.User{}
@@ -77,9 +79,9 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 	utils.SendJSON(w, projects)
 }
 
-// CreateProject will create a project in the database. This route requires
+// createProject will create a project in the database. This route requires
 // admin.
-func CreateProject(w http.ResponseWriter, r *http.Request) {
+func createProject(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		utils.Error(w, repo.ErrUnauthorized)
@@ -107,4 +109,31 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendJSON(w, p)
+}
+
+func getProjectNotifications(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
+	if u == nil {
+		u = &models.User{}
+	}
+
+	key := mux.Vars(r)["key"]
+
+	unread := r.FormValue("unread") == "true" || r.FormValue("unread") == "TRUE"
+
+	last, _ := strconv.Atoi(r.FormValue("last"))
+	// Last cannot be passed to us as 0 if it is 0 that means either nothing
+	// or a non-number was passed to set to the default value of 10
+	if last == 0 {
+		last = 10
+	}
+
+	notifications, err := Repo.Notifications().ForProject(u,
+		models.Project{Key: key}, unread, last)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	utils.SendJSON(w, notifications)
 }
