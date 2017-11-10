@@ -2,9 +2,9 @@
 // Use of this source code is governed by the AGPLv3 license that can be found in
 // the LICENSE file.
 
-// Package fs provides definitions for abstracting away filesystem interaction
+// Package files provides definitions for abstracting away filesystem interaction
 // in Praelatus
-package fs
+package files
 
 import (
 	"crypto/md5"

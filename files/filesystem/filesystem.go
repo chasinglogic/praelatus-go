@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 
 	"github.com/praelatus/praelatus/config"
-	"github.com/praelatus/praelatus/fs"
+	"github.com/praelatus/praelatus/files"
 )
 
-// FS implements fs.FS for a local filesystem.
+// FS implements files.FS for a local filesystem.
 type FS struct {
 	baseDir string
 }
@@ -28,14 +28,14 @@ func (f FS) Init() error {
 	return os.MkdirAll(f.baseDir, os.ModePerm)
 }
 
-// Get will retrieve the file by joining the given path with FS.baseDir
+// Get will retrieve the file by joining the given path with FILES.baseDir
 func (f FS) Get(path string) (io.ReadCloser, error) {
 	return os.Open(filepath.Join(f.baseDir, path))
 }
 
 // Save will generate a unique file name and save the file to the baseDir
 func (f FS) Save(file *os.File) (string, error) {
-	fn, err := fs.GenUniqueFileName(file)
+	fn, err := files.GenUniqueFileName(file)
 	if err != nil {
 		return "", err
 	}
