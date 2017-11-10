@@ -19,29 +19,32 @@ import (
 	"github.com/praelatus/praelatus/api/v1"
 )
 
-var Version string
-var Commit string
+// API holds global API state
+type API struct {
+	router    *mux.Router
+	Endpoints []Endpoint
+	Version   string
+	Commit    string
+}
 
-func routes(router *mux.Router) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rs := []string{}
+func (a API) routes(w http.ResponseWriter, r *http.Request) {
+	rs := []string{}
 
-		router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-			t, err := route.GetPathTemplate()
-			if err != nil {
-				return err
-			}
+	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		t, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
 
-			rs = append(rs, t)
-			return nil
-		})
-
-		utils.SendJSON(w, rs)
+		rs = append(rs, t)
+		return nil
 	})
+
+	utils.SendJSON(w, rs)
 }
 
 // Routes will return the mux.Router which contains all of the api routes
-func Routes() *mux.Router {
+func (a API) Routes() http.Handler {
 	router := mux.NewRouter()
 	api := router.PathPrefix("/api").Subrouter()
 	v1r := api.PathPrefix("/v1").Subrouter()
