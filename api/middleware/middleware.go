@@ -11,11 +11,25 @@ import (
 	"strings"
 
 	"github.com/praelatus/praelatus/api/utils"
-	"github.com/praelatus/praelatus/repo"
 )
 
-// Cache is the global SessionCache
-var Cache repo.Cache
+// Middleware is a function which modifies the behavior of a http.Handler
+type Middleware func(http.Handler) http.Handler
+
+// Chain is a slice of Middlewares that can be applied with Load
+type Chain []Middleware
+
+// Load will load all middleware in the chain for next returning the wrapped
+// handler
+func (c Chain) Load(next http.Handler) http.Handler {
+	h := next
+
+	for _, m := range c {
+		h = m(h)
+	}
+
+	return h
+}
 
 // ContentHeaders will set the content-type header for the API to application/json
 func ContentHeaders(next http.Handler) http.Handler {
@@ -34,19 +48,30 @@ func ContentHeaders(next http.Handler) http.Handler {
 	})
 }
 
-// LoadMw will wrap the given http.Handler in the DefaultMiddleware
-func LoadMw(handler http.Handler) http.Handler {
-	h := handler
+// CORS allows cross origin requests to the server. Note: By default it allows
+// all origins so can be insecure.
+// TODO: Make the origins configurable
+func CORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+			w.Header().Add("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
+			w.Header().Add("Access-Control-Expose-Headers", "X-Praelatus-Token, Content-Type")
+			w.Header().Add("Access-Control-Allow-Credentials", "true")
+			w.Header().Add("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS")
 
-	for _, m := range DefaultMiddleware {
-		h = m(h)
-	}
+			if r.Method == "OPTIONS" {
+				w.Write([]byte{})
+				return
+			}
 
-	return h
+			next.ServeHTTP(w, r)
+		})
 }
 
-// DefaultMiddleware is the default middleware stack for Praelatus
-var DefaultMiddleware = []func(http.Handler) http.Handler{
+// Default is the default middleware stack for Praelatus
+var Default = Chain{
 	ContentHeaders,
 	Logger,
+	CORS,
 }
