@@ -23,6 +23,7 @@ func ticketRouter(router *mux.Router) {
 	router.HandleFunc("/tickets", getAllTickets).Methods("GET")
 	router.HandleFunc("/tickets", createTicket).Methods("POST")
 	router.HandleFunc("/tickets/{key}", singleTicket)
+	// TODO: add update route
 
 	router.HandleFunc("/tickets/{key}/addComment", addComment).Methods("POST")
 	// TODO: add transition route

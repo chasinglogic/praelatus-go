@@ -75,7 +75,6 @@ func (t ticketRepo) AddComment(u *models.User, uid string, comment models.Commen
 }
 
 func (t ticketRepo) Create(u *models.User, ticket models.Ticket) (models.Ticket, error) {
-
 	var p models.Project
 	var dbUser models.User
 
