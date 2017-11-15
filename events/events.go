@@ -72,3 +72,8 @@ func (em EventManager) RegisterListener(ev chan event.Event) {
 func RegisterListener(ev chan event.Event) {
 	evm.RegisterListener(ev)
 }
+
+// FireEvent calls the method of the same name on the global EventManager
+func FireEvent(ev event.Event) {
+	evm.FireEvent(ev)
+}

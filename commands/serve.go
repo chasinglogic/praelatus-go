@@ -45,7 +45,7 @@ var server = &cobra.Command{
 		api.Version = Version
 		api.Commit = Commit
 
-		r := api.New(rpo)
+		r := api.New(rpo, nil)
 
 		if profile {
 			go func() {
