@@ -21,7 +21,7 @@ snapshot: build-client build-server
 	fi
 	goreleaser --snapshot
 
-package:
+package: build-client build-server
 	if [[ $(git branch | grep "*") != "* master" ]]; then
 		echo "ERROR: Must be on master to create a snapshot release"
 		exit 1
@@ -44,7 +44,7 @@ cleandb:
 	go run cmd/praelatus/main.go db clean --yes
 
 dev-server:
-	go run cmd/praelatus/main.go serve --dev-mode
+	go run cmd/praelatus/main.go serve
 
 dev-client:
 	cd client && npm run dev
