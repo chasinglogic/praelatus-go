@@ -11,11 +11,29 @@ import (
 	"strings"
 
 	"github.com/praelatus/praelatus/api/utils"
-	"github.com/praelatus/praelatus/repo"
 )
 
-// Cache is the global SessionCache
-var Cache repo.Cache
+// Middleware is any function which modifies the behavior of a http.Handler
+type Middleware func(http.Handler) http.Handler
+
+// Load the middleware for the given handler
+func (m Middleware) Load(next http.Handler) http.Handler {
+	return m(next)
+}
+
+// Chain is a middleware chain
+type Chain []Middleware
+
+// Load the middleware in this chain for the given handler
+func (c Chain) Load(next http.Handler) http.Handler {
+	h := next
+
+	for _, m := range c {
+		h = m(h)
+	}
+
+	return h
+}
 
 // ContentHeaders will set the content-type header for the API to application/json
 func ContentHeaders(next http.Handler) http.Handler {
@@ -34,19 +52,8 @@ func ContentHeaders(next http.Handler) http.Handler {
 	})
 }
 
-// LoadMw will wrap the given http.Handler in the DefaultMiddleware
-func LoadMw(handler http.Handler) http.Handler {
-	h := handler
-
-	for _, m := range DefaultMiddleware {
-		h = m(h)
-	}
-
-	return h
-}
-
-// DefaultMiddleware is the default middleware stack for Praelatus
-var DefaultMiddleware = []func(http.Handler) http.Handler{
+// Default is the default middleware stack for Praelatus
+var Default = Chain{
 	ContentHeaders,
 	Logger,
 }

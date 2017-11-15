@@ -14,16 +14,13 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/praelatus/praelatus/api"
-	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/events"
-	"github.com/praelatus/praelatus/repo"
 	"github.com/spf13/cobra"
 	"github.com/tylerb/graceful"
 )
 
 var (
-	devMode     bool
 	disableCORS bool
 	profile     bool
 )
@@ -31,8 +28,6 @@ var (
 func init() {
 	server.Flags().BoolVar(&disableCORS, "nocors", false,
 		"If given all Access-Control headers will be set to *")
-	server.Flags().BoolVarP(&devMode, "dev-mode", "d", false,
-		"Disables CORS and Authentication checks.")
 	server.Flags().BoolVar(&profile, "profile", false,
 		"Enables server performance profiling on localhost:6060")
 }
@@ -45,17 +40,12 @@ var server = &cobra.Command{
 
 		log.Println("Starting Praelatus...")
 		log.Println("Connecting to database...")
-		repo.GlobalRepo = loadRepo()
-		cache := loadCache()
+		rpo := loadRepo()
 
 		api.Version = Version
 		api.Commit = Commit
 
-		if disableCORS || devMode {
-			middleware.DefaultMiddleware = append(middleware.DefaultMiddleware, middleware.CORS)
-		}
-
-		r := api.New(repo.GlobalRepo, cache)
+		r := api.New(rpo)
 
 		if profile {
 			go func() {

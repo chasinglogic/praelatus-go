@@ -7,7 +7,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"runtime"
 
@@ -19,7 +18,10 @@ import (
 	"github.com/praelatus/praelatus/api/v1"
 )
 
+// Version of praelatus
 var Version string
+
+// Commit this version was built against
 var Commit string
 
 func routes(router *mux.Router) http.HandlerFunc {
@@ -55,36 +57,26 @@ func Routes() *mux.Router {
 	// setup routes endpoints
 	api.HandleFunc("/version",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(fmt.Sprintf("Praelatus %s#%s %s/%s",
-				Version, Commit, runtime.GOOS, runtime.GOARCH)))
+			utils.SendJSON(w, struct {
+				Version string
+				Commit  string
+				GOOS    string
+				GOARCH  string
+			}{
+				Version: Version,
+				Commit:  Commit,
+				GOOS:    runtime.GOOS,
+				GOARCH:  runtime.GOARCH,
+			})
 		})
 
 	v1r.HandleFunc("/routes", routes(v1r)).Methods("GET")
 	api.HandleFunc("/routes", routes(api)).Methods("GET")
-
-	static := http.StripPrefix("/assets/",
-		http.FileServer(http.Dir("client/assets/")))
-
-	router.HandleFunc("/",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path[len("api"):] == "api" {
-				api.ServeHTTP(w, r)
-			} else if r.URL.Path[len("static"):] == "static" {
-				static.ServeHTTP(w, r)
-			} else {
-				w.Header().Set("Content-Type", "text/html")
-				http.ServeFile(w, r, "client/index.html")
-			}
-		})
-
 	return router
 }
 
 // New will start running the api on the given port
-func New(r repo.Repo, cache repo.Cache) http.Handler {
+func New(r repo.Repo, mw middleware.Chain) http.Handler {
 	v1.Repo = r
-	middleware.Cache = cache
-
-	router := Routes()
-	return middleware.LoadMw(router)
+	return mw.Load(Routes())
 }

@@ -19,17 +19,24 @@ import (
 // the cost of spinning up new threads and channels to determine what the best
 // way to go is.
 
-// evm is the global event manager which is interfaced with using the functions
-// whose names match the methods of an EventManager
-var listeners = []chan event.Event{
-	hookEventChan,
-	notificationsEventChan,
-}
-
 var eventLog = log.New(config.LogWriter(), "[EVENT] ", log.LstdFlags)
 
 // Stop is a global channel used to stop the running event managers
 var Stop = make(chan int)
+
+// EventManager manages registered event listeners and dispatching those events
+type EventManager struct {
+	Listeners []chan event.Event
+}
+
+// evm is the global event manager which is interfaced with using the functions
+// whose names match the methods of an EventManager
+var evm = EventManager{
+	Listeners: []chan event.Event{
+		hookEventChan,
+		notificationsEventChan,
+	},
+}
 
 // Run starts the global event manager, should be called in a go routine normally
 func Run() {
@@ -44,10 +51,10 @@ func Run() {
 }
 
 // FireEvent calls the method of the same name on the global EventManager
-func FireEvent(e event.Event) {
+func (em EventManager) FireEvent(e event.Event) {
 	eventLog.Println("fired", e.Type(), "for", e.Ticket().Key)
 	// FireEvent sends the given event to all registered listeners
-	for _, listener := range listeners {
+	for _, listener := range em.Listeners {
 		listener <- e
 		eventLog.Println("sent")
 	}
@@ -57,6 +64,11 @@ func FireEvent(e event.Event) {
 }
 
 // RegisterListener adds a listener to the EventManager
+func (em EventManager) RegisterListener(ev chan event.Event) {
+	em.Listeners = append(em.Listeners, ev)
+}
+
+// RegisterListener calls the method of the same name on the global EventManager
 func RegisterListener(ev chan event.Event) {
-	listeners = append(listeners, ev)
+	evm.RegisterListener(ev)
 }
