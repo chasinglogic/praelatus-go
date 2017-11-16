@@ -14,7 +14,7 @@ tags = ["contributing"]
 
 - Code submissions. We always need more code written in the form of new features or bugs.
 
-For all of the above please follow our [Code of Conduct](https://github.com/chasinglogic/praelatus/blob/master/CODE_OF_CONDUCT.md)
+For all of the above please follow our [Code of Conduct](http://praelatus.io/#/contributing/code_of_conduct)
 
 ## General Contribution Guidelines
 
@@ -34,7 +34,7 @@ If you'd like to tackle an existing issue, just add a comment claiming the ticke
 5. If your code breaks some other package, feel free to adjust the other package.
 as long as the tests for that package still pass.
 
-Documentation for building Praelatus can be found 
+Documentation for building Praelatus can be found
 [here](/contributing/BUILDING_PRAELATUS)
 
 <span id="bug-reports"></span>
@@ -58,4 +58,3 @@ Feature requests are always welcome as we want to make Praelatus the best it can
 
 1. All feature requests should clearly define a scope with a clear "done" state. Meaning that the sentence "When Praelatus does X then Y feature will be considered complete." can be applied to it.
 2. All feature requests will go through a comment period (minimum of 7 days) before being worked and at least two project maintainers will sign off as having approved the feature for work.
-
