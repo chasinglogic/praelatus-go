@@ -35,7 +35,7 @@ The basics:
 All pull requests should go to the develop branch not master. Thanks!
 
 Need help getting started hacking on Praelatus? No problem we have docs for that!
-- [Contribution Guidelines](https://github.com/praelatus/backend/blob/develop/CONTRIBUTING.md)
+- [Contribution Guidelines](http://praelatus.io/#/contributing/)
 - [HACKING](https://doc.praelatus.io/contributing/HACKING)
 - [REST API Reference](https://doc.praelatus.io/rest/api_reference/)
 
