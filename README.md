@@ -1,9 +1,6 @@
 # Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/backend?status.svg)](https://godoc.org/github.com/praelatus/backend/) [![Go Report Card](https://goreportcard.com/badge/github.com/praelatus/praelatus)](https://goreportcard.com/report/github.com/praelatus/praelatus)
 An Open Source bug tracker and ticketing system.
 
-If you're looking for the official web frontend it's
-[in its own repo](https://github.com/praelatus/frontend)
-
 | Stable | Nightly |
 |:------:|:-------:|
 | [![Build Status](https://travis-ci.org/praelatus/backend.svg?branch=master)](https://travis-ci.org/praelatus/backend) | [![Build Status](https://travis-ci.org/praelatus/praelatus.svg?branch=develop)](https://travis-ci.org/praelatus/praelatus) |
@@ -36,8 +33,8 @@ All pull requests should go to the develop branch not master. Thanks!
 
 Need help getting started hacking on Praelatus? No problem we have docs for that!
 - [Contribution Guidelines](http://praelatus.io/#/contributing/guidelines)
-- [HACKING](https://doc.praelatus.io/contributing/HACKING)
-- [REST API Reference](https://doc.praelatus.io/rest/api_reference/)
+- [HACKING](http://praelatus.io/#/contributing/hacking?id=introduction)
+- REST API Reference - Coming Soon!
 
 ## Installation
 
