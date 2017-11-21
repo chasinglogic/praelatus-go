@@ -8,11 +8,21 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/praelatus/praelatus/ql/ast"
 	"github.com/praelatus/praelatus/ql/lexer"
 	"github.com/praelatus/praelatus/ql/token"
 )
+
+// Error is returned by the Parser's Errors() method
+type Error struct {
+	errors []string
+}
+
+func (pe *Error) Error() string {
+	return fmt.Sprintf("Parsing Errors: %v", strings.Join("\n", pe.errors))
+}
 
 const (
 	_      int = iota
@@ -121,8 +131,14 @@ func (p *Parser) curPrecedence() int {
 	return LOWEST
 }
 
-func (p *Parser) Errors() []string {
-	return p.errors
+// Errors will return a parser.Error instance with the problems found during
+// parsing
+func (p *Parser) Errors() error {
+	if len(p.errors) != 0 {
+		return &Error{p.errors}
+	}
+
+	return nil
 }
 
 func (p *Parser) peekError(t token.TokenType) {
