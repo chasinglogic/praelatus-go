@@ -80,11 +80,8 @@ func TestParseLimit(t *testing.T) {
 	p := New(l)
 	tree := p.Parse()
 
-	if len(p.Errors()) != 0 {
-		for _, e := range p.Errors() {
-			t.Error(e)
-		}
-
+	if p.Errors() != nil {
+		t.Error(p.Errors())
 		return
 	}
 
@@ -98,11 +95,8 @@ func TestParseOrderBy(t *testing.T) {
 	p := New(l)
 	tree := p.Parse()
 
-	if len(p.Errors()) != 0 {
-		for _, e := range p.Errors() {
-			t.Error(e)
-		}
-
+	if p.Errors() != nil {
+		t.Error(p.Errors())
 		return
 	}
 
@@ -116,11 +110,8 @@ func TestParseLimitOrderBy(t *testing.T) {
 	p := New(l)
 	tree := p.Parse()
 
-	if len(p.Errors()) != 0 {
-		for _, e := range p.Errors() {
-			t.Error(e)
-		}
-
+	if p.Errors() != nil {
+		t.Error(p.Errors())
 		return
 	}
 

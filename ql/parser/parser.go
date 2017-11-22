@@ -21,7 +21,11 @@ type Error struct {
 }
 
 func (pe *Error) Error() string {
-	return fmt.Sprintf("Parsing Errors: %v", strings.Join("\n", pe.errors))
+	return fmt.Sprintf("Parsing Errors: %v", strings.Join(pe.errors, "\n"))
+}
+
+func (pe *Error) String() string {
+	return pe.Error()
 }
 
 const (

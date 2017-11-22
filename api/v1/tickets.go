@@ -117,7 +117,7 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 	a := p.Parse()
 
 	if p.Errors() != nil {
-		utils.APIErr(w, http.StatusBadRequest, p.Errors()[0])
+		utils.APIErr(w, http.StatusBadRequest, p.Errors().Error())
 		return
 	}
 

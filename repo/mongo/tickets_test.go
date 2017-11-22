@@ -41,7 +41,7 @@ func TestTicketSearchLimit(t *testing.T) {
 	p := parser.New(l)
 	a := p.Parse()
 
-	if len(p.Errors()) != 0 {
+	if p.Errors() != nil {
 		t.Errorf("Parsing error: %v", p.Errors())
 		return
 	}
