@@ -1,4 +1,4 @@
-// Copyright 2017 Mathew Robinson <mrobinson@praelatus.io>. All rights reserved.
+// Copyright 2017 Mathew Robinson <chasinglogic@gmail.com>. All rights reserved.
 // Use of this source code is governed by the AGPLv3 license that can be found in
 // the LICENSE file.
 
@@ -15,7 +15,8 @@ import (
 	"github.com/praelatus/praelatus/ql/token"
 )
 
-// Error is returned by the Parser's Errors() method
+// Error is returned by the Parser's Errors() method eventually
+// this should be able to give us more info about what went wrong
 type Error struct {
 	errors []string
 }

@@ -7,7 +7,7 @@
 // information about how to use the API as a client or how to start
 // working on the backend visit http://docs.praelatus.io
 //
-// Copyright (C) 2017 Mathew Robinson <mrobinson@praelatus.io>
+// Copyright (C) 2017 Mathew Robinson <chasinglogic@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
