@@ -13,7 +13,3 @@ import (
 func loadRepo() repo.Repo {
 	return mongo.New(config.DBURL())
 }
-
-func loadCache() repo.Cache {
-	return mongo.NewCache(config.DBURL())
-}

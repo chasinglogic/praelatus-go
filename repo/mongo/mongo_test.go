@@ -12,7 +12,6 @@ import (
 )
 
 var r repo.Repo
-var c repo.Cache
 
 var admin = models.User{
 	Username: "testadmin",
@@ -38,8 +37,6 @@ func init() {
 	if e != nil {
 		panic(e)
 	}
-
-	c = mongo.NewCache("mongodb://localhost/praelatus_test")
 
 	mr, ok := r.(mongo.Repo)
 	if !ok {
