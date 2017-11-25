@@ -6,6 +6,7 @@ package v1_test
 
 import (
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/praelatus/praelatus/models"
@@ -58,6 +59,23 @@ var projectRouteTests = []routeTest{
 
 			if projects[0].Key != "TEST" {
 				t.Errorf("Expected TEST Got: %s", projects[0].Key)
+			}
+		},
+	},
+
+	{
+		Name:         "Get All Projects With ADMIN_PROJECT",
+		Endpoint:     "/api/v1/projects?permission=ADMIN_PROJECT",
+		ExpectedCode: http.StatusUnauthorized,
+		Converter: func(jsn []byte) (interface{}, error) {
+			return []models.Project{}, nil
+		},
+		Validator: func(v interface{}, t *testing.T) {
+			projects := toProjects(v)
+
+			if len(projects) >= 1 {
+				t.Errorf("Expected 0 Projects Got: %v", projects)
+				return
 			}
 		},
 	},

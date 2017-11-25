@@ -112,6 +112,10 @@ func (pr mockProjectRepo) HasLead(u *models.User, lead models.User) ([]models.Pr
 }
 
 func (pr mockProjectRepo) HasPermissionTo(u *models.User, perms permission.Permissions) ([]models.Project, error) {
+	if perms.Contains(permission.AdminProject) {
+		return []models.Project{}, ErrUnauthorized
+	}
+
 	return []models.Project{p, p1}, nil
 }
 
