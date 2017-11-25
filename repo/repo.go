@@ -10,6 +10,7 @@ import (
 	"errors"
 
 	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/models/permission"
 	"github.com/praelatus/praelatus/ql/ast"
 )
 
@@ -54,6 +55,7 @@ type ProjectRepo interface {
 	Delete(u *models.User, uid string) error
 
 	HasLead(u *models.User, lead models.User) ([]models.Project, error)
+	HasPermissionTo(u *models.User, perms permission.Permissions) ([]models.Project, error)
 }
 
 // UserRepo handles storing, retrieving, updating, and creating users.

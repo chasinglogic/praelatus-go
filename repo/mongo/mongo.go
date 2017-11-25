@@ -49,7 +49,28 @@ func mongoErr(e error) error {
 	}
 }
 
-func permQuery(u *models.User) bson.M {
+func hasViewPermissionQuery(u *models.User) bson.M {
+	if u == nil {
+		u = &models.User{}
+	}
+
+	query := buildPermQuery(u, permission.Permissions{}.Add(permission.ViewProject))
+
+	// Make sure to include public projects
+	switch v := query["$or"].(type) {
+	case []bson.M:
+		v[len(u.Roles)] = bson.M{
+			"public": true,
+		}
+		query["$or"] = v
+	default:
+		query["$or"] = []bson.M{{"public": true}}
+	}
+
+	return query
+}
+
+func buildPermQuery(u *models.User, perms permission.Permissions) bson.M {
 	if u == nil {
 		u = &models.User{}
 	}
@@ -63,14 +84,12 @@ func permQuery(u *models.User) bson.M {
 		viewPerms[i] = bson.M{
 			"_id": r.Project,
 			"permissions": bson.M{
-				"role":       r.Role,
-				"permission": permission.ViewProject,
+				"role": r.Role,
+				"permission": bson.M{
+					"$in": perms,
+				},
 			},
 		}
-	}
-
-	viewPerms[len(u.Roles)] = bson.M{
-		"public": true,
 	}
 
 	query := bson.M{

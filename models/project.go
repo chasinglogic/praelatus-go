@@ -87,9 +87,13 @@ func (p Project) GetPermsForRoles(roles ...Role) permission.Permissions {
 	for _, role := range roles {
 		for _, mappings := range p.Permissions {
 			if role == mappings.Role {
-				perms = append(perms, mappings.Permission)
+				perms = perms.Add(mappings.Permission)
 			}
 		}
+	}
+
+	if p.Public {
+		perms = perms.Add(permission.ViewProject)
 	}
 
 	return perms
@@ -109,8 +113,7 @@ func HasPermission(permName permission.Permission, user User,
 	for _, p := range projects {
 		roles := user.RolesForProject(p)
 		perms := p.GetPermsForRoles(roles...)
-		if (permName == permission.ViewProject && p.Public) ||
-			perms.Contains(permName) {
+		if perms.Contains(permName) {
 			hasPerm = append(hasPerm, p)
 		}
 	}

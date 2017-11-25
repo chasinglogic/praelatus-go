@@ -14,6 +14,7 @@ import (
 	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/api/utils"
 	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/models/permission"
 	"github.com/praelatus/praelatus/repo"
 )
 
@@ -132,6 +133,21 @@ func getProjectNotifications(w http.ResponseWriter, r *http.Request) {
 	utils.SendJSON(w, notifications)
 }
 
-func getAllProjectsWithPermission(w http.ReponseWriter, r *http.Request) {
+func getAllProjectsWithPermission(w http.ResponseWriter, r *http.Request) {
+	u := middleware.GetUserSession(r)
 
+	perms := permission.Permissions{}.Add(permission.ViewProject)
+
+	perm := r.FormValue("perm")
+	if perm != "" {
+		perms = permission.Permissions(strings.Split(perm, ","))
+	}
+
+	projects, err := Repo.Projects().HasPermissionTo(u, perms)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	utils.SendJSON(w, projects)
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/models/permission"
 	"github.com/praelatus/praelatus/repo"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -22,7 +23,7 @@ func (p projectRepo) coll() *mgo.Collection {
 }
 
 func permWithID(u *models.User, uid string) bson.M {
-	base := permQuery(u)
+	base := hasViewPermissionQuery(u)
 	return bson.M{
 		"$and": []bson.M{
 			{
@@ -63,7 +64,7 @@ func (p projectRepo) Delete(u *models.User, uid string) error {
 }
 
 func (p projectRepo) Search(u *models.User, query string) ([]models.Project, error) {
-	base := permQuery(u)
+	base := hasViewPermissionQuery(u)
 	q := base
 
 	if query != "" {
@@ -102,7 +103,7 @@ func (p projectRepo) Search(u *models.User, query string) ([]models.Project, err
 }
 
 func (p projectRepo) HasLead(u *models.User, lead models.User) ([]models.Project, error) {
-	base := permQuery(u)
+	base := hasViewPermissionQuery(u)
 	q := bson.M{
 		"$and": []bson.M{
 			base,
@@ -112,6 +113,15 @@ func (p projectRepo) HasLead(u *models.User, lead models.User) ([]models.Project
 		},
 	}
 
+	var projects []models.Project
+	err := p.coll().Find(q).All(&projects)
+	return projects, mongoErr(err)
+}
+
+// HasPermissionTo will return all projects which the given user has the given
+// permissions to
+func (p projectRepo) HasPermissionTo(u *models.User, perms permission.Permissions) ([]models.Project, error) {
+	q := buildPermQuery(u, perms)
 	var projects []models.Project
 	err := p.coll().Find(q).All(&projects)
 	return projects, mongoErr(err)

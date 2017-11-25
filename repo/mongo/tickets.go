@@ -248,7 +248,7 @@ func (t ticketRepo) LabelSearch(u *models.User, query string) ([]string, error) 
 }
 
 func getKeysUserHasPermissionTo(u *models.User, conn *mgo.Session) ([]string, error) {
-	permQ := permQuery(u)
+	permQ := hasViewPermissionQuery(u)
 	var p []models.Project
 
 	err := conn.DB(dbName).C(projects).Find(permQ).

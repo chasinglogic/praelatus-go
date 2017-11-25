@@ -10,16 +10,24 @@ package permission
 type Permission string
 
 // Permissions is used to add some convenience functions for checking permisisons
-type Permissions []Permission
+type Permissions []string
 
 func (p Permissions) Contains(permName Permission) bool {
 	for _, perm := range p {
-		if perm == permName {
+		if Permission(perm) == permName {
 			return true
 		}
 	}
 
 	return false
+}
+
+func (p Permissions) Add(perms ...Permission) Permissions {
+	for _, perm := range perms {
+		p = append(p, string(perm))
+	}
+
+	return p
 }
 
 // These are the permissions available in Praelatus

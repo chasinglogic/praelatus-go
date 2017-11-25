@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/models/permission"
 	"github.com/praelatus/praelatus/ql/ast"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -107,6 +108,10 @@ func (pr mockProjectRepo) Search(u *models.User, query string) ([]models.Project
 }
 
 func (pr mockProjectRepo) HasLead(u *models.User, lead models.User) ([]models.Project, error) {
+	return []models.Project{p, p1}, nil
+}
+
+func (pr mockProjectRepo) HasPermissionTo(u *models.User, perms permission.Permissions) ([]models.Project, error) {
 	return []models.Project{p, p1}, nil
 }
 
