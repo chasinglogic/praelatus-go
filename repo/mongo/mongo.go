@@ -7,6 +7,7 @@ package mongo
 
 import (
 	"log"
+	"os"
 
 	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/models"
@@ -17,7 +18,6 @@ import (
 )
 
 var dbLog = log.New(config.LogWriter(), "[MONGO] ", log.LstdFlags)
-var cacheLog = log.New(config.LogWriter(), "[MONGO_CACHE] ", log.LstdFlags)
 
 // MongoDB Collection and Database names
 const (
@@ -38,7 +38,7 @@ func mongoErr(e error) error {
 		return e
 	}
 
-	dbLog.Println("[MONGO] ERROR:", e)
+	dbLog.Println("ERROR:", e)
 
 	// TODO: Catch other repo errors
 	switch e.Error() {
@@ -141,7 +141,14 @@ func (r Repo) Init() error {
 func New(connURL string) repo.Repo {
 	conn, err := mgo.Dial(connURL)
 	if err != nil {
-		panic(err)
+		dbLog.Printf("Unable to connect: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	err = conn.Ping()
+	if err != nil {
+		dbLog.Printf("Unable to reach database: %s\n", err.Error())
+		os.Exit(1)
 	}
 
 	return Repo{

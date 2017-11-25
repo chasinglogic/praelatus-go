@@ -37,6 +37,7 @@ var server = &cobra.Command{
 	Short: "Run the praelatus API and UI server.",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetOutput(config.LogWriter())
+		log.SetPrefix("[MAIN] ")
 
 		log.Println("Starting Praelatus...")
 		log.Println("Connecting to database...")
