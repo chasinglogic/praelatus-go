@@ -21,9 +21,6 @@ import (
 func projectRouter(router *mux.Router) {
 	router.HandleFunc("/projects", getAllProjects).Methods("GET")
 	router.HandleFunc("/projects", createProject).Methods("POST")
-	router.HandleFunc("/projects/hasPermission",
-		getAllProjectsWithPermission).Methods("GET")
-
 	router.HandleFunc("/projects/{key}", singleProject)
 	router.HandleFunc("/projects/{key}/notifications", getProjectNotifications)
 }
@@ -69,7 +66,18 @@ func getAllProjects(w http.ResponseWriter, r *http.Request) {
 		q = strings.Replace(q, "*", ".*", -1)
 	}
 
-	projects, err := Repo.Projects().Search(u, q)
+	perm := r.FormValue("permission")
+
+	var projects []models.Project
+	var err error
+
+	if perm != "" {
+		perms := permission.Permissions(strings.Split(perm, ","))
+		projects, err = Repo.Projects().HasPermissionTo(u, perms)
+	} else {
+		projects, err = Repo.Projects().Search(u, q)
+	}
+
 	if err != nil {
 		utils.Error(w, err)
 		return
@@ -131,23 +139,4 @@ func getProjectNotifications(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendJSON(w, notifications)
-}
-
-func getAllProjectsWithPermission(w http.ResponseWriter, r *http.Request) {
-	u := middleware.GetUserSession(r)
-
-	perms := permission.Permissions{}.Add(permission.ViewProject)
-
-	perm := r.FormValue("perm")
-	if perm != "" {
-		perms = permission.Permissions(strings.Split(perm, ","))
-	}
-
-	projects, err := Repo.Projects().HasPermissionTo(u, perms)
-	if err != nil {
-		utils.Error(w, err)
-		return
-	}
-
-	utils.SendJSON(w, projects)
 }
