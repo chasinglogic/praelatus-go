@@ -20,6 +20,8 @@ import (
 func projectRouter(router *mux.Router) {
 	router.HandleFunc("/projects", getAllProjects).Methods("GET")
 	router.HandleFunc("/projects", createProject).Methods("POST")
+	router.HandleFunc("/projects/hasPermission",
+		getAllProjectsWithPermission).Methods("GET")
 
 	router.HandleFunc("/projects/{key}", singleProject)
 	router.HandleFunc("/projects/{key}/notifications", getProjectNotifications)
@@ -61,10 +63,6 @@ func singleProject(w http.ResponseWriter, r *http.Request) {
 // permissions to
 func getAllProjects(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		u = &models.User{}
-	}
-
 	q := r.FormValue("q")
 	if q != "" {
 		q = strings.Replace(q, "*", ".*", -1)
@@ -113,10 +111,6 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 
 func getProjectNotifications(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		u = &models.User{}
-	}
-
 	key := mux.Vars(r)["key"]
 
 	unread := r.FormValue("unread") == "true" || r.FormValue("unread") == "TRUE"
@@ -136,4 +130,8 @@ func getProjectNotifications(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendJSON(w, notifications)
+}
+
+func getAllProjectsWithPermission(w http.ReponseWriter, r *http.Request) {
+
 }

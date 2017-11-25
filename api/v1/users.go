@@ -135,10 +135,6 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 
 func singleUser(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		u = &models.User{}
-	}
-
 	var user models.User
 	var err error
 
@@ -170,10 +166,6 @@ func singleUser(w http.ResponseWriter, r *http.Request) {
 
 func avatar(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		u = &models.User{}
-	}
-
 	var user models.User
 	var err error
 
@@ -190,10 +182,6 @@ func avatar(w http.ResponseWriter, r *http.Request) {
 
 func leadOf(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		u = &models.User{}
-	}
-
 	username := mux.Vars(r)["username"]
 
 	projects, err := Repo.Projects().HasLead(u, models.User{Username: username})

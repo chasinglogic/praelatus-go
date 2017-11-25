@@ -32,10 +32,6 @@ func ticketRouter(router *mux.Router) {
 
 func createTicket(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		u = &models.User{}
-	}
-
 	var t models.Ticket
 
 	decoder := json.NewDecoder(r.Body)
@@ -68,10 +64,6 @@ func createTicket(w http.ResponseWriter, r *http.Request) {
 
 func singleTicket(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		u = &models.User{}
-	}
-
 	var t models.Ticket
 	var err error
 
@@ -108,10 +100,6 @@ func singleTicket(w http.ResponseWriter, r *http.Request) {
 // getAllTickets will return all tickets which the user has permissions to.
 func getAllTickets(w http.ResponseWriter, r *http.Request) {
 	u := middleware.GetUserSession(r)
-	if u == nil {
-		u = &models.User{}
-	}
-
 	q := r.FormValue("q")
 	p := parser.New(lexer.New(q))
 	a := p.Parse()
