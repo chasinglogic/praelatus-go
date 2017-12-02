@@ -3,7 +3,7 @@
 </template>
 
 <script>
- import Show from '@/components/Tickets/Show'
+ import Show from '@/components/Tickets/Show/Index'
 
  export default {
    name: 'ticket-show-page',

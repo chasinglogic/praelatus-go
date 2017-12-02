@@ -10,7 +10,7 @@ import TicketCreate from '@/components/Tickets/Create'
 import Project from '@/components/Projects/Show'
 import User from '@/components/Users/Show'
 import Login from '@/components/Users/Login'
-import Dashboard from '@/components/Dashboard'
+import Dashboard from '@/components/Dashboard/Index'
 import ProjectList from '@/components/Projects/List'
 
 const NotFound = {

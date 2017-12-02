@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import createPersistedState from 'vuex-persistedState'
+import createPersistedState from 'vuex-persistedstate'
 import Axios from 'axios'
 
 Vue.use(Vuex)
