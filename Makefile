@@ -13,6 +13,7 @@ clean:
 	rm -rf build
 	rm -rf client/dist
 	rm -rf dist
+	rm -rf node_modules
 
 snapshot: build-client build-server
 	if [[ $(git branch | grep "*") != "* master" ]]; then
