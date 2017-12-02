@@ -14,6 +14,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/praelatus/praelatus/api"
+	"github.com/praelatus/praelatus/api/middleware"
 	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/events"
 	"github.com/spf13/cobra"
@@ -46,7 +47,7 @@ var server = &cobra.Command{
 		api.Version = Version
 		api.Commit = Commit
 
-		r := api.New(rpo, nil)
+		r := api.New(rpo, middleware.Default)
 
 		if profile {
 			go func() {
