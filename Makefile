@@ -45,7 +45,7 @@ cleandb:
 	go run cmd/praelatus/main.go db clean --yes
 
 dev-server:
-	go run cmd/praelatus/main.go serve
+	go run cmd/praelatus/main.go serve --disable-cors
 
 dev-client:
 	cd client && npm run dev

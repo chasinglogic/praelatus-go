@@ -43,11 +43,16 @@ var server = &cobra.Command{
 		log.Println("Starting Praelatus...")
 		log.Println("Connecting to database...")
 		rpo := loadRepo()
+		mw := middleware.Default
+
+		if disableCORS {
+			mw = append(mw, middleware.CORS)
+		}
 
 		api.Version = Version
 		api.Commit = Commit
 
-		r := api.New(rpo, middleware.Default)
+		r := api.New(rpo, mw)
 
 		if profile {
 			go func() {
