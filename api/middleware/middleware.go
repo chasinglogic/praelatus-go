@@ -56,5 +56,4 @@ func ContentHeaders(next http.Handler) http.Handler {
 var Default = Chain{
 	ContentHeaders,
 	Logger,
-	CORS,
 }
