@@ -89,7 +89,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := utils.ValidateModel(u); err != nil {
+	if err := utils.ValidateModel(*u); err != nil {
 		utils.APIErr(w, http.StatusBadRequest, err.Error())
 		return
 	}
