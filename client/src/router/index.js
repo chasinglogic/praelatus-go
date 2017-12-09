@@ -12,6 +12,7 @@ import User from '@/components/Users/Show'
 import Login from '@/components/Users/Login'
 import Dashboard from '@/components/Dashboard/Index'
 import ProjectList from '@/components/Projects/List'
+import Admin from '@/components/Admin/Index'
 
 const NotFound = {
   name: 'not-found',
@@ -65,6 +66,11 @@ export default new Router({
       path: '/dashboard',
       name: 'Dashboard',
       component: Dashboard
+    },
+    {
+      path: '/admin',
+      name: 'SystemAdmin',
+      component: Admin
     },
     {
       path: '/',
