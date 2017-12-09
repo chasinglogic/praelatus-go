@@ -84,22 +84,39 @@
    color: #fff;
  }
 
- .bg-praelatus .nav .nav-item a {
-   color: #fff;
+ .bg-praelatus .nav-link {
+   color: #fff !important;
  }
 
- .bg-praelatus .nav .nav-item a:hover {
-   background-color: $highlight-color;
-   color: #fff;
+ .bg-praelatus .nav-link:hover {
+   background-color: lighten($primary-color, 10%);
+ }
+
+ .bg-praelatus .btn-success .nav-link:hover, .bg-praelatus .btn-success .nav-link.active:hover {
+   background-color: lighten(#28a745, 10%);
+   border-radius: 5px;
+ }
+
+ .bg-praelatus .btn-success .nav-link.active {
+   background-color: #28a745;
+   border-radius: 5px;
+ }
+
+ .bg-praelatus .nav-link.btn-success:hover {
  }
 
  .bg-praelatus .dropdown-item {
    color: #000 !important;
  }
 
- .bg-praelatus .dropdown-item:hover, .bg-praelatus .nav-link.active {
+ .bg-praelatus .dropdown-item:hover, .bg-praelatus .dropdown-item.active:hover, .bg-praelatus .nav-link.active {
    background-color: $primary-color;
    color: #fff !important;
+ }
+
+ .bg-praelatus .dropdown-item.active {
+   background-color: white;
+   border: 1px solid $primary-color;
  }
 
  .b-nav-dropdown .dropdown-item:focus:not(.active), .b-nav-dropdown .dropdown-item:hover:not(.active) {
@@ -116,8 +133,6 @@
    padding: 5px;
  }
 
- $placeholder-color: #fff;
-
  .bg-praelatus .nav .form-inline input {
    border: none;
    border-radius: 0px;
@@ -126,21 +141,21 @@
  }
 
  .bg-praelatus .nav .form-inline input::-webkit-input-placeholder { /* WebKit, Blink, Edge */
-   color:    $placeholder-color;
+   color:    #fff !important;
  }
  .bg-praelatus .nav .form-inline input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-   color:    $placeholder-color;
+   color:    #fff !important;
    opacity:  1;
  }
  .bg-praelatus .nav .form-inline input::-moz-placeholder { /* Mozilla Firefox 19+ */
-   color:    $placeholder-color;
+   color:    #fff !important;
    opacity:  1;
  }
  .bg-praelatus .nav .form-inline input:-ms-input-placeholder { /* Internet Explorer 10-11 */
-   color:    $placeholder-color;
+   color:    #fff !important;
  }
  .bg-praelatus .nav .form-inline input::-ms-input-placeholder { /* Microsoft Edge */
-   color:    $placeholder-color;
+   color:    #fff !important;
  }
 
  .navbar-ticket-search {
