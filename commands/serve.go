@@ -27,7 +27,7 @@ var (
 )
 
 func init() {
-	server.Flags().BoolVar(&disableCORS, "nocors", false,
+	server.Flags().BoolVar(&disableCORS, "disable-cors", false,
 		"If given all Access-Control headers will be set to *")
 	server.Flags().BoolVar(&profile, "profile", false,
 		"Enables server performance profiling on localhost:6060")
