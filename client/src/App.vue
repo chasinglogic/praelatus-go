@@ -57,6 +57,7 @@
 <style lang="scss">
  $fa-font-path: "~font-awesome/fonts";
  @import '~font-awesome/scss/font-awesome.scss';
+ @import './src/assets/styles/index.scss';
 
  #app {
    font-family: 'Avenir', Helvetica, Arial, sans-serif;
