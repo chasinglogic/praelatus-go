@@ -17,22 +17,22 @@ import (
 	"strings"
 )
 
-type AWSConfig struct {
-	Region  string
-	BaseURL *string
-}
-
 // Config holds much of the configuration for praelatus, if reading from the
 // configuration you should use the helper methods in this package as they do
 // some prequisite processing and return appropriate types.
 type Config struct {
-	DBURL        string
-	DBName       string
-	SessionURL   string
-	Port         string
-	LogLocations []string
-	SessionStore string
-	AWS          AWSConfig
+	DBURL        string   `required:"true"`
+	DBName       string   `required:"true"`
+	SessionURL   string   `required:"true"`
+	Port         string   `required:"true"`
+	LogLocations []string `required:"true"`
+	SessionStore string   `required:"true"`
+	InstanceName string   `required:"true"`
+}
+
+// Public returns a safe for public consumption Config
+func (c Config) Public() interface{} {
+	return Config{}
 }
 
 func (c Config) String() string {
@@ -42,6 +42,16 @@ func (c Config) String() string {
 	}
 
 	return string(b)
+}
+
+// Save writes the config to a json file
+func (c Config) Save() error {
+	b, err := json.MarshalIndent(c, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile("config.json", b, 0600)
 }
 
 // Cfg is the global config variable used in the helper methods of this package
@@ -82,12 +92,16 @@ func init() {
 		Cfg.LogLocations = []string{"stdout"}
 	}
 
+	Cfg.InstanceName = os.Getenv("PRAELATUS_INSTANCE_NAME")
+	if Cfg.InstanceName == "" {
+		Cfg.InstanceName = "Praelatus"
+	}
+
 	f, err := os.Open("config.json")
 	if err != nil && !os.IsNotExist(err) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
 	defer f.Close()
 
 	if os.IsNotExist(err) {
