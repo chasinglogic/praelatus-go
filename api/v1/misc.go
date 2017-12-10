@@ -68,6 +68,11 @@ func updateSysInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	c.DBURL = config.Cfg.DBURL
+	c.DBName = config.Cfg.DBName
+	c.Port = config.Cfg.Port
+	c.DataDirectory = config.Cfg.DataDirectory
+
 	config.Cfg = c
 	config.Cfg.Save()
 }
