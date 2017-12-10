@@ -21,13 +21,12 @@ import (
 // configuration you should use the helper methods in this package as they do
 // some prequisite processing and return appropriate types.
 type Config struct {
-	DBURL        string   `required:"true"`
-	DBName       string   `required:"true"`
-	SessionURL   string   `required:"true"`
-	Port         string   `required:"true"`
-	LogLocations []string `required:"true"`
-	SessionStore string   `required:"true"`
-	InstanceName string   `required:"true"`
+	DBURL         string   `required:"true"`
+	DBName        string   `required:"true"`
+	DataDirectory string   `required:"true"`
+	Port          string   `required:"true"`
+	LogLocations  []string `required:"true"`
+	InstanceName  string   `required:"true"`
 }
 
 // Public returns a safe for public consumption Config
@@ -63,19 +62,19 @@ func init() {
 		Cfg.DBURL = "mongodb://localhost:27017/praelatus"
 	}
 
+	Cfg.DataDirectory = os.Getenv("PRAELATUS_DATA_DIRECTORY")
+	if Cfg.DataDirectory == "" {
+		path, err := filepath.Abs("data")
+		if err != nil {
+			Cfg.DataDirectory = "data"
+		} else {
+			Cfg.DataDirectory = path
+		}
+	}
+
 	Cfg.DBName = os.Getenv("PRAELATUS_DB")
 	if Cfg.DBName == "" {
 		Cfg.DBName = "praelatus"
-	}
-
-	Cfg.SessionStore = os.Getenv("PRAELATUS_SESSION")
-	if Cfg.SessionStore == "" {
-		Cfg.SessionStore = "bolt"
-	}
-
-	Cfg.SessionURL = os.Getenv("PRAELATUS_SESSION_URL")
-	if Cfg.SessionURL == "" {
-		Cfg.SessionURL = "sessions.db"
 	}
 
 	Cfg.Port = os.Getenv("PRAELATUS_PORT")
@@ -144,11 +143,6 @@ func Port() string {
 	return Cfg.Port
 }
 
-// SessionURL will get the url to use for redis or file location for boltdb
-func SessionURL() string {
-	return Cfg.SessionURL
-}
-
 // WebWorkers returns the number of web workers to run for sending http
 // requests from hooks
 func WebWorkers() int {
@@ -158,10 +152,5 @@ func WebWorkers() int {
 var Logger *log.Logger
 
 func DataDir() string {
-	path, err := filepath.Abs("data")
-	if err != nil {
-		return "data"
-	}
-
-	return path
+	return Cfg.DataDirectory
 }
