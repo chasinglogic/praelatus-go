@@ -1,1 +1,1 @@
-https://github.com/praelatus/praelatus/blob/master/README.md => praelatus.io
+https://github.com/praelatus/praelatus/blob/master/README.md => http://praelatus.io
