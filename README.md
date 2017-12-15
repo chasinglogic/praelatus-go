@@ -1,5 +1,8 @@
-# Praelatus [![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/praelatus/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/backend?status.svg)](https://godoc.org/github.com/praelatus/backend/) [![Go Report Card](https://goreportcard.com/badge/github.com/praelatus/praelatus)](https://goreportcard.com/report/github.com/praelatus/praelatus)
+# Praelatus
+
 An Open Source bug tracker and ticketing system.
+
+[![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/praelatus/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/backend?status.svg)](https://godoc.org/github.com/praelatus/backend/) [![Go Report Card](https://goreportcard.com/badge/github.com/praelatus/praelatus)](https://goreportcard.com/report/github.com/praelatus/praelatus)
 
 | Stable | Nightly |
 |:------:|:-------:|
