@@ -1,1 +1,1 @@
-../README.md
+praelatus/docs/README.md
