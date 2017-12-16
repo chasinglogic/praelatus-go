@@ -1,1 +1,1 @@
-praelatus/README.md
+praelatus/praelatus/README.md
