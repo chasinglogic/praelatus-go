@@ -1,1 +1,1 @@
-praelatus/praelatus/README.md
+../../README.md
