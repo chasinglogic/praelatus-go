@@ -1,1 +1,1 @@
-praelatus/praelatus/blob/master/README.md
+ praelatus/README.md 
