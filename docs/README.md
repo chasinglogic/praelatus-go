@@ -1,1 +1,1 @@
-blob/master/README.md
+../blob/master/README.md
