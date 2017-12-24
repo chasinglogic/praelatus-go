@@ -97,6 +97,8 @@ func makeFieldSearchDoc(exp ast.InfixExpression, b bson.M, valDoc interface{}) {
 		b["status.name"] = valDoc
 	} else if fn.Value == "statusCategory" {
 		b["status.type"] = valDoc
+	} else if fn.Value == "key" {
+		b["_id"] = valDoc
 	} else if fn.IsCustomField() {
 		customFieldDoc := bson.M{
 			"name":  fn.Value,
