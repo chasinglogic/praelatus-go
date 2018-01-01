@@ -5,7 +5,7 @@
 package mongo
 
 import (
-//	"errors"
+	//	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -52,96 +52,93 @@ func (t ticketRepo) Get(u *models.User, uid string) (models.Ticket, error) {
 	return ticket, err
 }
 
-
 func (t ticketRepo) Update(u *models.User, uid string, updated models.Ticket) error {
-        // TODO: Have to validate field schema.
-        var p models.Project
-        var dbUser models.User
+	// TODO: Have to validate field schema.
+	var p models.Project
+	var dbUser models.User
 
-        err := t.conn.DB(dbName).C(projects).FindId(updated.Project).One(&p)
-        if err != nil {
-                //return models.Ticket{}, mongoErr(err)
-                return mongoErr(err)
-        }
+	err := t.conn.DB(dbName).C(projects).FindId(updated.Project).One(&p)
+	if err != nil {
+		//return models.Ticket{}, mongoErr(err)
+		return mongoErr(err)
+	}
 
-        err = t.conn.DB(dbName).C(users).FindId(u.Username).One(&dbUser)
-        if err != nil {
-                //return models.Ticket{}, mongoErr(err)
-                return mongoErr(err)
-        }
+	err = t.conn.DB(dbName).C(users).FindId(u.Username).One(&dbUser)
+	if err != nil {
+		//return models.Ticket{}, mongoErr(err)
+		return mongoErr(err)
+	}
 
-        if len(models.HasPermission(permission.CreateTicket, dbUser, p)) == 0 {
-                //return models.Ticket{}, repo.ErrUnauthorized
-                return repo.ErrUnauthorized
-        }
+	if len(models.HasPermission(permission.CreateTicket, dbUser, p)) == 0 {
+		//return models.Ticket{}, repo.ErrUnauthorized
+		return repo.ErrUnauthorized
+	}
 
-        if !p.HasTicketType(updated.Type) {
-                //return models.Ticket{}, repo.ErrInvalidTicketType
-                return repo.ErrInvalidTicketType
-        }
+	if !p.HasTicketType(updated.Type) {
+		//return models.Ticket{}, repo.ErrInvalidTicketType
+		return repo.ErrInvalidTicketType
+	}
 
-        var fs models.FieldScheme
+	var fs models.FieldScheme
 
-        err = t.conn.DB(dbName).C(fieldSchemes).FindId(p.FieldScheme).One(&fs)
-        if err != nil {
-                //return models.Ticket{}, mongoErr(err)
-                return mongoErr(err)
-        }
+	err = t.conn.DB(dbName).C(fieldSchemes).FindId(p.FieldScheme).One(&fs)
+	if err != nil {
+		//return models.Ticket{}, mongoErr(err)
+		return mongoErr(err)
+	}
 
-        if err := fs.ValidateTicket(updated); err != nil {
-                if err.Error() == "no fields set for this ticket type and default not set" {
+	if err := fs.ValidateTicket(updated); err != nil {
+		if err.Error() == "no fields set for this ticket type and default not set" {
 
-                        //return models.Ticket{}, repo.ErrInvalidFieldsForTicket
-                        return mongoErr(err)
-                }
+			//return models.Ticket{}, repo.ErrInvalidFieldsForTicket
+			return mongoErr(err)
+		}
 
-             //return models.Ticket{}, repo.ErrInvalidFieldsForTicket
-                return mongoErr(err)
-        }
+		//return models.Ticket{}, repo.ErrInvalidFieldsForTicket
+		return mongoErr(err)
+	}
 
+	updated.Workflow = p.GetWorkflow(updated.Type)
 
-        updated.Workflow = p.GetWorkflow(updated.Type)
+	var wkf models.Workflow
 
-        var wkf models.Workflow
+	err = t.conn.DB(dbName).C(workflows).FindId(updated.Workflow).One(&wkf)
+	if err != nil {
+		//return models.Ticket{}, mongoErr(err)
+		return mongoErr(err)
+	}
 
-        err = t.conn.DB(dbName).C(workflows).FindId(updated.Workflow).One(&wkf)
-        if err != nil {
-                //return models.Ticket{}, mongoErr(err)
-                return mongoErr(err)
-        }
+	var ticket models.Ticket
+	err = t.coll().FindId(uid).One(&ticket)
 
-        var ticket models.Ticket
-        err = t.coll().FindId(uid).One(&ticket)
+	//key, err := t.NextTicketKey(u, ticket.Project)
+	//if err != nil {
+	//      return models.Ticket{}, mongoErr(err)
+	//}
 
+	//ticket.Key = key
+	//ticket.CreatedDate = time.Now()
+	ticket.UpdatedDate = time.Now()
+	ticket.Comments = updated.Comments
+	ticket.Status = updated.Status
+	ticket.Watchers = updated.Watchers
 
-        //key, err := t.NextTicketKey(u, ticket.Project)
-        //if err != nil {
-        //      return models.Ticket{}, mongoErr(err)
-        //}
+	err = t.coll().Insert(ticket)
+	if err != nil {
+		//return ticket, mongoErr(err)
+		return mongoErr(err)
+	}
 
-        //ticket.Key = key
-        //ticket.CreatedDate = time.Now()
-        ticket.UpdatedDate = time.Now()
-        ticket.Comments = updated.Comments
-        ticket.Status = updated.Status
-        ticket.Watchers = updated.Watchers
-
-        err = t.coll().Insert(ticket)
-        if err != nil {
-                //return ticket, mongoErr(err)
-                return mongoErr(err)
-        }
-
-        //return ticket, nil
-        return nil
+	//return ticket, nil
+	return nil
 }
-
 
 func (t ticketRepo) AddComment(u *models.User, uid string, comment models.Comment) (models.Ticket, error) {
 	var ticket models.Ticket
 
 	comment.CreatedDate = time.Now()
 	comment.UpdatedDate = time.Now()
+	comment.ID = bson.NewObjectId()
 
 	err := t.coll().UpdateId(uid, bson.M{
 		"$push": bson.M{
