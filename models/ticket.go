@@ -80,10 +80,11 @@ func (t Ticket) Transition(db *mgo.Database, name string) (Transition, bool) {
 
 // Comment is a comment on an issue / ticket.
 type Comment struct {
-	UpdatedDate time.Time `json:"updatedDate"`
-	CreatedDate time.Time `json:"createdDate"`
-	Body        string    `json:"body" required:"true"`
-	Author      string    `json:"author" required:"true"`
+	ID          bson.ObjectId `json:"id"`
+	UpdatedDate time.Time     `json:"updatedDate"`
+	CreatedDate time.Time     `json:"createdDate"`
+	Body        string        `json:"body" required:"true"`
+	Author      string        `json:"author" required:"true"`
 }
 
 func (c *Comment) String() string {
